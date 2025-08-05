@@ -21,12 +21,12 @@ import ReservaWhite from '@/public/Reserva-white.jpeg';
 // Dados dos produtos
 const sneakersHugoBoss = [
   {
-    src: SneackersBrown.src,
-    alt: 'Tênis Hugo Boss marrom'
+    src: SneackersBlack.src,
+    alt: 'Tênis Hugo Boss Preto'
   },
   {
-    src: SneackersBlack.src,
-    alt: 'Tênis Hugo Boss preto'
+    src: SneackersBrown.src,
+    alt: 'Tênis Hugo Boss Marrom'
   }
 ];
 
@@ -61,6 +61,29 @@ const sneakersLeather = [
     alt: 'Tênis couro Bege'
   }
 ];
+
+const sneakersNewBalance = [
+  {
+    src: NewBalanceBlack.src,
+    alt: 'Tênis New Balance preto'
+  },
+  {
+    src: NewBalanceBeige.src,
+    alt: 'Tênis New Balance bege'
+  }
+];
+
+const sneakersReserva = [
+  {
+    src: ReservaBlack.src,
+    alt: 'Tênis Reserva preto'
+  },
+  {
+    src: ReservaWhite.src,
+    alt: 'Tênis Reserva branco'
+  }
+];
+
 
 // Página principal
 export default function BoyPage() {
