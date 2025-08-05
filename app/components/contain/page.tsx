@@ -4,21 +4,20 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Sneaker {
+type Sneaker = {
   src: string;
   alt: string;
-}
+};
 
 interface ContainProps {
   sneakers: Sneaker[];
-  title?: string;
+  title: string;
+  price: string;
 }
 
-export default function Contain({ sneakers, title = "Tênis HUGO BOSS" }: ContainProps) {
+export default function Contain({ sneakers, title, price }: ContainProps) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-
-  if (!sneakers || sneakers.length === 0) return null;
 
   const handlePrev = () => {
     setDirection(-1);
@@ -29,6 +28,8 @@ export default function Contain({ sneakers, title = "Tênis HUGO BOSS" }: Contai
     setDirection(1);
     setIndex((prev) => (prev === sneakers.length - 1 ? 0 : prev + 1));
   };
+
+  const currentSneaker = sneakers[index];
 
   return (
     <article className="relative w-[20rem] h-[30rem] mt-8 ml-4 p-4 border-[2px] border-white cursor-pointer text-white text-center font-bold animate-fade-right animate-once animate-duration-[3000ms] animate-delay-1000 animate-ease-linear overflow-hidden rounded hover:border-green-500">
@@ -62,9 +63,9 @@ export default function Contain({ sneakers, title = "Tênis HUGO BOSS" }: Contai
       <figure className="relative w-full h-[20rem] flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.img
-            key={sneakers[index].src}
-            src={sneakers[index].src}
-            alt={sneakers[index].alt}
+            key={currentSneaker.src}
+            src={currentSneaker.src}
+            alt={currentSneaker.alt}
             initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
@@ -72,11 +73,15 @@ export default function Contain({ sneakers, title = "Tênis HUGO BOSS" }: Contai
             className="absolute w-[16rem] h-[20rem] object-cover mx-auto rounded-md"
           />
         </AnimatePresence>
-        <figcaption className="mt-6 text-lg absolute bottom-[-2.5rem]">{title}</figcaption>
+        <figcaption className="mt-6 text-lg absolute bottom-[-2.5rem]">
+          {currentSneaker.alt}
+        </figcaption>
       </figure>
 
-      <p className="mt-12 text-xl font-thin">R$ 199,99</p>
-      <p className="text-sm mt-2">ou 12x de R$ 16,66</p>
+      {/* Título e Preço */}
+      <h2 className="mt-8 text-lg font-semibold">{title}</h2>
+      <p className="text-xl font-thin">{price}</p>
+      <p className="text-sm mt-2">ou 12x sem juros</p>
     </article>
   );
 }

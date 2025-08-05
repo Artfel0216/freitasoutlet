@@ -26,15 +26,15 @@ export default function Header() {
           onClick={handleClick}
           className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400"
         >
-          Masculino
+          Masculinos
           <ChevronDown />
         </button>
         <button className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
-          Feminino
+          Femininos
           <ChevronDown />
         </button>
         <button className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
-          Infantil
+          Infantis
           <ChevronDown />
         </button>
       </nav>
