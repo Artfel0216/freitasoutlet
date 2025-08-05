@@ -3,23 +3,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import SneackersBrown from "@/public/HugoBossMarrom.jpeg";
-import SneackersBlack from "@/public/HugoBossPreto.jpeg";
 
-const sneakers = [
-  {
-    src: SneackersBrown.src,
-    alt: "Tênis Hugo Boss marrom"
-  },
-  {
-    src: SneackersBlack.src,
-    alt: "Tênis Hugo Boss preto"
-  }
-];
+interface Sneaker {
+  src: string;
+  alt: string;
+}
 
-export default function Contain() {
+interface ContainProps {
+  sneakers: Sneaker[];
+  title?: string;
+}
+
+export default function Contain({ sneakers, title = "Tênis HUGO BOSS" }: ContainProps) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+
+  if (!sneakers || sneakers.length === 0) return null;
 
   const handlePrev = () => {
     setDirection(-1);
@@ -73,11 +72,11 @@ export default function Contain() {
             className="absolute w-[16rem] h-[20rem] object-cover mx-auto rounded-md"
           />
         </AnimatePresence>
-        <figcaption className="mt-6 text-lg absolute bottom-[-2.5rem]">Tênis HUGO BOSS</figcaption>
+        <figcaption className="mt-6 text-lg absolute bottom-[-2.5rem]">{title}</figcaption>
       </figure>
 
       <p className="mt-12 text-xl font-thin">R$ 199,99</p>
-        <p className="text-sm mt-2">ou 12x de R$ 16,66</p>
+      <p className="text-sm mt-2">ou 12x de R$ 16,66</p>
     </article>
   );
 }
