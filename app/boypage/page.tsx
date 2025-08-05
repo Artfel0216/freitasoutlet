@@ -51,6 +51,16 @@ const sneakersBoss = [
     alt: 'Tênis Hugo Boss branco'
   }
 ];
+const sneakersLeather = [
+  {
+    src: LeatherBlack.src,
+    alt: 'Tênis couro Preto'
+  },
+  {
+    src: LeatherBeige.src,
+    alt: 'Tênis couro Bege'
+  }
+];
 
 // Página principal
 export default function BoyPage() {
