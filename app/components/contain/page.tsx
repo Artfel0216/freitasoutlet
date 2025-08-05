@@ -32,7 +32,7 @@ export default function Contain() {
   };
 
   return (
-    <article className="relative w-[20rem] h-[30rem] mt-8 ml-4 p-4 border border-white text-white text-center font-bold animate-fade-right animate-once animate-duration-[3000ms] animate-delay-1000 animate-ease-linear overflow-hidden rounded">
+    <article className="relative w-[20rem] h-[30rem] mt-8 ml-4 p-4 border-[2px] border-white cursor-pointer text-white text-center font-bold animate-fade-right animate-once animate-duration-[3000ms] animate-delay-1000 animate-ease-linear overflow-hidden rounded hover:border-green-500">
       
       {/* Botões laterais */}
       <button
