@@ -11,6 +11,13 @@ export default function Header() {
     router.push('/boypage');
   };
 
+  const WomanPage = () => {
+    router.push('/womanpage');
+  }
+  const KidsPage = () => {
+    router.push('/kidspage');
+  };
+
   return (
     <header className="w-full h-[10rem] p-4 flex items-center text-white text-[1.2rem] font-bold">
       <a href="/" className="cursor-pointer">
@@ -29,11 +36,15 @@ export default function Header() {
           Masculinos
           <ChevronDown />
         </button>
-        <button className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
+        <button
+          onClick={WomanPage}
+         className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
           Femininos
           <ChevronDown />
         </button>
-        <button className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
+        <button
+          onClick={KidsPage}
+         className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
           Infantis
           <ChevronDown />
         </button>

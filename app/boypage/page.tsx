@@ -116,7 +116,22 @@ export default function BoyPage() {
         </main>
 
         <main className='flex gap-2 items-center justify-center'>
+          <Contain
+            sneakers={sneakersLeather}
+            title="Tênis Hugo Boss"
+            price="R$ 199,99"
+          />
 
+          <Contain
+            sneakers={sneakersNewBalance}
+            title="Tênis New Balance"
+            price="R$ 299,99"
+          />
+          <Contain
+            sneakers={sneakersReserva}
+            title="Tênis Reserva"
+            price="R$ 129,99"
+          />
         </main>
       </div>
     </div>

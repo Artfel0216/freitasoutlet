@@ -80,8 +80,8 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
 
       {/* Título e Preço */}
       <h2 className="mt-8 text-lg font-semibold">{title}</h2>
-      <p className="text-xl font-thin">{price}</p>
-      <p className="text-sm mt-2">ou 6x sem juros</p>
+      <p className="text-xl font-thin">{price} no Pix</p>
+      <p className="text-sm mt-2">ou até 6x sem juros</p>
     </article>
   );
 }
