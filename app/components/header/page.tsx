@@ -1,6 +1,6 @@
 'use client';
 
-import Logo from '@/public/Logo.png';
+import Logo from '@/app/public/img/LogoFreitasOutlet.png';
 import { ChevronDown, ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation'; 
 
