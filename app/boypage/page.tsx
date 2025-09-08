@@ -15,6 +15,8 @@ import SneakersAirForceAllBlack from '@/app/public/imgCalçados/TênisNikeAirFor
 import SneakersAirForceAllWhite from '@/app/public/imgCalçados/TênisNikeAirForceLinhaPremiumWhite.jpg';
 import SneakersAirForceLinhaPremiumstringBlack from '@/app/public/imgCalçados/Tênis NikeAirForceLinhaPremiumCordaPreta.jpg'
 import SneakersAirForceLinhaPremiumstringWhite from '@/app/public/imgCalçados/Tênis NikeAirForceLinhaPremiumCordaBranca.jpg';
+import SneakersAdidasSamba from '@/app/public/imgCalçados/TenisAdidasSamba.jpg';
+import SneakersAdidasSambaSolado from '@/app/public/imgCalçados/TenisAdidasSambaSolado.jpg';
 
 
 // Product data
@@ -104,6 +106,14 @@ export default function BoyPage() {
             sneakers={AirForceSneakers}
             title="Nike Air Force Premium Line"
             price="R$ 86,00"
+          />
+        </main>
+        
+        <main className='flex gap-2 items-center justify-center'>
+          <Contain 
+           sneakers={AsunaSlippers}
+            title="Asuna Slipper Premium Line"
+            price="R$ 150,00"
           />
         </main>
 
