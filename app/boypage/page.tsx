@@ -19,6 +19,7 @@ import SneakersAdidasSamba from '@/app/public/imgCalçados/AdidasSamba.jpg';
 import SneakersAdidasSambaSolado from '@/app/public/imgCalçados/AdidasSambaSol.jpg';
 import SneakersAdidasAdSport from '@/app/public/imgCalçados/TenisAdidasAdSport.jpg';
 import SneakersAdidasAdSportSolado from '@/app/public/imgCalçados/TenisAdidasAdSport2.jpg';
+import SneakersAdidasAdSportWhite from '@/app/public/imgCalçados/TenisAdidasAdSportWhite.jpg';
 import SneakersLV from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremium .jpg';
 import SneakersLV2 from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremiumBlacAndWhite.jpg';
 import SneakersLV3 from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremiumBlack.jpg';
@@ -106,11 +107,15 @@ const AdidasSneakersSamba = [
 const AdidasSneakersAdSport = [
   {
     src: SneakersAdidasAdSport.src,   
-    alt: 'Adidas AdSport',
+    alt: 'Adidas AdSport Black',
   },
   {
     src: SneakersAdidasAdSportSolado.src,
     alt: '',
+  },
+  {
+    src: SneakersAdidasAdSportWhite.src,
+    alt: 'Adidas AdSport White',
   }
 ]
 
