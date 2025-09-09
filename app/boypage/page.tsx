@@ -1,8 +1,13 @@
 'use client';
 
+'use client';
+
 import React from 'react';
 import Header from '../components/header/page';
 import Contain from '@/app/components/contain/page';
+
+// ... seus imports de imagens e arrays de produtos aqui
+
 import SlipperAsunaAllBlack from "@/app/public/imgCalçados/ChineloAsunaAllBlack.jpg";
 import SlipperAsunaBeige from "@/app/public/imgCalçados/ChineloAsunabege.jpg";
 import SlipperAsunaGray from "@/app/public/imgCalçados/ChineloAsunaCinza.jpg";
@@ -32,6 +37,8 @@ import MizunoProBlack from '@/app/public/imgCalçados/MizunoProBlack.jpg';
 import MizunoProBlackAndGreen from '@/app/public/imgCalçados/MizunoProBlackAndGreen.jpg';
 import MizunoProBlue from '@/app/public/imgCalçados/MizunoProBlue.jpg';
 import MizunoProPurple from '@/app/public/imgCalçados/MizunoProPurple.jpg';
+
+
 
 // Product data
 const AsunaSlippers = [
@@ -194,17 +201,17 @@ export default function BoyPage() {
           <Contain
             sneakers={AsunaSlippers}
             title=''
-            price="R$ 150,00"
+            price="R$ 187,50"
           />
           <Contain
             sneakers={VansSneakers}
             title=""
-            price="R$ 100,00"
+            price="R$ 125,00"
           />
           <Contain
             sneakers={AirForceSneakers}
             title=""
-            price="R$ 86,00"
+            price="R$ 107,50"
           />
         </main>
         
@@ -212,19 +219,19 @@ export default function BoyPage() {
           <Contain 
            sneakers={LVSneakers}
             title=""
-            price="R$ 170,00"
+            price="R$ 212,50"
           />
 
           <Contain 
             sneakers={AdidasSneakersSamba}
             title=""
-            price="R$ 80,00"
+            price="R$ 100,00"
           /> 
 
           <Contain 
             sneakers={AdidasSneakersAdSport}
             title=""
-            price="R$ 86,00"
+            price="R$ 107,50"
           />
         </main>
 
@@ -232,13 +239,13 @@ export default function BoyPage() {
           <Contain 
            sneakers={AdidasCampus}
             title=""
-            price="R$ 86,00"
+            price="R$ 107,50"
           />
 
           <Contain 
             sneakers={MizunoPro}
             title=""
-            price="R$ 100,00"
+            price="R$ 125,00"
           /> 
 
           <Contain 

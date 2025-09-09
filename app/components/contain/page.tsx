@@ -32,13 +32,30 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
   const currentSneaker = sneakers[index];
 
   return (
-    <article className="relative w-[20rem] h-[30rem] mt-8 ml-4 p-4 border-[2px] border-white cursor-pointer text-white text-center font-bold animate-fade-right animate-once animate-duration-[3000ms] animate-delay-1000 animate-ease-linear overflow-hidden rounded hover:border-green-500">
-      
+    <article
+      className="
+        relative 
+        w-full max-w-[18rem] 
+        h-[32rem] 
+        mt-6 
+        p-4 
+        border-2 border-white 
+        rounded-xl 
+        text-white 
+        text-center 
+        font-bold 
+        overflow-hidden 
+        hover:border-green-500 
+        transition 
+        duration-300 
+        flex flex-col justify-between
+      "
+    >
       {/* Botões laterais */}
       <button
         onClick={handlePrev}
         aria-label="Imagem anterior"
-        className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white text-black p-1 rounded-full cursor-pointer z-10"
+        className="absolute top-1/2 left-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -46,13 +63,13 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
       <button
         onClick={handleNext}
         aria-label="Próxima imagem"
-        className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white text-black p-1 rounded-full cursor-pointer z-10"
+        className="absolute top-1/2 right-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
       >
         <ChevronRight className="w-5 h-5" />
-      </button>  
+      </button>
 
       {/* Imagem com animação */}
-      <figure className="relative w-full h-[20rem] flex items-center justify-center">
+      <figure className="relative w-full aspect-[3/4] flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.img
             key={currentSneaker.src}
@@ -61,19 +78,23 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
             initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-            transition={{ duration: 0.5 }}
-            className="absolute w-[16rem] h-[20rem] object-cover mx-auto rounded-md"
+            transition={{ duration: 0.4 }}
+            className="absolute w-full h-full object-cover rounded-md"
           />
         </AnimatePresence>
-        <figcaption className="mt-6 text-lg absolute bottom-[-2.5rem]">
-          {currentSneaker.alt}
-        </figcaption>
       </figure>
 
-      {/* Título e Preço */}
-      <h2 className="mt-[3rem] text-lg font-semibold">{title}</h2>
-      <p className="text-xl font-thin">{price} no Pix</p>
-      <p className="text-sm mt-2">ou até 6x sem juros</p>
+      {/* Textos fixados na parte de baixo */}
+      <div className="mt-3">
+        <figcaption className="text-sm sm:text-base font-medium">
+          {currentSneaker.alt}
+        </figcaption>
+        <h2 className="mt-2 text-lg sm:text-xl font-semibold">{title}</h2>
+        <p className="text-base sm:text-lg font-thin">{price} no Pix</p>
+        <p className="text-xs sm:text-sm mt-1 text-gray-300">
+          ou até 6x sem juros
+        </p>
+      </div>
     </article>
   );
 }
