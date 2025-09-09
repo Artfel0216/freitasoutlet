@@ -15,9 +15,22 @@ import SneakersAirForceAllBlack from '@/app/public/imgCalçados/TênisNikeAirFor
 import SneakersAirForceAllWhite from '@/app/public/imgCalçados/TênisNikeAirForceLinhaPremiumWhite.jpg';
 import SneakersAirForceLinhaPremiumstringBlack from '@/app/public/imgCalçados/Tênis NikeAirForceLinhaPremiumCordaPreta.jpg'
 import SneakersAirForceLinhaPremiumstringWhite from '@/app/public/imgCalçados/Tênis NikeAirForceLinhaPremiumCordaBranca.jpg';
-import SneakersAdidasSamba from '@/app/public/imgCalçados/TenisAdidasSamba.jpg';
-import SneakersAdidasSambaSolado from '@/app/public/imgCalçados/TenisAdidasSambaSolado.jpg';
-
+import SneakersAdidasSamba from '@/app/public/imgCalçados/AdidasSamba.jpg';
+import SneakersAdidasSambaSolado from '@/app/public/imgCalçados/AdidasSambaSol.jpg';
+import SneakersAdidasAdSport from '@/app/public/imgCalçados/TenisAdidasAdSport.jpg';
+import SneakersAdidasAdSportSolado from '@/app/public/imgCalçados/TenisAdidasAdSport2.jpg';
+import SneakersLV from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremium .jpg';
+import SneakersLV2 from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremiumBlacAndWhite.jpg';
+import SneakersLV3 from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremiumBlack.jpg';
+import SneakersLV4 from '@/app/public/imgCalçados/TênisLouisVuittonTrainerLinhaPremiumBlue.jpg';
+import AdidasCampusBlackAndWhite from '@/app/public/imgCalçados/AdidasCampusBlackAndWhite.jpg';
+import AdidasCampusAllBlack from '@/app/public/imgCalçados/AdidasCampusAllBlack.jpg';
+import AdidasCampusBege from '@/app/public/imgCalçados/AdidasCampusBege.jpg';
+import MizunoProAllBlack from '@/app/public/imgCalçados/MizunoProAllBlack.jpg';
+import MizunoProBlack from '@/app/public/imgCalçados/MizunoProBlack.jpg';
+import MizunoProBlackAndGreen from '@/app/public/imgCalçados/MizunoProBlackAndGreen.jpg';
+import MizunoProBlue from '@/app/public/imgCalçados/MizunoProBlue.jpg';
+import MizunoProPurple from '@/app/public/imgCalçados/MizunoProPurple.jpg';
 
 // Product data
 const AsunaSlippers = [
@@ -79,6 +92,87 @@ const AirForceSneakers = [
   
 ]
 
+const AdidasSneakersSamba = [
+  {
+    src: SneakersAdidasSamba.src,
+    alt: 'Adidas Samba',
+  },
+  {
+    src: SneakersAdidasSambaSolado.src,
+    alt: '',
+  }
+]
+
+const AdidasSneakersAdSport = [
+  {
+    src: SneakersAdidasAdSport.src,   
+    alt: 'Adidas AdSport',
+  },
+  {
+    src: SneakersAdidasAdSportSolado.src,
+    alt: '',
+  }
+]
+
+const LVSneakers = [
+  {
+    src: SneakersLV.src,  
+    alt: 'Louis Vuitton Trainer',
+  },
+  {
+    src: SneakersLV2.src,
+    alt: 'Louis Vuitton Trainer',
+  },
+  {
+    src: SneakersLV3.src,
+    alt: 'Louis Vuitton Trainer',
+  },
+  {
+    src: SneakersLV4.src,
+
+    alt: 'Louis Vuitton Trainer',
+  }
+]
+
+const AdidasCampus = [
+  {
+    src: AdidasCampusBlackAndWhite.src,
+    alt: 'Adidas Campus Black and White',
+  },
+  {
+    src: AdidasCampusAllBlack.src,
+    alt: 'Adidas Campus All Black',
+  },
+  {
+    src: AdidasCampusBege.src,
+    alt: 'Adidas Campus Beige',
+  }
+]
+
+const MizunoPro = [
+  {
+    src: MizunoProAllBlack.src,
+    alt: 'Mizuno Pro All Black',
+  },
+  {
+    src: MizunoProBlack.src,
+    alt: 'Mizuno Pro Black',
+  },
+  {
+    src: MizunoProBlackAndGreen.src,
+    alt: 'Mizuno Pro Black and Green',
+  },
+  {
+    src: MizunoProBlue.src,
+    alt: 'Mizuno Pro Blue',
+  },
+  {
+    src: MizunoProPurple.src,
+    alt: 'Mizuno Pro Purple',
+  }
+]
+
+
 // Main page
 export default function BoyPage() {
   return (
@@ -94,26 +188,58 @@ export default function BoyPage() {
         <main className="flex gap-2 items-center justify-center">
           <Contain
             sneakers={AsunaSlippers}
-            title="Asuna Slipper Premium Line"
+            title=''
             price="R$ 150,00"
           />
           <Contain
             sneakers={VansSneakers}
-            title="Vans VR3 Sneakers"
+            title=""
             price="R$ 100,00"
           />
           <Contain
             sneakers={AirForceSneakers}
-            title="Nike Air Force Premium Line"
+            title=""
             price="R$ 86,00"
           />
         </main>
         
         <main className='flex gap-2 items-center justify-center'>
           <Contain 
-           sneakers={AsunaSlippers}
-            title="Asuna Slipper Premium Line"
-            price="R$ 150,00"
+           sneakers={LVSneakers}
+            title=""
+            price="R$ 170,00"
+          />
+
+          <Contain 
+            sneakers={AdidasSneakersSamba}
+            title=""
+            price="R$ 80,00"
+          /> 
+
+          <Contain 
+            sneakers={AdidasSneakersAdSport}
+            title=""
+            price="R$ 86,00"
+          />
+        </main>
+
+         <main className='flex gap-2 items-center justify-center'>
+          <Contain 
+           sneakers={AdidasCampus}
+            title=""
+            price="R$ 86,00"
+          />
+
+          <Contain 
+            sneakers={MizunoPro}
+            title=""
+            price="R$ 100,00"
+          /> 
+
+          <Contain 
+            sneakers={AdidasSneakersAdSport}
+            title=""
+            price="R$ 86,00"
           />
         </main>
 

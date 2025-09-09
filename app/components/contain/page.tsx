@@ -49,15 +49,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white text-black p-1 rounded-full cursor-pointer z-10"
       >
         <ChevronRight className="w-5 h-5" />
-      </button>
-
-      {/* Selo de desconto */}
-      <div className="absolute top-4 left-4 flex items-center justify-center w-16 h-16 rounded-full bg-white text-black text-sm font-bold leading-tight cursor-pointer z-10">
-        <span>
-          50% <br />
-          Off
-        </span>
-      </div>
+      </button>  
 
       {/* Imagem com animação */}
       <figure className="relative w-full h-[20rem] flex items-center justify-center">
