@@ -44,19 +44,19 @@ import MizunoProPurple from '@/app/public/imgCalçados/MizunoProPurple.jpg';
 const AsunaSlippers = [
   {
     src: SlipperAsunaAllBlack.src,
-    alt: 'Asuna Slipper'
+    alt: 'Asuna Slipper All black'
   },
   {
     src: SlipperAsunaBeige.src,
-    alt: 'Asuna Slipper'
+    alt: 'Asuna Slipper Beige'
   },
   {
     src: SlipperAsunaGray.src,
-    alt: 'Asuna Slipper'
+    alt: 'Asuna Slipper Gray'
   },
   {
     src: SlipperAsunaBlack.src,
-    alt: 'Asuna Slipper'
+    alt: 'Asuna Slipper Black And white'
   }   
 ];
 
@@ -118,7 +118,7 @@ const AdidasSneakersAdSport = [
   },
   {
     src: SneakersAdidasAdSportSolado.src,
-    alt: '',
+    alt: 'Adidas AdSport Black',
   },
   {
     src: SneakersAdidasAdSportWhite.src,
