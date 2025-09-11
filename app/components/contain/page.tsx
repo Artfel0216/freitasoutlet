@@ -49,6 +49,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         transition 
         duration-300 
         flex flex-col justify-between
+        cursor-pointer
       "
     >
       {/* Botões laterais */}
@@ -57,7 +58,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         aria-label="Imagem anterior"
         className="absolute top-1/2 left-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5 cursor-pointer" />
       </button>
 
       <button
@@ -65,7 +66,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         aria-label="Próxima imagem"
         className="absolute top-1/2 right-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-5 h-5 cursor-pointer" />
       </button>
 
       {/* Imagem com animação */}
