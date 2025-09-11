@@ -37,6 +37,13 @@ import MizunoProBlack from '@/app/public/imgCalçados/MizunoProBlack.jpg';
 import MizunoProBlackAndGreen from '@/app/public/imgCalçados/MizunoProBlackAndGreen.jpg';
 import MizunoProBlue from '@/app/public/imgCalçados/MizunoProBlue.jpg';
 import MizunoProPurple from '@/app/public/imgCalçados/MizunoProPurple.jpg';
+import NikeAirZoomAlphafly2GreenAndBlack from '@/app/public/imgCalçados/NikeAirZoomAlphafly2GreenAndBlack.jpg';
+import NikeAirZoomAlphafly2GreenAndblue from '@/app/public/imgCalçados/NikeAirZoomAlphafly2GreenAndblue.jpg';
+import NikeAirZoomAlphafly2Orange from '@/app/public/imgCalçados/NikeAirZoomAlphafly2Orange.jpg';
+import NikeAirZoomAlphafly2WhiteAndOrange from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteAndOrange.jpg';
+import NikeAirZoomAlphafly2WhiteAndPurple from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteAndPurple.jpg';
+import NikeAirZoomAlphafly2WhiteAndRose from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteAndRose.jpg';
+import NikeAirZoomAlphafly2WhiteFireRed from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteFire.jpg';
 
 
 
@@ -184,6 +191,37 @@ const MizunoPro = [
   }
 ]
 
+const NikeAirZoomAlphafly2 = [
+  {
+    src: NikeAirZoomAlphafly2GreenAndBlack.src,
+    alt: 'Nike Air Zoom Alphafly2 Green and Black',
+  },
+  {
+    src: NikeAirZoomAlphafly2GreenAndblue.src,
+    alt: 'Nike Air Zoom Alphafly2 Green and Blue',
+  },
+  {
+    src: NikeAirZoomAlphafly2Orange.src,
+    alt: 'Nike Air Zoom Alphafly2 Orange',
+  },
+  {
+    src: NikeAirZoomAlphafly2WhiteAndOrange.src,
+    alt: 'Nike Air Zoom Alphafly2 White and Orange',
+  },
+  {
+    src: NikeAirZoomAlphafly2WhiteAndPurple.src,
+    alt: 'Nike Air Zoom Alphafly2 White and Purple',
+  },
+  {
+    src: NikeAirZoomAlphafly2WhiteAndRose.src,
+    alt: 'Nike Air Zoom Alphafly2 White and Rose',
+  },
+  {
+    src: NikeAirZoomAlphafly2WhiteFireRed.src,
+    alt: 'Nike Air Zoom Alphafly2 White Fire Red',
+  }
+]
+
 
 // Main page
 export default function BoyPage() {
@@ -249,9 +287,9 @@ export default function BoyPage() {
           /> 
 
           <Contain 
-            sneakers={AdidasSneakersAdSport}
+            sneakers={NikeAirZoomAlphafly2}
             title=""
-            price="R$ 86,00"
+            price="R$ 950,00"
           />
         </main>
 

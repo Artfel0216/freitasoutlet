@@ -225,7 +225,7 @@ export default function WomanPage() {
                             title=""
                             price="R$ 219,90"
                         />
-
+                        
                     </main>
                   </div>
         </div>
