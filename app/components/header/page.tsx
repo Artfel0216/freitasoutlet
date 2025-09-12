@@ -1,21 +1,22 @@
 'use client';
 
 import Logo from '@/app/public/img/LogoFreitasOutlet.png';
-import { ChevronDown, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation'; 
 
 export default function Header() {
   const router = useRouter();
 
-  const handleClick = () => {
-    router.push('/boypage');
+  const goToManPage = () => {
+    router.push('/routes/ManPage/');
   };
 
-  const WomanPage = () => {
-    router.push('/womanpage');
-  }
-  const KidsPage = () => {
-    router.push('/kidspage');
+  const goToWomanPage = () => {
+    router.push('/routes/WomanPage');
+  };
+
+  const goToKidsPage = () => {
+    router.push('/routes/KidsPage');
   };
 
   return (
@@ -30,19 +31,21 @@ export default function Header() {
 
       <nav className="flex ml-[45rem] gap-[2rem]">
         <button
-          onClick={handleClick}
+          onClick={goToManPage}
           className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400"
         >
           Masculinos
         </button>
         <button
-          onClick={WomanPage}
-         className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
+          onClick={goToWomanPage}
+          className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400"
+        >
           Femininos  
         </button>
         <button
-          onClick={KidsPage}
-         className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400">
+          onClick={goToKidsPage}
+          className="flex items-center justify-center gap-2 cursor-pointer hover:text-gray-400"
+        >
           Infantis
         </button>
       </nav>

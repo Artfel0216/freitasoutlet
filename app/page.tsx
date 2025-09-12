@@ -1,6 +1,6 @@
 'use client';
 
-import Header from "./components/header/page";
+import Header from "@/app/components/header/page";
 import Sliders from "./components/sliders/page";
 
 export default function Home() {

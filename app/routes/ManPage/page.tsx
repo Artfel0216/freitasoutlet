@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Header from '../components/header/page';
+import Header from '@/app/components/header/page';
 import Contain from '@/app/components/contain/page';
 
 // ===================
