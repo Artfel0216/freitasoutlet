@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type Sneaker = {
   src: string;
@@ -31,6 +32,12 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
 
   const currentSneaker = sneakers[index];
 
+  const router = useRouter();
+
+  const GoToProductPage = () => {
+    router.push('/routes/ProductPage');
+  }
+
   return (
     <article
       className="
@@ -51,7 +58,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         flex flex-col justify-between
         cursor-pointer
       "
-    >
+     onClick={GoToProductPage}>
       {/* Botões laterais */}
       <button
         onClick={handlePrev}
