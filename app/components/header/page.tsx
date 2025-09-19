@@ -24,9 +24,9 @@ export default function Header() {
       </a>
 
       <nav className="flex ml-[45rem] gap-[2rem]">
-        <button onClick={goToManPage} className="hover:text-gray-400">Masculinos</button>
-        <button onClick={goToWomanPage} className="hover:text-gray-400">Femininos</button>
-        <button onClick={goToKidsPage} className="hover:text-gray-400">Infantis</button>
+        <button onClick={goToManPage} className="hover:text-gray-400 cursor-pointer">Masculinos</button>
+        <button onClick={goToWomanPage} className="hover:text-gray-400 cursor-pointer">Femininos</button>
+        <button onClick={goToKidsPage} className="hover:text-gray-400 cursor-pointer">Infantis</button>
       </nav>
 
       <div className="ml-[2rem] relative">

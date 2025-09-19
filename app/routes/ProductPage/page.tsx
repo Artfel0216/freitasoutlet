@@ -75,12 +75,13 @@ export default function ProductPage() {
 
           {/* Ações */}
           <div className="flex justify-center lg:justify-start gap-6 mt-8">
-            <button className="cursor-pointer w-[7rem] sm:w-[8rem] bg-white h-[3rem] text-black flex items-center justify-center rounded hover:bg-gray-300">
+            <button 
+             onClick={addToCart}
+            className="cursor-pointer w-[7rem] sm:w-[8rem] bg-white h-[3rem] text-black flex items-center justify-center rounded hover:bg-gray-300">
               <ShoppingCart />
             </button>
 
             <button
-              onClick={addToCart}
               className="cursor-pointer w-[7rem] sm:w-[8rem] font-bold bg-green-600 h-[3rem] text-black flex items-center justify-center rounded hover:bg-green-800"
             >
               Comprar
