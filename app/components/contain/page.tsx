@@ -58,7 +58,7 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
         flex flex-col justify-between
         cursor-pointer
       "
-     onClick={GoToProductPage}>
+     >
       {/* Botões laterais */}
       <button
         onClick={handlePrev}
@@ -77,7 +77,9 @@ export default function Contain({ sneakers, title, price }: ContainProps) {
       </button>
 
       {/* Imagem com animação */}
-      <figure className="relative w-full aspect-[3/4] flex items-center justify-center">
+      <figure className="relative w-full aspect-[3/4] flex items-center justify-center"
+       onClick={GoToProductPage}
+       >
         <AnimatePresence mode="wait">
           <motion.img
             key={currentSneaker.src}

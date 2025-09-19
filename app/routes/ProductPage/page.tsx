@@ -5,8 +5,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import NikeAirZoomAlphafly2WhiteAndOrange from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteAndOrange.jpg';
 import Header from '@/app/components/header/page';
 import { ShoppingCart } from 'lucide-react';
+import { useCart } from '@/app/context/CartContext';
 
 export default function ProductPage() {
+  const { addToCart } = useCart();
+
   const sneaker = {
     src: NikeAirZoomAlphafly2WhiteAndOrange.src,
     alt: 'Nike Air Zoom Alphafly 2 White And Orange',
@@ -20,11 +23,10 @@ export default function ProductPage() {
       {/* Header */}
       <Header />
 
-      {/* Divider */}
       <hr className="w-full h-[2px] bg-gray-500" />
 
       <main className="p-6 text-white flex flex-col lg:flex-row gap-10 items-center lg:items-start">
-        {/* Imagem do produto */}
+        {/* Imagem */}
         <figure className="relative w-full max-w-[22rem] h-[22rem] sm:max-w-[28rem] sm:h-[28rem] lg:w-[30rem] lg:h-[30rem] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.img
@@ -40,7 +42,7 @@ export default function ProductPage() {
           </AnimatePresence>
         </figure>
 
-        {/* Informações do produto */}
+        {/* Informações */}
         <section className="w-full max-w-xl">
           <h1 className="text-2xl sm:text-3xl lg:text-[2.6rem] font-thin leading-snug mt-6 lg:mt-10 text-center lg:text-left">
             Nike Air Zoom Alphafly 2 <br />
@@ -50,8 +52,7 @@ export default function ProductPage() {
           <p className="text-xl sm:text-2xl font-bold mt-6 text-center lg:text-left">
             R$ 800,00 <br />
             <span className="font-normal text-sm sm:text-base">
-              Ou em 6X de{' '}
-              <strong className="text-green-500">R$ 133,00</strong>
+              Ou em 6X de <strong className="text-green-500">R$ 133,00</strong>
             </span>
           </p>
 
@@ -69,19 +70,19 @@ export default function ProductPage() {
 
           {/* Descrição */}
           <p className="mt-6 font-medium text-sm sm:text-base text-center lg:text-left">
-            Tênis Nike Air Zoom Alphafly 2 Masculino: desenvolvido para máxima
-            performance em corridas, oferece retorno de energia excepcional com
-            espuma ZoomX, placas de carbono e cabedal leve e respirável. Ideal
-            para velocidade, conforto e resistência em longas distâncias.
+            Tênis Nike Air Zoom Alphafly 2 Masculino: desenvolvido para máxima performance em corridas...
           </p>
 
-          {/* Botões de ação */}
+          {/* Ações */}
           <div className="flex justify-center lg:justify-start gap-6 mt-8">
             <button className="cursor-pointer w-[7rem] sm:w-[8rem] bg-white h-[3rem] text-black flex items-center justify-center rounded hover:bg-gray-300">
               <ShoppingCart />
             </button>
 
-            <button className="cursor-pointer w-[7rem] sm:w-[8rem] font-bold bg-green-600 h-[3rem] text-black flex items-center justify-center rounded hover:bg-green-800">
+            <button
+              onClick={addToCart}
+              className="cursor-pointer w-[7rem] sm:w-[8rem] font-bold bg-green-600 h-[3rem] text-black flex items-center justify-center rounded hover:bg-green-800"
+            >
               Comprar
             </button>
           </div>
