@@ -12,6 +12,7 @@ export default function Header() {
   const goToManPage = () => router.push('/routes/ManPage/');
   const goToWomanPage = () => router.push('/routes/WomanPage');
   const goToKidsPage = () => router.push('/routes/KidsPage');
+  const goToCarPage = () => router.push('/routes/CarPage');
 
   return (
     <header className="w-full h-[10rem] p-4 flex items-center text-white text-[1.2rem] font-bold relative">
@@ -30,7 +31,7 @@ export default function Header() {
       </nav>
 
       <div className="ml-[2rem] relative">
-        <ShoppingCart className="w-6 h-6 cursor-pointer hover:text-gray-400" />
+        <ShoppingCart className="w-6 h-6 cursor-pointer hover:text-gray-400" onClick={goToCarPage}/>
         {cartCount > 0 && (
           <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
             {cartCount}
