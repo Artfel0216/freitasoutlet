@@ -4,22 +4,15 @@ import { useState } from "react";
 import HeaderCar from "@/app/components/HeaderCar/page";
 import NikeAirZoomAlphafly2GreenAndBlack from '@/app/public/imgCalçados/NikeAirZoomAlphafly2GreenAndBlack.jpg';
 import { Plus, Trash } from "lucide-react";
+import ContinueButton from "./ContinueButton"; // Subcomponente client
 
 export default function CarPage() {
   const [quantity, setQuantity] = useState(1);
-
-  const removeItem = () => {
-    if (quantity > 0) {
-      setQuantity(quantity - 1);
-    }
-  };
-
-  const addItem = () => {
-    setQuantity(quantity + 1);
-  };
-
   const price = 800; // unit price
   const total = price * quantity;
+
+  const removeItem = () => quantity > 0 && setQuantity(quantity - 1);
+  const addItem = () => setQuantity(quantity + 1);
 
   return (
     <div>
@@ -47,8 +40,7 @@ export default function CarPage() {
               Cor: <strong className="font-bold text-green-600">Verde</strong>
             </p>
             <p className="mt-2">
-              Vendido e entregue por:{" "}
-              <strong className="font-bold">Freitas Outlet</strong>
+              Vendido e entregue por: <strong className="font-bold">Freitas Outlet</strong>
             </p>
           </section>
 
@@ -90,7 +82,6 @@ export default function CarPage() {
 
           <div className="flex">
             <p className="mt-4 text-[1.1rem] font-bold">Total: </p>
-
             <p className="mt-4 font-bold ml-60 text-[1.5rem] flex-col">
               R$ {total.toFixed(2).replace(".", ",")} <br />
               <span className="text-[0.7rem] font-normal text-black flex">
@@ -99,9 +90,8 @@ export default function CarPage() {
             </p>
           </div>
 
-          <button className="bg-green-400 rounded cursor-pointer font-semibold h-[2.5rem] mt-4 hover:bg-green-600">
-            Continuar
-          </button>
+          {/* Botão "Continuar" agora é subcomponente client */}
+          <ContinueButton />
         </aside>
       </main>
 
@@ -109,27 +99,19 @@ export default function CarPage() {
       <section className="text-white mt-4 p-2 font-bold text-center">
         <h2 className="text-xl">Nike Air Zoom Alphafly 2</h2>
         <p className="mt-4">
-          O Nike Air Zoom Alphafly 2 foi desenvolvido para quem busca velocidade
-          máxima, eficiência e conforto em longas distâncias. <br />
-          Projetado a partir do feedback de atletas de elite, ele combina
-          tecnologia de ponta com design inovador para proporcionar desempenho
-          incomparável.
+          O Nike Air Zoom Alphafly 2 foi desenvolvido para quem busca velocidade máxima, eficiência e conforto em longas distâncias. <br />
+          Projetado a partir do feedback de atletas de elite, ele combina tecnologia de ponta com design inovador para proporcionar desempenho incomparável.
         </p>
 
         <ul className="mt-4 space-y-2">
           <li>
-            <strong>Impulso explosivo:</strong> As cápsulas duplas de Zoom Air
-            na região do antepé oferecem resposta imediata a cada passada.
+            <strong>Impulso explosivo:</strong> As cápsulas duplas de Zoom Air na região do antepé oferecem resposta imediata a cada passada.
           </li>
           <li>
-            <strong>Estabilidade e suporte:</strong> A placa de carbono de
-            comprimento total garante transições mais rápidas e consistentes
-            durante a corrida.
+            <strong>Estabilidade e suporte:</strong> A placa de carbono de comprimento total garante transições mais rápidas e consistentes durante a corrida.
           </li>
           <li>
-            <strong>Amortecimento premium:</strong> A espuma ZoomX proporciona
-            maciez e retorno de energia excepcionais, mesmo em treinos ou provas
-            mais longas.
+            <strong>Amortecimento premium:</strong> A espuma ZoomX proporciona maciez e retorno de energia excepcionais, mesmo em treinos ou provas mais longas.
           </li>
         </ul>
       </section>
