@@ -1,17 +1,33 @@
 'use client';
 
+import { useState } from "react";
 import HeaderCar from "@/app/components/HeaderCar/page";
 import NikeAirZoomAlphafly2GreenAndBlack from '@/app/public/imgCalçados/NikeAirZoomAlphafly2GreenAndBlack.jpg';
 import { Plus, Trash } from "lucide-react";
 
 export default function CarPage() {
+  const [quantity, setQuantity] = useState(1);
+
+  const removeItem = () => {
+    if (quantity > 0) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const addItem = () => {
+    setQuantity(quantity + 1);
+  };
+
+  const price = 800; // unit price
+  const total = price * quantity;
+
   return (
     <div>
       {/* Header */}
       <HeaderCar />
 
       <main className="flex">
-        {/* Produto no carrinho */}
+        {/* Product in cart */}
         <article className="border border-gray-500 rounded w-[65rem] h-[15rem] mt-10 ml-2 flex text-white p-6 hover:border-green-500 transition duration-300">
           <figure>
             <img
@@ -21,7 +37,7 @@ export default function CarPage() {
             />
           </figure>
 
-          {/* Informações do produto */}
+          {/* Product information */}
           <section className="ml-6 flex flex-col">
             <h1 className="font-bold mt-6">Nike Air Zoom Alphafly 2</h1>
             <p className="mt-2">
@@ -36,30 +52,38 @@ export default function CarPage() {
             </p>
           </section>
 
-          {/* Controles de quantidade */}
+          {/* Quantity controls */}
           <section className="flex items-center ml-30 gap-10">
-            <button className="rounded-full border-white border-[2px] w-[3rem] h-[3rem] text-white flex items-center justify-center hover:border-red-500 transition duration-300 cursor-pointer">
+            <button
+              onClick={removeItem}
+              className="rounded-full border-white border-[2px] w-[3rem] h-[3rem] text-white flex items-center justify-center hover:border-red-500 transition duration-300 cursor-pointer"
+            >
               <Trash />
             </button>
 
-            <p className="font-bold text-[1.5rem]">1</p>
+            <p className="font-bold text-[1.5rem]">{quantity}</p>
 
-            <button className="rounded-full border-white border-[2px] w-[3rem] h-[3rem] text-white flex items-center justify-center hover:border-green-500 transition duration-300 cursor-pointer">
+            <button
+              onClick={addItem}
+              className="rounded-full border-white border-[2px] w-[3rem] h-[3rem] text-white flex items-center justify-center hover:border-green-500 transition duration-300 cursor-pointer"
+            >
               <Plus />
             </button>
           </section>
 
-          {/* Preço */}
+          {/* Price */}
           <p className="font-bold text-white text-[1.2rem] ml-24 mt-20">
-            R$ 800,00
+            R$ {total.toFixed(2).replace(".", ",")}
           </p>
         </article>
 
-        {/* Resumo do pedido */}
+        {/* Order Summary */}
         <aside className="w-[29rem] h-[15rem] mt-10 ml-2 bg-white opacity-70 rounded text-black font-semibold flex flex-col align-center p-6">
           <div className="flex">
             <p className="text-[1.2rem] font-bold">Produtos: </p>
-            <p className="text-[1.2rem] ml-60">R$ 800,00</p>
+            <p className="text-[0.9rem] ml-60 flex">
+              R$ {total.toFixed(2).replace(".", ",")}
+            </p>
           </div>
 
           <div className="w-[26rem] mt-4 bg-black h-[2px]"></div>
@@ -68,9 +92,9 @@ export default function CarPage() {
             <p className="mt-4 text-[1.1rem] font-bold">Total: </p>
 
             <p className="mt-4 font-bold ml-60 text-[1.5rem] flex-col">
-              R$ 800,00 <br />
+              R$ {total.toFixed(2).replace(".", ",")} <br />
               <span className="text-[0.7rem] font-normal text-black flex">
-                ou <strong>6x de R$ 133,33 sem juros</strong>
+                ou <strong>6x de R$ {(total / 6).toFixed(2).replace(".", ",")} sem juros</strong>
               </span>
             </p>
           </div>
@@ -81,7 +105,7 @@ export default function CarPage() {
         </aside>
       </main>
 
-      {/* Descrição do produto */}
+      {/* Product Description */}
       <section className="text-white mt-4 p-2 font-bold text-center">
         <h2 className="text-xl">Nike Air Zoom Alphafly 2</h2>
         <p className="mt-4">
