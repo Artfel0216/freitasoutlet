@@ -1,7 +1,7 @@
 'use client';
 
 import Logo from '@/app/public/img/LogoFreitasOutlet.png';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, User } from 'lucide-react';
 import { useRouter } from 'next/navigation'; 
 import { useCart } from '@/app/context/CartContext';
 
@@ -13,6 +13,7 @@ export default function Header() {
   const goToWomanPage = () => router.push('/routes/WomanPage');
   const goToKidsPage = () => router.push('/routes/KidsPage');
   const goToCarPage = () => router.push('/routes/CarPage');
+  const goToProfilePage = () => router.push('/routes/ProfilePage');
 
   return (
     <header className="w-full h-[10rem] p-4 flex items-center text-white text-[1.2rem] font-bold relative">
@@ -28,6 +29,9 @@ export default function Header() {
         <button onClick={goToManPage} className="hover:text-gray-400 cursor-pointer">Masculinos</button>
         <button onClick={goToWomanPage} className="hover:text-gray-400 cursor-pointer">Femininos</button>
         <button onClick={goToKidsPage} className="hover:text-gray-400 cursor-pointer">Infantis</button>
+        <button onClick={goToProfilePage} className='"hover:text-gray-400 cursor-pointer'>
+          <User className="w-6 h-6" />
+        </button>
       </nav>
 
       <div className="ml-[2rem] relative">
