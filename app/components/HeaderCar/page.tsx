@@ -19,20 +19,20 @@ export default function HeaderCar() {
 
       {/* Navegação */}
       <nav className="flex gap-7 items-center">
-        <button className="flex items-center gap-2 cursor-pointer hover:text-gray-400">
+        <p className="flex items-center gap-2 cursor-pointer">
           <ShoppingCart />
           <span>Carrinho</span>
-        </button>
+        </p>
 
-        <button className="flex items-center gap-2 cursor-pointer hover:text-gray-400">
+        <p className="flex items-center gap-2 cursor-pointer">
           <Rocket />
           <span>Entrega</span>
-        </button>
+        </p>
 
-        <button className="flex items-center gap-2 cursor-pointer hover:text-gray-400">
+        <p className="flex items-center gap-2 cursor-pointer">
           <Wallet />
           <span>Pagamento</span>
-        </button>
+        </p>
       </nav>
 
       {/* Segurança */}

@@ -72,7 +72,7 @@ export default function CarPage() {
           </section>
 
           {/* Price */}
-          <p className="font-bold text-white text-[1.2rem] ml-24 mt-20">
+          <p className="font-bold text-white text-[1.1rem] ml-20 mt-20">
             R$ {total.toFixed(2).replace(".", ",")}
           </p>
         </article>
