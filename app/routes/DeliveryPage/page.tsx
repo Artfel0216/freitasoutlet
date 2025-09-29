@@ -1,10 +1,17 @@
 'use client';
 
+import { useRouter } from "next/navigation";
+import { MapPin, Pencil } from "lucide-react";
 import HeaderCar from "@/app/components/HeaderCar/page";
 import NikeAirZoomAlphafly2WhiteFireRed from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteFire.jpg';
-import { MapPin, Pencil } from "lucide-react";
 
 export default function DeliveryPage() {
+  const router = useRouter();
+
+  const handleGoToPayment = () => {
+    router.push("/routes/PaymentPage/");
+  };
+
   return (
     <main>
       {/* Cabeçalho */}
@@ -12,7 +19,7 @@ export default function DeliveryPage() {
 
       {/* Endereço e botão de pagamento */}
       <section className="flex text-white">
-        <article className="mt-10 ml-6 h-[14rem] w-[50rem] rounded border border-white bg-black p-6">
+        <article className="ml-6 mt-10 h-[14rem] w-[50rem] rounded border border-white bg-black p-6">
           <h1 className="mb-4 flex items-center gap-2 text-[1.2rem] font-bold">
             <MapPin size={25} />
             Endereço:
@@ -29,7 +36,10 @@ export default function DeliveryPage() {
         </article>
 
         <aside className="ml-[10rem] mt-16 flex h-[10rem] w-[30rem] items-center justify-center rounded bg-white">
-          <button className="flex h-[3rem] w-[20rem] items-center justify-center rounded bg-black font-bold text-white cursor-pointer">
+          <button
+            onClick={handleGoToPayment}
+            className="flex h-[3rem] w-[20rem] items-center justify-center rounded bg-black font-bold text-white cursor-pointer"
+          >
             Ir para Pagamento
           </button>
         </aside>
