@@ -11,14 +11,12 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url    = "file:./dev.db"
+  url      = "file:./dev.db"
 }
 
-
-
 model ProductMasculino {
-  id          Int       @id @default(autoincrement())
-  title       String    @default("Sem título")
+  id          Int      @id @default(autoincrement())
+  title       String   @default("Sem título")
   description String?
   filename    String
   category    String?
@@ -27,13 +25,17 @@ model ProductMasculino {
   mime        String?
   size        Int?
   price       Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relação com Marca
+  marca   Marca? @relation(fields: [marcaId], references: [id])
+  marcaId Int?
 }
 
 model ProductKids {
-  id          Int       @id @default(autoincrement())
-  title       String    @default("Sem título")
+  id          Int      @id @default(autoincrement())
+  title       String   @default("Sem título")
   description String?
   filename    String
   category    String?
@@ -42,13 +44,17 @@ model ProductKids {
   mime        String?
   size        Int?
   price       Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relação com Marca
+  marca   Marca? @relation(fields: [marcaId], references: [id])
+  marcaId Int?
 }
 
 model ProductFeminino {
-  id          Int       @id @default(autoincrement())
-  title       String    @default("Sem título")
+  id          Int      @id @default(autoincrement())
+  title       String   @default("Sem título")
   description String?
   filename    String
   category    String?
@@ -57,7 +63,22 @@ model ProductFeminino {
   mime        String?
   size        Int?
   price       Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relação com Marca
+  marca   Marca? @relation(fields: [marcaId], references: [id])
+  marcaId Int?
 }
 
+model Marca {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String?  @unique
+  createdAt DateTime @default(now())
+
+  // relações inversas
+  productsMasculino ProductMasculino[]
+  productsKids      ProductKids[]
+  productsFeminino  ProductFeminino[]
+}
