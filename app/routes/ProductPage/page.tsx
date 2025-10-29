@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import NikeAirZoomAlphafly2WhiteAndOrange from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteAndOrange.jpg';
 import Header from '@/app/components/header/page';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/app/context/CartContext';
@@ -10,10 +9,6 @@ import { useCart } from '@/app/context/CartContext';
 export default function ProductPage() {
   const { addToCart } = useCart();
 
-  const sneaker = {
-    src: NikeAirZoomAlphafly2WhiteAndOrange.src,
-    alt: 'Nike Air Zoom Alphafly 2 White And Orange',
-  };
 
   const direction = 1;
   const sizes = [38, 39, 40, 41, 42, 43];
@@ -30,9 +25,7 @@ export default function ProductPage() {
         <figure className="relative w-full max-w-[22rem] h-[22rem] sm:max-w-[28rem] sm:h-[28rem] lg:w-[30rem] lg:h-[30rem] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.img
-              key={sneaker.src}
-              src={sneaker.src}
-              alt={sneaker.alt}
+
               initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}

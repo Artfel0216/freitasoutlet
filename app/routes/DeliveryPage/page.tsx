@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { MapPin, Pencil } from "lucide-react";
 import HeaderCar from "@/app/components/HeaderCar/page";
-import NikeAirZoomAlphafly2WhiteFireRed from '@/app/public/imgCalçados/NikeAirZoomAlphafly2WhiteFire.jpg';
+import { prisma } from "@/app/lib/prisma/index"
+import { NextRequest } from "next/server";
 
 export default function DeliveryPage() {
   const router = useRouter();
@@ -48,12 +49,6 @@ export default function DeliveryPage() {
       {/* Produto */}
       <section className="flex">
         <article className="ml-6 mt-4 flex h-[14rem] w-[50rem] items-center gap-4 rounded border border-white p-6 text-white">
-          <img
-            src={NikeAirZoomAlphafly2WhiteFireRed.src}
-            alt="Tênis Air Zoom Alphafly 2"
-            className="h-[10rem] w-[10rem] rounded object-cover"
-          />
-
           <div className="flex flex-col">
             <h2 className="font-bold">Tênis Air Zoom Alphafly 2</h2>
             <p className="font-bold">Tamanho: 40</p>
@@ -67,4 +62,25 @@ export default function DeliveryPage() {
       </section>
     </main>
   );
+}
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const id = Number(params.id);
+  if (!Number.isFinite(id) || id <= 0) {
+    return new Response(JSON.stringify({ error: "Invalid id" }), { status: 400, headers: { "content-type": "application/json" } });
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      images: { orderBy: { order: "asc" } },
+      marca: true,
+    },
+  });
+
+  if (!product) {
+    return new Response(JSON.stringify({ error: "Product not found" }), { status: 404, headers: { "content-type": "application/json" } });
+  }
+
+  return new Response(JSON.stringify(product), { status: 200, headers: { "content-type": "application/json" } });
 }

@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  // output = "../app/generated/prisma"
 }
 
 datasource db {
@@ -14,71 +11,55 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model ProductMasculino {
-  id          Int      @id @default(autoincrement())
-  title       String   @default("Sem título")
-  description String?
-  filename    String
-  category    String?
-  url         String?
-  path        String?
-  mime        String?
-  size        Int?
-  price       Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// ========================================
+// ENUMS
+// ========================================
 
-  // relação com Marca
-  marca   Marca? @relation(fields: [marcaId], references: [id])
-  marcaId Int?
+enum Gender {
+  MASCULINO
+  FEMININO
+  KIDS
 }
 
-model ProductKids {
-  id          Int      @id @default(autoincrement())
-  title       String   @default("Sem título")
-  description String?
-  filename    String
-  category    String?
-  url         String?
-  path        String?
-  mime        String?
-  size        Int?
-  price       Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // relação com Marca
-  marca   Marca? @relation(fields: [marcaId], references: [id])
-  marcaId Int?
+enum ProductType {
+  SAPATO
+  SANDALIA
+  OUTRO
 }
 
-model ProductFeminino {
-  id          Int      @id @default(autoincrement())
-  title       String   @default("Sem título")
-  description String?
-  filename    String
-  category    String?
-  url         String?
-  path        String?
-  mime        String?
-  size        Int?
-  price       Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // relação com Marca
-  marca   Marca? @relation(fields: [marcaId], references: [id])
-  marcaId Int?
-}
+// ========================================
+// MODELOS
+// ========================================
 
 model Marca {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  slug      String?  @unique
-  createdAt DateTime @default(now())
+  slug      String?   @unique
+  createdAt DateTime  @default(now())
 
-  // relações inversas
-  productsMasculino ProductMasculino[]
-  productsKids      ProductKids[]
-  productsFeminino  ProductFeminino[]
+  products  Product[]
+}
+
+model Product {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float
+  gender      Gender
+  productType ProductType
+  marcaId     Int?
+  marca       Marca?          @relation(fields: [marcaId], references: [id])
+  images      ProductImage[]  // ← relação com as imagens
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  filename  String?
+  category  String?
+  product   Product? @relation(fields: [productId], references: [id])
+  productId Int?
+  createdAt DateTime @default(now())
 }

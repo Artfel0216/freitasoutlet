@@ -1,110 +1,49 @@
 'use client';
+import React from 'react';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
-type Sneaker = {
-  src: string;
-  alt: string;
-};
-
+// =========================
+// Tipagem das Props
+// =========================
 interface ContainProps {
-  sneakers: Sneaker[];
+  sneakers: {
+    src: string;
+    alt?: string;
+  }[];
   title: string;
-  price: string;
+  description?: string;
+  price?: string;
 }
 
-export default function Contain({ sneakers, title, price }: ContainProps) {
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
-
-  const handlePrev = () => {
-    setDirection(-1);
-    setIndex((prev) => (prev === 0 ? sneakers.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setDirection(1);
-    setIndex((prev) => (prev === sneakers.length - 1 ? 0 : prev + 1));
-  };
-
-  const currentSneaker = sneakers[index];
-
-  const router = useRouter();
-
-  const GoToProductPage = () => {
-    router.push('/routes/ProductPage');
-  }
+// =========================
+// Componente Principal
+// =========================
+export default function Contain({ sneakers, title, description, price }: ContainProps) {
+  // Pega a primeira imagem (principal)
+  const mainImage = sneakers && sneakers.length > 0 ? sneakers[0].src : '/imgCalcados/placeholder.png';
 
   return (
-    <article
-      className="
-        relative 
-        w-full max-w-[18rem] 
-        h-[32rem] 
-        mt-6 
-        p-4 
-        border-2 border-white 
-        rounded-xl 
-        text-white 
-        text-center 
-        font-bold 
-        overflow-hidden 
-        hover:border-green-500 
-        transition 
-        duration-300 
-        flex flex-col justify-between
-        cursor-pointer
-      "
-     >
-      {/* Botões laterais */}
-      <button
-        onClick={handlePrev}
-        aria-label="Imagem anterior"
-        className="absolute top-1/2 left-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
-      >
-        <ChevronLeft className="w-5 h-5 cursor-pointer" />
-      </button>
-
-      <button
-        onClick={handleNext}
-        aria-label="Próxima imagem"
-        className="absolute top-1/2 right-2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 z-10"
-      >
-        <ChevronRight className="w-5 h-5 cursor-pointer" />
-      </button>
-
-      {/* Imagem com animação */}
-      <figure className="relative w-full aspect-[3/4] flex items-center justify-center"
-       onClick={GoToProductPage}
-       >
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={currentSneaker.src}
-            src={currentSneaker.src}
-            alt={currentSneaker.alt}
-            initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-            transition={{ duration: 0.4 }}
-            className="absolute w-full h-full object-cover rounded-md"
-          />
-        </AnimatePresence>
-      </figure>
-
-      {/* Textos fixados na parte de baixo */}
-      <div className="mt-3">
-        <figcaption className="text-sm sm:text-base font-medium">
-          {currentSneaker.alt}
-        </figcaption>
-        <h2 className="mt-2 text-lg sm:text-xl font-semibold">{title}</h2>
-        <p className="text-base sm:text-lg font-thin">{price} no Pix</p>
-        <p className="text-xs sm:text-sm mt-1 text-gray-300">
-          ou até 6x sem juros
-        </p>
+    <div className="flex flex-col items-center justify-center text-white p-4 bg-neutral-900 rounded-2xl shadow-lg w-full max-w-xs">
+      {/* Imagem principal */}
+      <div className="w-full aspect-square overflow-hidden rounded-xl mb-4 bg-gray-800">
+        <img
+          src={mainImage}
+          alt={sneakers[0]?.alt ?? 'Produto'}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+        />
       </div>
-    </article>
+
+      {/* Nome / Título */}
+      <h2 className="text-lg font-semibold text-center mb-2">{title}</h2>
+
+      {/* Descrição opcional */}
+      {description && (
+        <p className="text-sm text-gray-400 text-center line-clamp-2 mb-2">{description}</p>
+      )}
+
+      {/* Preço opcional */}
+      {price && (
+        <span className="text-yellow-400 font-bold text-lg">{price}</span>
+      )}
+    </div>
   );
 }
