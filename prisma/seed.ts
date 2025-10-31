@@ -4,99 +4,80 @@ import path from 'path';
 
 const prisma = new PrismaClient();
 
+/**
+ * Normaliza nomes de arquivos:
+ * - Remove acentos
+ * - Substitui espaços e caracteres inválidos por '-'
+ */
+function normalizeFilename(filename: string) {
+  return filename
+    .normalize('NFD') // separa acentos
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .replace(/\s+/g, '-') // espaços -> "-"
+    .replace(/[^a-zA-Z0-9\-_.]/g, '') // remove caracteres inválidos
+    .toLowerCase();
+}
+
 async function main() {
-  console.log('🌱 Iniciando seed...');
-
-  // ====================================================
-  // 1️⃣ Criar Marcas
-  // ====================================================
-  const marcas = await prisma.marca.createMany({
-    data: [
-      { name: 'Nike', slug: 'nike' },
-      { name: 'Adidas', slug: 'adidas' },
-      { name: 'Puma', slug: 'puma' },
-    ],
-  });
-  console.log(`✅ Marcas criadas: ${marcas.count}`);
-
-  // ====================================================
-  // 2️⃣ Criar Produtos
-  // ====================================================
-  const produtos = await prisma.product.createMany({
-    data: [
-      {
-        title: 'Tênis Nike Air Zoom',
-        description: 'Tênis confortável com amortecimento responsivo.',
-        price: 499.9,
-        gender: 'MASCULINO',
-        productType: 'SAPATO',
-        marcaId: 1,
-      },
-      {
-        title: 'Sandália Adidas Adilette',
-        description: 'Sandália leve e moderna.',
-        price: 189.9,
-        gender: 'FEMININO',
-        productType: 'SANDALIA',
-        marcaId: 2,
-      },
-      {
-        title: 'Tênis Infantil Puma Fun',
-        description: 'Tênis colorido e confortável para crianças.',
-        price: 259.9,
-        gender: 'KIDS',
-        productType: 'SAPATO',
-        marcaId: 3,
-      },
-    ],
-  });
-  console.log(`✅ Produtos criados: ${produtos.count}`);
-
-  // ====================================================
-  // 3️⃣ Criar Imagens
-  // ====================================================
-  const basePath = path.join(process.cwd(), 'public');
-  const categorias = ['imgCalcados', 'imgCalcadosWoman', 'imgKids'];
-
-  for (const category of categorias) {
-    const folderPath = path.join(basePath, category);
-    if (!fs.existsSync(folderPath)) continue;
-
-    const files = fs.readdirSync(folderPath);
-    for (const file of files) {
-      const filePath = path.join(folderPath, file);
-
-      // apenas arquivos de imagem
-      if (!/\.(jpg|jpeg|png|webp)$/i.test(file)) continue;
-
-      await prisma.productImage.create({
-        data: {
-          title: path.parse(file).name,
-          filename: file,
-          url: `/${category}/${file}`,
-          path: filePath,
-          category,
-          mime: 'image/jpeg',
-          size: fs.statSync(filePath).size,
-          productId:
-            category === 'imgCalcados' ? 1 :
-            category === 'imgCalcadosWoman' ? 2 :
-            category === 'imgKids' ? 3 :
-            null,
-        },
-      });
-    }
+  const baseDir = path.join(process.cwd(), 'public', 'imgCalcados');
+  if (!fs.existsSync(baseDir)) {
+    console.log(`⚠️ Pasta não encontrada: ${baseDir}`);
+    return;
   }
 
-  console.log('✅ Imagens criadas com base nas pastas locais.');
-  console.log('🌱 Seed finalizado com sucesso!');
+  const files = fs.readdirSync(baseDir);
+  console.log(`🖼️ Encontradas ${files.length} imagens na pasta imgCalcados\n`);
+
+  const validExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+  const allProducts = await prisma.product.findMany();
+
+  for (const file of files) {
+    const ext = path.extname(file).toLowerCase();
+    if (!validExtensions.includes(ext)) continue;
+
+    const rawName = path.basename(file);
+    const normalizedName = normalizeFilename(rawName);
+
+    const url = `/imgCalcados/${normalizedName}`;
+
+    // Verifica duplicidade
+    const existing = await prisma.productImage.findFirst({ where: { url } });
+    if (existing) {
+      console.log(`⚠️ Já existe: ${normalizedName}`);
+      continue;
+    }
+
+    // Buscar produto pelo nome aproximado
+    const titleLike = path.parse(file).name.toLowerCase();
+    const product = allProducts.find(p => p.title.toLowerCase().includes(titleLike));
+
+    // Renomeia arquivo fisicamente para corresponder ao URL normalizado
+    const oldPath = path.join(baseDir, file);
+    const newPath = path.join(baseDir, normalizedName);
+    if (!fs.existsSync(newPath)) {
+      fs.renameSync(oldPath, newPath);
+    }
+
+    // Cria registro no banco
+    await prisma.productImage.create({
+      data: {
+        url,
+        filename: normalizedName,
+        category: 'calcado',
+        productId: product?.id ?? null,
+      },
+    });
+
+    console.log(
+      `✅ Inserido: ${normalizedName} ${product ? `(ligado a "${product.title}")` : '(sem produto)'}`
+    );
+  }
+
+  console.log('\n🎉 Seed finalizado com sucesso!');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Erro no seed:', e);
-    process.exit(1);
-  })
+  .catch(e => console.error('❌ Erro no seed:', e))
   .finally(async () => {
     await prisma.$disconnect();
   });

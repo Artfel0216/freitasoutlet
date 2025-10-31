@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export async function getImagesByCategory(category?: string) {
   try {
     
-    const imagesFromDB = await prisma.productImage.findMany({
+    const imagesFromDB = await prisma.productMasculino.findMany({
       where: category ? { category } : {},
       orderBy: { id: "asc" },
     });

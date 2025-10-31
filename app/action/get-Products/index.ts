@@ -1,35 +1,36 @@
-'use server';
+import { PrismaClient, Product, ProductImage, Marca } from "@prisma/client";
 
-import { prisma } from "../../lib/prisma";
+const prisma = new PrismaClient();
 
-function normalizeUrl(u?: string) {
+function formatUrlToImgCalcados(u?: string) {
   if (!u) return '';
-  const s = u.trim().replace(/^\.?\/?public\//, '');
-
+  const s = u.trim().replace(/^\.?\/?public\//, ''); 
   if (s.startsWith('http') || s.startsWith('data:')) return s;
-  if (s.includes('imgCalcados')) return s.startsWith('/') ? s : `/${s.replace(/^\/+/, '')}`;
 
-  const parts = s.split('/').filter(Boolean);
-  const basename = parts.pop() ?? s;
-  return `/imgCalcados/${basename}`;
+  // garante que o caminho sempre comece com /
+  const clean = s.startsWith('/') ? s : `/${s}`;
+  return clean;
 }
 
-export async function getProducts() {
+
+/**
+ * Retorna todos os produtos com marca e imagens.
+ */
+export async function getProducts(): Promise<
+  (Product & { images: ProductImage[]; marca: Marca | null })[]
+> {
   const products = await prisma.product.findMany({
     include: {
-      marca: { select: { id: true, name: true, slug: true } },
-      images: { select: { id: true, url: true, filename: true } },
+      images: true,
+      marca: true,
     },
-    orderBy: { createdAt: 'desc' },
   });
 
-  // normaliza URLs
   return products.map((p) => ({
     ...p,
-    images: (p.images ?? []).map((img) => ({
-      id: img.id,
-      url: normalizeUrl(img.url ?? img.filename ?? ''),
-      altText: p.title ?? 'Produto',
+    images: p.images.map((img) => ({
+      ...img,
+      url: formatUrlToImgCalcados(img.url),
     })),
   }));
 }

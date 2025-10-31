@@ -10,6 +10,7 @@ export async function POST(req: Request) {
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
     const category = formData.get("category") as string; // Ex: "imgCalcados"
+    
 
     if (!file || !category) {
       return new Response("Arquivo ou categoria não enviada", { status: 400 });

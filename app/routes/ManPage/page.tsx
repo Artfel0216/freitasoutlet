@@ -1,27 +1,48 @@
 import React from 'react';
 import Header from '@/app/components/header/page';
 import Contain from '@/app/components/contain/page';
+import { PrismaClient, Product, ProductImage, Marca } from '@prisma/client';
 import { getProducts } from '@/app/action/get-Products';
 
-function formatUrlToImgCalcados(u?: string) {
-  if (!u) return '';
-  const s = u.trim().replace(/^\.?\/?public\//, '');
-  if (s.startsWith('http') || s.startsWith('data:')) return s;
-  if (s.includes('imgCalcados')) return s.startsWith('/') ? s : `/${s.replace(/^\/+/, '')}`;
-  const parts = s.split('/').filter(Boolean);
-  const basename = parts.pop() ?? s;
-  return `/imgCalcados/${basename}`;
+const prisma = new PrismaClient();
+
+// ===========================================================
+// Tipos derivados do Prisma
+// ===========================================================
+interface ProductWithRelations extends Product {
+  images: ProductImage[];
+  marca: Marca | null;
 }
 
-export default async function ManPage() {
-  const products = await getProducts();
+// ===========================================================
+// Função para formatar URLs das imagens corretamente
+// ===========================================================
+function formatUrlToImgCalcados(u?: string): string {
+  if (!u) return '/imgCalcados/placeholder.png';
+  const s = u.trim().replace(/^\.?\/?public\//, '');
+  if (s.startsWith('http') || s.startsWith('data:')) return s;
+  return s.startsWith('/') ? s : `/${s}`;
+}
 
-  const items = (products ?? []).map((p) => {
+// ===========================================================
+// Página principal
+// ===========================================================
+export default async function ManPage() {
+  // 1️⃣ Busca produtos
+  const products = (await getProducts()) as ProductWithRelations[];
+
+  // 2️⃣ Busca todas as imagens separadamente
+  const images = await prisma.productImage.findMany();
+
+  // 3️⃣ Mapear imagens para cada produto
+  const items = products.map((p) => {
+    const productImages = images.filter(img => img.productId === p.id);
+
     const sneakers =
-      (p.images ?? []).length > 0
-        ? p.images.map((i: any) => ({
-            src: formatUrlToImgCalcados(i.url),
-            alt: i.altText ?? p.title ?? 'Produto',
+      productImages.length > 0
+        ? productImages.map((img) => ({
+            src: formatUrlToImgCalcados(img.url),
+            alt: img.filename ?? p.title ?? 'Produto',
           }))
         : [
             {
@@ -48,7 +69,7 @@ export default async function ManPage() {
     };
   });
 
-  // ordena por marca e título
+  // 4️⃣ Ordena por marca e depois por nome
   items.sort((a, b) => {
     const ma = (a.marcaName ?? '').toLowerCase();
     const mb = (b.marcaName ?? '').toLowerCase();
@@ -56,6 +77,9 @@ export default async function ManPage() {
     return (a.name ?? '').toLowerCase().localeCompare((b.name ?? '').toLowerCase());
   });
 
+  // ===========================================================
+  // Renderização
+  // ===========================================================
   return (
     <div>
       <Header />
@@ -63,9 +87,9 @@ export default async function ManPage() {
 
       <div className="min-h-screen bg-black p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
-          {items.map((item, idx) => (
+          {items.map((item) => (
             <Contain
-              key={idx}
+              key={item.id}
               sneakers={item.sneakers}
               title={item.name}
               description={item.description}
