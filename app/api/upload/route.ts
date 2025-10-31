@@ -9,14 +9,14 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
-    const category = formData.get("category") as string; // Ex: "imgCalcados"
+    const category = formData.get("category") as string; 
     
 
     if (!file || !category) {
       return new Response("Arquivo ou categoria não enviada", { status: 400 });
     }
 
-    // Caminho da pasta (ex: public/imgCalcados)
+    
     const folderPath = path.join(process.cwd(), "public", category);
     await mkdir(folderPath, { recursive: true });
 
@@ -24,13 +24,13 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     const filePath = path.join(folderPath, file.name);
 
-    // Salva o arquivo fisicamente
+   
     await writeFile(filePath, buffer);
 
-    // Caminho acessível pelo navegador
+   
     const imageUrl = `/${category}/${file.name}`;
 
-    // Salva os metadados no banco
+   
     const image = await prisma.productMasculino.create({
       data: {
         title,

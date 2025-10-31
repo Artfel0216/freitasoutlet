@@ -1,6 +1,13 @@
+# 🏷️ Freitas Outlet
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+Freitas Outlet is a modern and responsive e-commerce application built with **Next.js 14**, **Prisma**, **Tailwind CSS**, and **Lucide React**.  
+It was designed to display a dynamic shoe catalog with image galleries, animations, and database integration.
+
+---
+
+## 🚀 Getting Started
 
 First, run the development server:
 
@@ -14,23 +21,97 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the main page by modifying `app/page.tsx`.  
+The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧱 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+freitas-outlet/
+├── prisma/
+│   └── schema.prisma          # Database models
+├── public/
+│   └── imgCalcados/           # Product images
+├── src/
+│   ├── app/
+│   │   ├── page.tsx           # Homepage
+│   │   ├── components/
+│   │   │   ├── header/        # Header and navigation
+│   │   │   ├── contain/       # Product cards with carousel
+│   │   │   └── footer/        # Footer section
+│   │   └── action/
+│   │       └── get-products.ts  # Fetch products from Prisma
+│   └── styles/
+│       └── globals.css
+└── package.json
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧩 Technologies
 
-## Deploy on Vercel
+- ⚙️ **Next.js 14** – App Router, Server Components & SEO optimization  
+- 🧱 **Prisma ORM** – database modeling and querying  
+- 🎨 **Tailwind CSS** – modern and responsive styling  
+- 🖼️ **Lucide React** – beautiful icons for the UI  
+- 💾 **SQLite / PostgreSQL** – database connection  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Example of a Prisma query:
+```ts
+const products = await prisma.product.findMany({
+  include: { images: true },
+});
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🖥️ Features
+
+✅ Product catalog with image galleries  
+✅ Image carousel with navigation buttons and transition animations  
+✅ Responsive and dark design  
+✅ Database connection via Prisma ORM  
+✅ Reusable and clean React components  
+
+---
+
+## ✨ Fonts
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)  
+to automatically optimize and load [Geist](https://vercel.com/font),  
+a new font family created by Vercel.
+
+---
+
+## 📚 Learn More
+
+To learn more about Next.js, check out these resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) – learn about Next.js features and API.  
+- [Learn Next.js](https://nextjs.org/learn) – an interactive Next.js tutorial.  
+
+You can also visit the [Next.js GitHub repository](https://github.com/vercel/next.js) – your feedback and contributions are welcome!
+
+---
+
+## ☁️ Deploy on Vercel
+
+The easiest way to deploy your Next.js app is with the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme), created by the same team behind Next.js.
+
+Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## 💡 Author
+
+**Arthur Fellipe**  
+Frontend & Full Stack Developer  
+📧 [Your Email or GitHub Link]
+
+---
+
+🖤 Built with passion for sneakers, clean code, and Next.js.

@@ -2,9 +2,6 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import React, { useState } from 'react';
 
-// =========================
-// Tipagem das Props
-// =========================
 interface ContainProps {
   sneakers: {
     src: string;
@@ -15,9 +12,6 @@ interface ContainProps {
   price?: string;
 }
 
-// =========================
-// Componente Principal
-// =========================
 export default function Contain({
   sneakers,
   title,
@@ -27,7 +21,7 @@ export default function Contain({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fade, setFade] = useState(false);
 
-  // Transição suave entre imagens
+  
   const changeImage = (newIndex: number) => {
     setFade(true);
     setTimeout(() => {
@@ -36,7 +30,6 @@ export default function Contain({
     }, 200);
   };
 
-  // Funções de navegação
   const handlePrev = () => {
     const newIndex = currentIndex === 0 ? sneakers.length - 1 : currentIndex - 1;
     changeImage(newIndex);
@@ -47,7 +40,6 @@ export default function Contain({
     changeImage(newIndex);
   };
 
-  // Imagem atual
   const currentImage =
     sneakers && sneakers.length > 0
       ? sneakers[currentIndex].src
