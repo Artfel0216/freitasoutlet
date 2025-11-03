@@ -1,68 +1,107 @@
-'use client';
+import React from 'react';
+import Header from '@/app/components/header/page';
+import Contain from '@/app/components/contain/page';
+import { PrismaClient, Product, ProductImage, Marca, Gender } from '@prisma/client';
+import { getProducts } from '@/app/action/get-Products';
 
-import Header from "@/app/components/header/page";
-import Contain from "@/app/components/contain/page";
+const prisma = new PrismaClient();
 
-import NikeAirforceBlack from "@/app/public/imgKids/NikeAirforceBlack.jpg";
-import NikeAirforceBobGoodiesBlue from "@/app/public/imgKids/NikeAirforceBobGoodiesBlue.jpg";
-import NikeAirforceBobGoodiesPink from "@/app/public/imgKids/NikeAirforceBobGoodiesPink.jpg";
-import NikeAirforceBobGoodiesWhite from "@/app/public/imgKids/NikeAirforceBobGoodiesWhite.jpg";
-import NikeAirforceStichBlue from "@/app/public/imgKids/NikeAirforceStichBlue.jpg";
-import NikeAirforceStichWhite  from "@/app/public/imgKids/NikeAirforceStichWhite .jpg";
-import NikeAirforceWhite from "@/app/public/imgKids/NikeAirforceWhite.jpg";
-import NikeDunkAllBalck from "@/app/public/imgKids/NikeDunkAllBalck.jpg";
-import NikeDunkBlackAndRed from "@/app/public/imgKids/NikeDunkBlackAndRed.jpg";
-import NikeDunkBlackAndWhite from "@/app/public/imgKids/NikeDunkBlackAndWhite.jpg";
+// Tipos derivados do Prisma
+interface ProductWithRelations extends Product {
+images: ProductImage[];
+marca: Marca | null;
+}
 
-const NikeAirforce = [
-  { src: NikeAirforceBlack.src, alt: 'Nike Air Force Black' },
-  { src: NikeAirforceWhite.src, alt: 'Nike Air Force White' },
-];
+// Função para formatar URLs das imagens
+function formatUrlToImgCalcados(u?: string): string {
+if (!u) return '/imgCalcados/placeholder.png';
+const s = u.trim().replace(/^\.?\/?public\//, '');
+if (s.startsWith('http') || s.startsWith('data:')) return s;
+return s.startsWith('/') ? s : `/${s}`;
+}
 
-const NikeAirforceBobGoodies = [
-  { src: NikeAirforceBobGoodiesBlue.src, alt: 'Nike Air Force Bob Goodies Blue' },
-  { src: NikeAirforceBobGoodiesPink.src, alt: 'Nike Air Force Bob Goodies Pink' },
-  { src: NikeAirforceBobGoodiesWhite.src, alt: 'Nike Air Force Bob Goodies White' },
-];
+// Página Kids
+export default async function KidsPage() {
+// 1️⃣ Busca todos os produtos
+const products = (await getProducts()) as ProductWithRelations[];
 
-const NikeAirforceStich = [
-  { src: NikeAirforceStichBlue.src, alt: 'Nike Air Force Stitch Blue' },
-  { src: NikeAirforceStichWhite.src, alt: 'Nike Air Force Stitch White' },
-];
+// 2️⃣ Filtra apenas produtos do gênero KIDS
+const kidsProducts = products.filter((p) => p.gender === Gender.KIDS);
 
-const NikeDunk = [
-  { src: NikeDunkAllBalck.src, alt: 'Nike Dunk All Black' },
-  { src: NikeDunkBlackAndRed.src, alt: 'Nike Dunk Black and Red' },
-  { src: NikeDunkBlackAndWhite.src, alt: 'Nike Dunk Black and White' },
-];
+// 3️⃣ Busca todas as imagens separadamente
+const images = await prisma.productImage.findMany();
 
-export default function KidsPage() {
-  return (
-    <>
-      {/* Cabeçalho */}
-      <header>
-        <Header />
-      </header>
+// 4️⃣ Mapeia imagens para cada produto
+const items = kidsProducts.map((p) => {
+const productImages = images.filter((img) => img.productId === p.id);
 
-      {/* Divisor */}
-      <hr className="w-full border-gray-500" />
 
-      {/* Conteúdo Principal */}
-      <main className="min-h-screen bg-black p-8">
-        <section
-          aria-labelledby="kids-shoes"
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center"
-        >
-          <h1 id="kids-shoes" className="sr-only">
-            Tênis Infantis
-          </h1>
+const sneakers =
+  productImages.length > 0
+    ? productImages.map((img) => ({
+        src: formatUrlToImgCalcados(img.url),
+        alt: img.filename ?? p.title ?? 'Produto',
+      }))
+    : [
+        {
+          src: '/imgCalcados/placeholder.png',
+          alt: 'Imagem indisponível',
+        },
+      ];
 
-          <Contain sneakers={NikeAirforce} title="Nike Air Force" price="R$ 187,50" />
-          <Contain sneakers={NikeAirforceBobGoodies} title="Nike Air Force Bob Goodies" price="R$ 125,00" />
-          <Contain sneakers={NikeAirforceStich} title="Nike Air Force Stitch" price="R$ 107,50" />
-          <Contain sneakers={NikeDunk} title="Nike Dunk" price="R$ 212,50" />
-        </section>
-      </main>
-    </>
-  );
+const price =
+  typeof p.price === 'number'
+    ? new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(p.price)
+    : '';
+
+return {
+  id: String(p.id),
+  name: p.title ?? '',
+  description: p.description ?? '',
+  price,
+  marcaName: p.marca?.name ?? '',
+  sneakers,
+};
+
+
+});
+
+// 5️⃣ Ordena por marca e depois por nome
+items.sort((a, b) => {
+const ma = (a.marcaName ?? '').toLowerCase();
+const mb = (b.marcaName ?? '').toLowerCase();
+if (ma !== mb) return ma.localeCompare(mb);
+return (a.name ?? '').toLowerCase().localeCompare((b.name ?? '').toLowerCase());
+});
+
+// Renderização
+return ( <div> <Header /> <div className="w-full h-[1px] bg-gray-500"></div>
+
+
+  <div className="min-h-screen bg-black p-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
+      {items.map((item) => (
+        <Contain
+          key={item.id}
+          sneakers={item.sneakers}
+          title={item.name}
+          description={item.description}
+          price={item.price}
+        />
+      ))}
+    </div>
+    {items.length === 0 && (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-black text-gray-400 text-lg">
+        Nenhum produto encontrado na categoria{' '}
+        <span className="text-white font-semibold">Infantil</span>.
+      </div>
+    )}
+  </div>
+</div>
+
+
+);
 }
