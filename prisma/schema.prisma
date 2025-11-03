@@ -41,25 +41,23 @@ model Marca {
 }
 
 model Product {
-  id          Int             @id @default(autoincrement())
-  title       String
-  description String?
-  price       Float
-  gender      Gender
-  productType ProductType
-  marcaId     Int?
-  marca       Marca?          @relation(fields: [marcaId], references: [id])
-  images      ProductImage[]  // ← relação com as imagens
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id           Int            @id @default(autoincrement())
+  title        String
+  description  String?
+  price        Float
+  gender       Gender
+  productType  ProductType
+  marcaId      Int?
+  marca        Marca?         @relation(fields: [marcaId], references: [id])
+  images       ProductImage[] // 👈 ADICIONE ESTA LINHA
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
 
 model ProductImage {
-  id        Int      @id @default(autoincrement())
-  url       String
-  filename  String?
-  category  String?
-  product   Product? @relation(fields: [productId], references: [id])
-  productId Int?
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  filename   String
+  url        String
+  productId  Int
+  product    Product   @relation(fields: [productId], references: [id])
 }
