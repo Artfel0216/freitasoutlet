@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Models from '@/app/public/img/Arte 1 carrosel.png';
-import Envio from '@/app/public/img/Arte 2 carrosel.png';
+import Models from '@/public/img/Arte 1 carrosel.png';
+import Envio from '@/public/img/Arte 2 carrosel.png';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

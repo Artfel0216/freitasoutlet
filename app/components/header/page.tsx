@@ -1,6 +1,6 @@
 'use client';
 
-import Logo from '@/app/public/img/LogoFreitasOutlet.png';
+import Logo from '@/public/img/LogoFreitasOutlet.png';
 import { ShoppingCart, User } from 'lucide-react';
 import { useRouter } from 'next/navigation'; 
 import { useCart } from '@/app/context/CartContext';
