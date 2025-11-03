@@ -7,15 +7,11 @@ function formatUrlToImgCalcados(u?: string) {
   const s = u.trim().replace(/^\.?\/?public\//, ''); 
   if (s.startsWith('http') || s.startsWith('data:')) return s;
 
-  // garante que o caminho sempre comece com /
+ 
   const clean = s.startsWith('/') ? s : `/${s}`;
   return clean;
 }
 
-
-/**
- * Retorna todos os produtos com marca e imagens.
- */
 export async function getProducts(): Promise<
   (Product & { images: ProductImage[]; marca: Marca | null })[]
 > {

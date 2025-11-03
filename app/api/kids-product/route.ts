@@ -11,7 +11,7 @@ include: { images: true, marca: true },
 });
 
 
-// Formata os produtos para enviar como JSON
+
 const formattedProducts = products.map((p) => ({
   id: p.id,
   title: p.title,

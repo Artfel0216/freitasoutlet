@@ -6,13 +6,11 @@ import { getProducts } from '@/app/action/get-Products';
 
 const prisma = new PrismaClient();
 
-// Tipos derivados do Prisma
 interface ProductWithRelations extends Product {
 images: ProductImage[];
 marca: Marca | null;
 }
 
-// Função para formatar URLs das imagens
 function formatUrlToImgCalcados(u?: string): string {
 if (!u) return '/imgCalcados/placeholder.png';
 const s = u.trim().replace(/^\.?\/?public\//, '');
@@ -20,18 +18,14 @@ if (s.startsWith('http') || s.startsWith('data:')) return s;
 return s.startsWith('/') ? s : `/${s}`;
 }
 
-// Página Kids
 export default async function KidsPage() {
-// 1️⃣ Busca todos os produtos
+
 const products = (await getProducts()) as ProductWithRelations[];
 
-// 2️⃣ Filtra apenas produtos do gênero KIDS
 const kidsProducts = products.filter((p) => p.gender === Gender.KIDS);
 
-// 3️⃣ Busca todas as imagens separadamente
 const images = await prisma.productImage.findMany();
 
-// 4️⃣ Mapeia imagens para cada produto
 const items = kidsProducts.map((p) => {
 const productImages = images.filter((img) => img.productId === p.id);
 
@@ -69,7 +63,6 @@ return {
 
 });
 
-// 5️⃣ Ordena por marca e depois por nome
 items.sort((a, b) => {
 const ma = (a.marcaName ?? '').toLowerCase();
 const mb = (b.marcaName ?? '').toLowerCase();
@@ -77,7 +70,6 @@ if (ma !== mb) return ma.localeCompare(mb);
 return (a.name ?? '').toLowerCase().localeCompare((b.name ?? '').toLowerCase());
 });
 
-// Renderização
 return ( <div> <Header /> <div className="w-full h-[1px] bg-gray-500"></div>
 
 
