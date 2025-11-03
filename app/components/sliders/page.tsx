@@ -1,25 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import Models from '@/public/img/Arte 1 carrosel.png';
-import Envio from '@/public/img/Arte 2 carrosel.png';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const images = [
   {
-    src: Models.src,
+    src: '/img/Arte 1 carrosel.png',
     alt: 'Modelos de roupas',
   },
   {
-    src: Envio.src,
+    src: '/img/Arte 2 carrosel.png',
     alt: 'Envio rápido',
   },
 ];
 
 export default function Sliders() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0); // -1 para esquerda, 1 para direita
+  const [direction, setDirection] = useState(0); // -1 = esquerda, 1 = direita
 
   const handlePrev = () => {
     setDirection(-1);
@@ -35,16 +34,22 @@ export default function Sliders() {
     <section className="w-full mt-[3rem] flex justify-center items-center relative overflow-hidden">
       <div className="w-full max-w-[100rem] h-auto relative">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.img
+          <motion.div
             key={images[currentIndex].src}
-            src={images[currentIndex].src}
-            alt={images[currentIndex].alt}
             initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-auto rounded shadow-md"
-          />
+          >
+            <Image
+              src={images[currentIndex].src}
+              alt={images[currentIndex].alt}
+              width={1600}
+              height={600}
+              className="w-full h-auto rounded shadow-md object-cover"
+              priority
+            />
+          </motion.div>
         </AnimatePresence>
       </div>
 
