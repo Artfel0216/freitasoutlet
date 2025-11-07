@@ -1,11 +1,15 @@
-import { Geist } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "./context/CartContext";
+import { CartProvider } from "@/context/CartContext"; // ✅ caminho corrigido
+import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export const metadata: Metadata = {
+  title: "Freitas Outlet",
+  description: "Loja online de calçados — Freitas Outlet",
+  authors: [{ name: "Freitas Outlet Dev Team" }],
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -13,10 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} antialiased bg-black`}>
+    <html lang="pt-BR">
+      <body className="bg-neutral-900 text-white min-h-screen antialiased">
+        {/* Contexto global do carrinho */}
         <CartProvider>
-          {children}
+          <main className="flex flex-col min-h-screen">{children}</main>
         </CartProvider>
       </body>
     </html>

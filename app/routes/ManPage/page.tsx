@@ -76,12 +76,12 @@ export default async function ManPage() {
       <div className="min-h-screen bg-black p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
           {items.map((item) => (
-            <Contain
-              key={item.id}
-              sneakers={item.sneakers}
-              title={item.name}
-              description={item.description}
-              price={item.price}
+           <Contain
+            id={item.id} // ✅ novo
+            sneakers={item.sneakers}
+            title={item.name}
+           description={item.description}
+           price={item.price}
             />
           ))}
         </div>
