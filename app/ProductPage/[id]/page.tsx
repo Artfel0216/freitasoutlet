@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Header from "@/app/components/header/page";
 import { motion } from "framer-motion";
-import { useCart } from "@/context/CartContext"; // ✅ caminho corrigido
+import { useCart } from "@/context/CartContext";
 
 interface Product {
   id: string;
@@ -18,6 +18,8 @@ export default function ProductPage() {
   const { addToCart } = useCart();
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
+
   const id = params?.id;
   const initialImage = searchParams.get("image");
 
@@ -28,7 +30,6 @@ export default function ProductPage() {
   useEffect(() => {
     async function fetchProduct() {
       if (!id) return;
-
       try {
         const res = await fetch(`/api/product/${id}`);
         if (!res.ok) throw new Error("Erro ao buscar produto");
@@ -42,7 +43,6 @@ export default function ProductPage() {
         console.error("Erro ao carregar produto:", error);
       }
     }
-
     fetchProduct();
   }, [id, initialImage]);
 
@@ -62,7 +62,6 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
-
     addToCart({
       id: product.id,
       title: product.title,
@@ -72,10 +71,12 @@ export default function ProductPage() {
     });
   };
 
-  const handleBuyNow = () => {
-    if (!selectedSize) return;
-    // 🔜 Futuro: redirecionamento para checkout
-  };
+ const handleBuyNow = () => {
+  if (!selectedSize) return;
+  const imageParam = selectedImage ? `&image=${encodeURIComponent(selectedImage)}` : "";
+  router.push(`/carpage?id=${product.id}&size=${selectedSize}${imageParam}`);
+};
+
 
   return (
     <main className="min-h-screen bg-neutral-900 text-white">
@@ -124,12 +125,11 @@ export default function ProductPage() {
                   key={size}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedSize(size)}
-                  className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-200
-                    ${
-                      selectedSize === size
-                        ? "bg-green-500 text-white border-green-500"
-                        : "bg-blue-300 text-black border-gray-300 hover:bg-green-300"
-                    }`}
+                  className={`px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-200 ${
+                    selectedSize === size
+                      ? "bg-green-500 text-white border-green-500"
+                      : "bg-blue-300 text-black border-gray-300 hover:bg-green-300"
+                  }`}
                 >
                   {size}
                 </motion.button>
@@ -145,7 +145,6 @@ export default function ProductPage() {
               >
                 Adicionar ao carrinho
               </motion.button>
-
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={handleBuyNow}
