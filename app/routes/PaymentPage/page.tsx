@@ -1,7 +1,6 @@
-'use client';
-
+// NÃO adicione "use client" aqui!
 import HeaderCar from "@/app/components/HeaderCar/page";
-import { CreditCard, House, Pencil, Wallet } from "lucide-react";
+import { CreditCard, House, Wallet } from "lucide-react";
 
 export default function PaymentPage() {
   return (
@@ -10,13 +9,11 @@ export default function PaymentPage() {
       <HeaderCar />
 
       <div className="flex ml-4 mt-4 gap-6">
-
         {/* Coluna Esquerda - Entrega + Pagamento */}
         <section className="flex-1 text-white font-bold">
           {/* Seção de entrega */}
           <header className="flex justify-between items-center">
             <h1 className="text-[1.2rem]">Entrega</h1>
-           
           </header>
 
           <address className="p-6 w-[54rem] h-[8rem] mt-4 border border-white rounded not-italic">

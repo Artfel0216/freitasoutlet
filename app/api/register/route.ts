@@ -7,13 +7,11 @@ const prisma = new PrismaClient();
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const {
       firstName,
       lastName,
       email,
       password,
-      confirmPassword, // ✅ novo campo
       address,
       number,
       city,
@@ -21,23 +19,14 @@ export async function POST(req: Request) {
       cep,
     } = body;
 
-    // ✅ Verificação de campos obrigatórios
-    if (!email || !password || !firstName || !confirmPassword) {
+    if (!email || !password || !firstName) {
       return NextResponse.json(
-        { error: "Preencha todos os campos obrigatórios." },
+        { error: "Campos obrigatórios faltando." },
         { status: 400 }
       );
     }
 
-    // ✅ Confirmação de senha
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        { error: "As senhas não coincidem." },
-        { status: 400 }
-      );
-    }
-
-    // ✅ Verifica se o usuário já existe
+    // 🔹 Verifica se o usuário já existe
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -49,10 +38,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Cria hash da senha
+    // 🔹 Cria hash da senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Cria o novo usuário
+    // 🔹 Cria o novo usuário
     const newUser = await prisma.user.create({
       data: {
         firstName,
@@ -65,7 +54,7 @@ export async function POST(req: Request) {
         state,
         cep,
         provider: "credentials",
-        image: "/default-avatar.png", // 🔹 imagem padrão
+        image: "/default-avatar.png", // ✅ valor padrão para evitar erro
       },
     });
 
@@ -74,9 +63,9 @@ export async function POST(req: Request) {
       user: newUser,
     });
   } catch (error) {
-    console.error("Erro ao criar usuário:", error);
+    console.error(error);
     return NextResponse.json(
-      { error: "Erro interno ao criar usuário." },
+      { error: "Erro ao criar usuário." },
       { status: 500 }
     );
   }

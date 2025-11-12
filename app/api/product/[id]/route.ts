@@ -1,14 +1,20 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
-
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
+    const id = parseInt(params.id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
     const product = await prisma.product.findUnique({
-      where: { id: Number(id) },
+      where: { id },
       include: {
         marca: true,
         images: true,
@@ -16,32 +22,38 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!product) {
-      return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Produto não encontrado" },
+        { status: 404 }
+      );
     }
 
-    const imageUrl = product.images[0]?.url
-      ? product.images[0].url.replace(/^\.?\/?public\//, '/')
-      : '/imgCalcados/placeholder.png';
+    // Corrige URLs das imagens (caso estejam com prefixo /public/)
+    const images = product.images.map((img) => ({
+      id: img.id,
+      filename: img.filename,
+      url: img.url.replace(/^\.?\/?public\//, "/"),
+    }));
 
-    const price =
-      typeof product.price === 'number'
-        ? new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-          }).format(product.price)
-        : '';
-
-    return NextResponse.json({
+    const responseData = {
       id: product.id,
       title: product.title,
       description: product.description,
-      marcaName: product.marca?.name ?? '',
-      price,
-      rawPrice: product.price,
-      imageUrl,
-    });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+      price: product.price,
+      gender: product.gender,
+      productType: product.productType,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      marca: product.marca ? { name: product.marca.name } : null,
+      images,
+    };
+
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error("Erro interno da API de produto:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }

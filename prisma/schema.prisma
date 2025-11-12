@@ -28,7 +28,7 @@ enum ProductType {
 }
 
 // ========================================
-// MODELOS
+// MODELOS EXISTENTES
 // ========================================
 
 model Marca {
@@ -49,7 +49,7 @@ model Product {
   productType  ProductType
   marcaId      Int?
   marca        Marca?         @relation(fields: [marcaId], references: [id])
-  images       ProductImage[] // 👈 ADICIONE ESTA LINHA
+  images       ProductImage[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 }
@@ -60,4 +60,24 @@ model ProductImage {
   url        String
   productId  Int
   product    Product   @relation(fields: [productId], references: [id])
+}
+
+// ========================================
+// NOVO MODELO DE USUÁRIO (LOGIN/REGISTRO)
+// ========================================
+
+model User {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String   @unique
+  password      String
+  address       String
+  number        String
+  city          String
+  state         String
+  cep           String
+  image         String?
+  provider      String // "google", "facebook" ou "credentials"
+  createdAt     DateTime @default(now())
 }

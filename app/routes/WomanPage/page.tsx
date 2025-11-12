@@ -1,58 +1,100 @@
-'use client';
+import React from "react";
+import Header from "@/app/components/header/page";
+import Contain from "@/app/components/contain/page";
+import { prisma } from "@/app/lib/prisma";
+import { getProducts } from "@/app/action/get-Products";
+import { Product, ProductImage, Marca } from "@prisma/client";
 
-import React, { useState, useEffect } from 'react';
-import Header from '@/app/components/header/page';
-import Contain from '@/app/components/contain/page';
+// ===========================================================
+// Tipos derivados do Prisma
+// ===========================================================
+interface ProductWithRelations extends Product {
+  images: ProductImage[];
+  marca: Marca | null;
+}
 
-export default function WomanPage() {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+// ===========================================================
+// Função auxiliar para formatar URLs de imagem
+// ===========================================================
+function formatUrlToImgCalcados(u?: string): string {
+  if (!u) return "/imgCalcados/placeholder.png";
+  const s = u.trim().replace(/^\.?\/?public\//, "");
+  if (s.startsWith("http") || s.startsWith("data:")) return s;
+  return s.startsWith("/") ? s : `/${s}`;
+}
 
-  useEffect(() => {
-    const fetchFeminino = async () => {
-      try {
-        const res = await fetch('/api/products/feminino');
-        const data = await res.json();
-        setItems(data);
-      } catch (err) {
-        console.error('Erro ao buscar produtos femininos:', err);
-      } finally {
-        setLoading(false);
-      }
+// ===========================================================
+// Página principal (exemplo: WomanPage)
+// ===========================================================
+export default async function WomanPage() {
+  const products = (await getProducts()) as ProductWithRelations[];
+  const images = await prisma.productImage.findMany();
+
+  // Mapeia e formata os produtos
+  const items = products.map((p) => {
+    const productImages = images.filter((img) => img.productId === p.id);
+    const sneakers =
+      productImages.length > 0
+        ? productImages.map((img) => ({
+            src: formatUrlToImgCalcados(img.url),
+            alt: img.filename ?? p.title ?? "Produto",
+          }))
+        : [
+            {
+              src: "/imgCalcados/placeholder.png",
+              alt: "Imagem indisponível",
+            },
+          ];
+
+    const price =
+      typeof p.price === "number"
+        ? new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(p.price)
+        : "";
+
+    return {
+      id: String(p.id),
+      name: p.title ?? "",
+      description: p.description ?? "",
+      price,
+      marcaName: p.marca?.name ?? "",
+      sneakers,
     };
+  });
 
-    fetchFeminino();
-  }, []);
+  // Ordena por marca e nome
+  items.sort((a, b) => {
+    const ma = (a.marcaName ?? "").toLowerCase();
+    const mb = (b.marcaName ?? "").toLowerCase();
+    if (ma !== mb) return ma.localeCompare(mb);
+    return (a.name ?? "").toLowerCase().localeCompare((b.name ?? "").toLowerCase());
+  });
 
+  // ===========================================================
+  // Renderização
+  // ===========================================================
   return (
     <div>
       <Header />
-      <div className="w-full h-[1px] bg-gray-600"></div>
+      <div className="w-full h-[1px] bg-gray-500"></div>
 
-      <main className="min-h-screen bg-black p-8">
-        {/* Lista de produtos */}
-        {items.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 place-items-center">
-            {items.map((item) => (
-              <Contain
-                key={item.id}
-                sneakers={item.sneakers}
-                title={item.name}
-                description={item.description}
-                price={item.price}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Mensagem caso não haja produtos */}
-        {items.length === 0 && !loading && (
-          <div className="flex flex-col justify-center items-center min-h-screen bg-black text-gray-400 text-lg">
-            Nenhum produto encontrado na categoria{' '}
-            <span className="text-white font-semibold">Feminino</span>.
-          </div>
-        )}
-      </main>
+      <div className="min-h-screen bg-black p-8">
+        <h1 className="text-white text-3xl font-semibold mb-6">Calçados Femininos</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
+          {items.map((item) => (
+            <Contain
+              key={item.id}
+              id={item.id}
+              sneakers={item.sneakers}
+              title={item.name}
+              description={item.description}
+              price={item.price}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
