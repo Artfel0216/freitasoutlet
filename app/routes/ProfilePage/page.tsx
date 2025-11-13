@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Facebook, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -23,37 +24,30 @@ export default function ProfilePage() {
   };
 
   // ===========================================================
-  // Função de login
+  // Função de login com credenciais (NextAuth)
   // ===========================================================
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setMessage("");
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
 
-      const data = await res.json();
+    setLoading(false);
 
-      if (!res.ok) throw new Error(data.error || "Erro ao fazer login.");
-
+    if (result?.error) {
+      setMessage(
+        "❌ Você não possui login na plataforma. Por favor, registre-se."
+      );
+    } else {
       setMessage("✅ Login realizado com sucesso!");
-
-      // Simula salvar sessão localmente (ajuste se usar JWT/cookies)
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Redireciona para página inicial ou perfil
       setTimeout(() => {
         router.push("/HomePage");
       }, 1000);
-    } catch (error: any) {
-      setMessage(`Você não possui login na plataforma. Por favor, registre-se. (${error.message})`);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -95,18 +89,22 @@ export default function ProfilePage() {
         <section className="flex flex-col items-center justify-center w-[35rem] gap-5 text-white">
           {/* Login social */}
           <div className="flex gap-4">
+            {/* Login com Facebook */}
             <button
               type="button"
+              onClick={() => signIn("facebook")}
               className="w-[2.5rem] h-[2.5rem] rounded-full border-2 border-white flex justify-center items-center cursor-pointer hover:bg-white/10 transition"
               aria-label="Entrar com Facebook"
             >
               <Facebook size={20} color="white" />
             </button>
 
+            {/* Login com Google */}
             <button
               type="button"
+              onClick={() => signIn("google")}
               className="w-[2.5rem] h-[2.5rem] rounded-full border-2 border-white flex justify-center items-center cursor-pointer hover:bg-white/10 transition"
-              aria-label="Entrar com E-mail"
+              aria-label="Entrar com Google"
             >
               <Mail size={20} color="white" />
             </button>
@@ -115,7 +113,10 @@ export default function ProfilePage() {
           <p>Entre com E-mail e Senha</p>
 
           {/* Formulário de login */}
-          <form onSubmit={handleLogin} className="flex flex-col gap-4 items-center">
+          <form
+            onSubmit={handleLogin}
+            className="flex flex-col gap-4 items-center"
+          >
             <label htmlFor="email" className="text-sm">
               E-mail
             </label>

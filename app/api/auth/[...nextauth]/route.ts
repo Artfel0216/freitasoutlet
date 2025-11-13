@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -8,9 +8,11 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     // ✅ Login com Google
     GoogleProvider({
@@ -24,7 +26,7 @@ const handler = NextAuth({
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
 
-    // ✅ Login com credenciais normais (email/senha)
+    // ✅ Login com e-mail/senha (credenciais)
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -32,29 +34,39 @@ const handler = NextAuth({
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password)
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Credenciais inválidas");
+        }
 
+        // Buscar usuário no banco
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user) throw new Error("Usuário não encontrado");
+        if (!user || !user.password) {
+          throw new Error("Usuário não encontrado");
+        }
 
+        // Verificar senha
         const isValid = await bcrypt.compare(
           credentials.password,
-          user.password!
+          user.password
         );
 
-        if (!isValid) throw new Error("Senha incorreta");
+        if (!isValid) {
+          throw new Error("Senha incorreta");
+        }
 
         return user;
       },
     }),
   ],
   pages: {
-    signIn: "/routes/ProfilePage", // Tela personalizada de login
+    signIn: "/routes/ProfilePage", // página customizada de login
   },
-});
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
