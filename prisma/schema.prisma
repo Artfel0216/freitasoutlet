@@ -3,12 +3,12 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output = "../app/generated/prisma"
 }
 
+// datasource: adiciona url via env para compatibilidade com seu CLI atual
 datasource db {
   provider = "sqlite"
-  // url foi removida do schema; use prisma.config.ts ou override no cliente
+  url      = env("DATABASE_URL")
 }
 
 // ========================================
