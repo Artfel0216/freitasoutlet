@@ -1,54 +1,60 @@
 "use client";
 
-import { useLoader } from "@/context/LoaderContext"; // ✅ Caminho certo
-import { useState } from "react";
+import React, { useState } from "react";
 
-export default function PayButton({ product, method, email, children }: any) {
-  const { setLoading } = useLoader();
+export default function PayButton({ product, email, children }: any) {
   const [processing, setProcessing] = useState(false);
 
   async function handlePay() {
     if (processing) return;
-
     setProcessing(true);
-    setLoading(true);
 
     try {
       const res = await fetch("/api/payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          email,
+          id: product?.id,
+          title: product?.title,
+          description: product?.description,
+          price: product?.price,
+          email: email ?? undefined,
         }),
       });
 
       const data = await res.json();
-
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        console.error("Erro: init_point ausente", data);
+      if (!res.ok) {
+        console.error("payment API error:", data);
+        alert(data?.error ? `${data.error}` : "Erro ao criar preferência de pagamento");
+        setProcessing(false);
+        return;
       }
-    } catch (error) {
-      console.error("Erro ao iniciar pagamento:", error);
-    }
 
-    setProcessing(false);
-    setLoading(false);
+      const init = data?.init_point || data?.sandbox_init_point || data?.initPoint || data?.raw?.init_point;
+      if (!init) {
+        console.error("init_point não retornado:", data);
+        alert("Não foi possível obter a URL de pagamento. Verifique logs do servidor.");
+        setProcessing(false);
+        return;
+      }
+
+      // redireciona para Mercado Pago
+      window.location.href = init;
+    } catch (err) {
+      console.error("handlePay exception:", err);
+      alert("Erro ao iniciar pagamento.");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   return (
-    <div onClick={handlePay}>
-      {processing ? (
-        <button className="w-full h-[3.2rem] rounded-xl bg-black text-white font-bold animate-pulse">
-          Processando...
-        </button>
-      ) : (
-        children
-      )}
-    </div>
+    <button
+      onClick={handlePay}
+      disabled={processing}
+      className={`px-4 py-2 rounded font-bold ${processing ? "opacity-50 cursor-wait" : "bg-white text-black"}`}
+    >
+      {processing ? "Processando..." : children ?? "Pagar"}
+    </button>
   );
 }

@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // ========================================
@@ -80,8 +81,6 @@ model User {
   provider      String // "google", "facebook" ou "credentials"
   createdAt     DateTime @default(now())
 }
-
-
 
 model Order {
   id            Int      @id @default(autoincrement())
