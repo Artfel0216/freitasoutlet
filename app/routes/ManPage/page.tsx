@@ -27,12 +27,15 @@ function formatUrlToImgCalcados(u?: string): string {
 // Página principal - ManPage
 // ===========================================================
 export default async function ManPage() {
-  // Busca produtos e imagens relacionadas
+  // Busca todos os produtos com relações
   const products = (await getProducts()) as ProductWithRelations[];
   const images = await prisma.productImage.findMany();
 
+  // 🔥 Filtra SOMENTE produtos masculinos
+  const maleProducts = products.filter((p) => p.gender === "MASCULINO");
+
   // Mapeia produtos com dados formatados
-  const items = products.map((p) => {
+  const items = maleProducts.map((p) => {
     const productImages = images.filter((img) => img.productId === p.id);
 
     const sneakers =
@@ -66,7 +69,7 @@ export default async function ManPage() {
     };
   });
 
-  // Ordena produtos por marca e nome
+  // Ordena por marca + nome
   items.sort((a, b) => {
     const ma = (a.marcaName ?? "").toLowerCase();
     const mb = (b.marcaName ?? "").toLowerCase();
@@ -74,9 +77,6 @@ export default async function ManPage() {
     return (a.name ?? "").toLowerCase().localeCompare((b.name ?? "").toLowerCase());
   });
 
-  // ===========================================================
-  // Renderização
-  // ===========================================================
   return (
     <div>
       <Header />
@@ -86,7 +86,7 @@ export default async function ManPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
           {items.map((item) => (
             <Contain
-              key={item.id} // ✅ chave única
+              key={item.id}
               id={item.id}
               sneakers={item.sneakers}
               title={item.name}

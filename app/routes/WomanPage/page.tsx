@@ -2,8 +2,7 @@ import React from "react";
 import Header from "@/app/components/header/page";
 import Contain from "@/app/components/contain/page";
 import { prisma } from "@/app/lib/prisma";
-import { getProducts } from "@/app/action/get-Products";
-import { Product, ProductImage, Marca } from "@prisma/client";
+import { Product, ProductImage, Marca, Gender } from "@prisma/client";
 
 // ===========================================================
 // Tipos derivados do Prisma
@@ -24,19 +23,27 @@ function formatUrlToImgCalcados(u?: string): string {
 }
 
 // ===========================================================
-// Página principal (exemplo: WomanPage)
+// Página principal (WomanPage filtrada por FEMININO)
 // ===========================================================
 export default async function WomanPage() {
-  const products = (await getProducts()) as ProductWithRelations[];
-  const images = await prisma.productImage.findMany();
+  // 🔥 Agora buscando apenas produtos FEMININOS direto do banco
+  const products = await prisma.product.findMany({
+    where: {
+      gender: Gender.FEMININO,
+    },
+    include: {
+      images: true,
+      marca: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   // Mapeia e formata os produtos
   const items = products.map((p) => {
-    const productImages = images.filter((img) => img.productId === p.id);
     const sneakers =
-      productImages.length > 0
-        ? productImages.map((img) => ({
-            src: formatUrlToImgCalcados(img.url),
+      p.images.length > 0
+        ? p.images.map((img) => ({
+            src: formatUrlToImgCalcados(img.url || img.filename),
             alt: img.filename ?? p.title ?? "Produto",
           }))
         : [
@@ -58,8 +65,8 @@ export default async function WomanPage() {
       id: String(p.id),
       name: p.title ?? "",
       description: p.description ?? "",
-      price,
       marcaName: p.marca?.name ?? "",
+      price,
       sneakers,
     };
   });
@@ -81,7 +88,10 @@ export default async function WomanPage() {
       <div className="w-full h-[1px] bg-gray-500"></div>
 
       <div className="min-h-screen bg-black p-8">
-        <h1 className="text-white text-3xl font-semibold mb-6">Calçados Femininos</h1>
+        <h1 className="text-white text-3xl font-semibold mb-6">
+          Calçados Femininos
+        </h1>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
           {items.map((item) => (
             <Contain
