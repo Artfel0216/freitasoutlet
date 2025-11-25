@@ -77,7 +77,6 @@ export default function ProductPage() {
   router.push(`/carpage?id=${product.id}&size=${selectedSize}${imageParam}`);
 };
 
-
   return (
     <main className="min-h-screen bg-neutral-900 text-white">
       <Header />

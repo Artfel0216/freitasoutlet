@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ShoppingCart, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext"; // ✅ caminho ajustado conforme sua estrutura
+import { useCart } from "@/context/CartContext";
 
 export default function Header() {
   const router = useRouter();
@@ -12,12 +12,20 @@ export default function Header() {
   const goToManPage = () => router.push("/routes/ManPage");
   const goToWomanPage = () => router.push("/routes/WomanPage");
   const goToKidsPage = () => router.push("/routes/KidsPage");
-  const goToCarPage = () => router.push("/routes/CarPage");
   const goToProfilePage = () => router.push("/routes/ProfilePage");
+
+  const goToCarPage = () => {
+    if (cartCount === 0) {
+      alert("Seu carrinho está vazio!");
+      return;
+    }
+    // rota usada no projeto (pasta app/routes/carpage)
+    router.push("/routes/carpage");
+  };
 
   return (
     <header className="w-full h-[10rem] p-4 flex items-center text-white text-[1.2rem] font-bold relative">
-      <a href="/" className="cursor-pointer">
+      <button onClick={() => router.push("/")} className="cursor-pointer">
         <Image
           src="/img/LogoFreitasOutlet.png"
           alt="Logo Freitas-Outlet"
@@ -25,7 +33,7 @@ export default function Header() {
           height={80}
           className="cursor-pointer"
         />
-      </a>
+      </button>
 
       <nav className="flex ml-[45rem] gap-[2rem]">
         <button onClick={goToManPage} className="hover:text-gray-400">

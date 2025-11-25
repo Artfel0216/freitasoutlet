@@ -5,16 +5,18 @@ const prisma = new PrismaClient();
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const { id } = await context.params;
+
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
       return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
 
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: numericId },
       include: {
         marca: true,
         images: true,
@@ -28,7 +30,7 @@ export async function GET(
       );
     }
 
-    // Corrige URLs das imagens (caso estejam com prefixo /public/)
+    // Corrige URLs das imagens (caso venham com /public/)
     const images = product.images.map((img) => ({
       id: img.id,
       filename: img.filename,

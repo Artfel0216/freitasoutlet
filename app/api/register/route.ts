@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         state,
         cep,
         provider: "credentials",
-        image: "/default-avatar.png", // ✅ valor padrão para evitar erro
+        image: "/default-avatar.png", 
       },
     });
 

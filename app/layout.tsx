@@ -1,5 +1,6 @@
 import "./globals.css";
-import { CartProvider } from "@/context/CartContext"; // ✅ caminho corrigido
+import { CartProvider } from "@/context/CartContext";
+import { LoaderProvider } from "@/context/LoaderContext"; 
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -19,9 +20,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="bg-neutral-900 text-white min-h-screen antialiased">
-        {/* Contexto global do carrinho */}
+        {/* Contexto global */}
         <CartProvider>
-          <main className="flex flex-col min-h-screen">{children}</main>
+          <LoaderProvider> {/* ✅ LOADER GLOBAL ADICIONADO */}
+            <main className="flex flex-col min-h-screen">
+              {children}
+            </main>
+          </LoaderProvider>
         </CartProvider>
       </body>
     </html>

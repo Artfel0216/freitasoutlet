@@ -56,8 +56,9 @@ export default function DeliveryPage() {
   }, [id]);
 
   const handleGoToPayment = () => {
-    router.push("/routes/PaymentPage/");
-  };
+  router.push(`/routes/PaymentPage/${id}`);
+};
+
 
   return (
     <main>
