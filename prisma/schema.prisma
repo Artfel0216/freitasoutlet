@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // url foi removida do schema; use prisma.config.ts ou override no cliente
 }
 
 // ========================================
