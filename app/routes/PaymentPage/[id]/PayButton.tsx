@@ -22,18 +22,21 @@ export default function PayButton({ product, email, children }: any) {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) { data = { text }; }
+
       if (!res.ok) {
         console.error("payment API error:", data);
-        alert(data?.error ? `${data.error}` : "Erro ao criar preferência de pagamento");
+        alert(`Erro ao criar pagamento: ${data?.error ?? JSON.stringify(data)}`);
         setProcessing(false);
         return;
       }
 
       const init = data?.init_point || data?.sandbox_init_point || data?.initPoint || data?.raw?.init_point;
       if (!init) {
-        console.error("init_point não retornado:", data);
-        alert("Não foi possível obter a URL de pagamento. Verifique logs do servidor.");
+        console.error("init_point ausente no response:", data);
+        alert("Não foi possível obter a URL de pagamento. Veja console para detalhes.");
         setProcessing(false);
         return;
       }
@@ -42,8 +45,7 @@ export default function PayButton({ product, email, children }: any) {
       window.location.href = init;
     } catch (err) {
       console.error("handlePay exception:", err);
-      alert("Erro ao iniciar pagamento.");
-    } finally {
+      alert("Erro de rede ao iniciar pagamento.");
       setProcessing(false);
     }
   }
