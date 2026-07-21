@@ -1,0 +1,320 @@
+openapi: 3.1.0
+info:
+  title: Freitas Outlet API
+  description: API do e-commerce Freitas Outlet — streetwear, luxo & performance
+  version: 0.1.0
+  contact:
+    name: Freitas Outlet
+
+servers:
+  - url: http://localhost:3000
+    description: Desenvolvimento
+  - url: https://freitasoutlet.com.br
+    description: Produção
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Registrar novo cliente
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+                password: { type: string, minLength: 6 }
+      responses:
+        '200': { description: Registro realizado }
+        '409': { description: E-mail já cadastrado }
+
+  /api/auth/login:
+    post:
+      summary: Login do cliente
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200': { description: Login realizado }
+        '401': { description: Credenciais inválidas }
+
+  /api/auth/me:
+    get:
+      summary: Dados do cliente logado
+      tags: [Auth]
+      responses:
+        '200': { description: Dados do cliente }
+
+  /api/auth/forgot-password:
+    post:
+      summary: Solicitar recuperação de senha
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+      responses:
+        '200': { description: E-mail enviado se conta existir }
+
+  /api/auth/reset-password:
+    post:
+      summary: Redefinir senha
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+                password: { type: string }
+      responses:
+        '200': { description: Senha redefinida }
+
+  /api/checkout:
+    post:
+      summary: Processar checkout
+      tags: [Checkout]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action: { type: string, enum: [validate, process] }
+                data: { type: object }
+                paymentMethod: { type: string, enum: [pix, credit, debit] }
+                paymentData: { type: object }
+                items: { type: array }
+      responses:
+        '200': { description: Pedido criado }
+        '403': { description: Rejeitado pela análise de fraude }
+        '409': { description: Estoque insuficiente }
+
+  /api/shipping:
+    post:
+      summary: Calcular frete
+      tags: [Shipping]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state: { type: string, example: SP }
+                items: { type: integer }
+      responses:
+        '200':
+          description: Opções de frete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        service: { type: string }
+                        description: { type: string }
+                        price: { type: number }
+                        deliveryDays: { type: string }
+
+  /api/cliente/endereco:
+    get:
+      summary: Listar endereços do cliente
+      tags: [Cliente]
+      responses:
+        '200': { description: Lista de endereços }
+    post:
+      summary: Adicionar endereço
+      tags: [Cliente]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label: { type: string }
+                cep: { type: string }
+                street: { type: string }
+                number: { type: string }
+                neighborhood: { type: string }
+                city: { type: string }
+                state: { type: string }
+      responses:
+        '200': { description: Endereço criado }
+
+  /api/cliente/pedidos:
+    get:
+      summary: Listar pedidos do cliente
+      tags: [Cliente]
+      responses:
+        '200': { description: Lista de pedidos }
+
+  /api/cliente/perfil:
+    put:
+      summary: Atualizar perfil
+      tags: [Cliente]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+                currentPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Perfil atualizado }
+
+  /api/admin/login:
+    post:
+      summary: Login administrativo
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string }
+      responses:
+        '200': { description: Login realizado }
+
+  /api/admin/pedidos/[id]:
+    patch:
+      summary: Atualizar status do pedido
+      tags: [Admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [pending, approved, rejected, refunded] }
+                trackingCode: { type: string }
+      responses:
+        '200': { description: Status atualizado }
+
+  /api/admin/produtos:
+    get:
+      summary: Listar produtos
+      tags: [Admin]
+      responses:
+        '200': { description: Lista de produtos }
+    post:
+      summary: Criar produto
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                price: { type: number }
+                description: { type: string }
+      responses:
+        '200': { description: Produto criado }
+
+  /api/cep/{cep}:
+    get:
+      summary: Buscar CEP
+      tags: [Utils]
+      parameters:
+        - name: cep
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Dados do endereço }
+
+  /api/health:
+    get:
+      summary: Health check
+      tags: [Utils]
+      responses:
+        '200': { description: Serviço saudável }
+        '503': { description: Serviço indisponível }
+
+  /api/webhook:
+    post:
+      summary: Webhook de pagamento
+      tags: [Utils]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string }
+                data: { type: object }
+      responses:
+        '200': { description: Recebido }
+
+  /api/contato:
+    post:
+      summary: Formulário de contato
+      tags: [Utils]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+                message: { type: string }
+      responses:
+        '200': { description: Mensagem enviada }
+
+  /api/verify-email:
+    post:
+      summary: Verificar e-mail
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+      responses:
+        '200': { description: E-mail verificado }
