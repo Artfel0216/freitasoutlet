@@ -1,7 +1,10 @@
 import 'server-only'
 
-const STORE_PIX_KEY = process.env.STORE_PIX_KEY || '11236173414'
-const STORE_NAME = process.env.STORE_NAME || 'PEDRO AUGUSTO GOMES DE FREITAS'
+const STORE_PIX_KEY = process.env.STORE_PIX_KEY ?? ''
+const STORE_NAME = process.env.STORE_NAME ?? ''
+
+if (!STORE_PIX_KEY) throw new Error('STORE_PIX_KEY não configurada')
+if (!STORE_NAME) throw new Error('STORE_NAME não configurado')
 
 type PixPayload = {
   qrCode: string
