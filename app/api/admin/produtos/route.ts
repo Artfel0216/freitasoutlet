@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server'
 import type { Product } from '@/types'
 import { products as staticProducts } from '@/data/products'
 import { readStoredProducts, writeStoredProducts, type StoredProduct } from '@/lib/admin-products'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
 import { getSession } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 
@@ -19,9 +18,10 @@ export async function GET(request: Request) {
   const category = searchParams.get('category')
 
   const stored = await readStoredProducts()
+  const hiddenSlugs = new Set(stored.filter((s) => s.active === false).map((s) => s.slug))
   const all: (Product | StoredProduct)[] = [
-    ...stored.filter((sp) => !staticProducts.some((p) => p.slug === sp.slug)),
-    ...staticProducts,
+    ...stored.filter((sp) => !staticProducts.some((p) => p.slug === sp.slug) && sp.active !== false),
+    ...staticProducts.filter((p) => !hiddenSlugs.has(p.slug)),
   ]
 
   if (search) {
@@ -62,6 +62,10 @@ export async function POST(request: Request) {
     const tags = (formData.get('tags') as string || '').split(',').map((t) => t.trim()).filter(Boolean)
     const isNew = formData.get('isNew') === 'true'
     const isTrending = formData.get('isTrending') === 'true'
+    const offerStatus = (formData.get('offerStatus') as string) || 'none'
+    const offerType = (formData.get('offerType') as string) || 'none'
+    const offerDiscount = Number(formData.get('offerDiscount') || 0)
+    const featured = formData.get('featured') === 'true'
     const active = formData.get('active') !== 'false'
     const sizeGuide = (formData.get('sizeGuide') as string) || 'shirt'
 
@@ -75,28 +79,21 @@ export async function POST(request: Request) {
       .replace(/-+/g, '-')
       .trim()
 
-    const imageFile = formData.get('image') as File | null
+    const imageFiles = formData.getAll('images') as File[]
     let images: string[] = []
 
-    if (imageFile && imageFile.size > 0) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-      if (!allowedTypes.includes(imageFile.type)) {
+    for (const file of imageFiles) {
+      if (file.size === 0) continue
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         return NextResponse.json({
-          error: 'Tipo de arquivo não permitido. Use JPEG, PNG, WebP ou GIF.',
+          error: `Tipo de arquivo não permitido: ${file.name}. Use JPEG, PNG, WebP ou GIF.`,
         }, { status: 400 })
       }
-      const maxSize = 5 * 1024 * 1024 
-      if (imageFile.size > maxSize) {
-        return NextResponse.json({ error: 'Imagem deve ter no máximo 5MB.' }, { status: 400 })
+      if (file.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json({ error: `${file.name} deve ter no máximo 5MB.` }, { status: 400 })
       }
-      const ext = imageFile.name.split('.').pop() || 'webp'
-      const filename = `${slug}-${Date.now()}.${ext}`
-      const buffer = Buffer.from(await imageFile.arrayBuffer())
-      const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads')
-      await mkdir(uploadDir, { recursive: true })
-      const filepath = path.join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      images = [`/images/uploads/${filename}`]
+      const url = await saveImage(file, 'uploads')
+      if (url) images.push(url)
     }
 
     const newProduct: StoredProduct = {
@@ -115,6 +112,10 @@ export async function POST(request: Request) {
       tags,
       isNew,
       isTrending,
+      offerStatus: offerStatus as StoredProduct['offerStatus'],
+      offerType: offerType as StoredProduct['offerType'],
+      offerDiscount,
+      featured,
       stock: {},
       active,
       createdAt: new Date().toISOString(),
@@ -144,6 +145,10 @@ export async function PUT(request: Request) {
     if (!slug) return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
 
     const name = formData.get('name') as string
+    const brandName = formData.get('brandName') as string
+    const brandSlug = formData.get('brandSlug') as string
+    const categoryName = formData.get('categoryName') as string
+    const categorySlug = formData.get('categorySlug') as string
     const description = formData.get('description') as string
     const price = Number(formData.get('price'))
     const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
@@ -152,6 +157,10 @@ export async function PUT(request: Request) {
     const tags = (formData.get('tags') as string || '').split(',').map((t) => t.trim()).filter(Boolean)
     const isNew = formData.get('isNew') === 'true'
     const isTrending = formData.get('isTrending') === 'true'
+    const offerStatus = (formData.get('offerStatus') as string) || 'none'
+    const offerType = (formData.get('offerType') as string) || 'none'
+    const offerDiscount = Number(formData.get('offerDiscount') || 0)
+    const featured = formData.get('featured') === 'true'
     const active = formData.get('active') !== 'false'
     const sizeGuide = (formData.get('sizeGuide') as string) || 'shirt'
 
@@ -163,32 +172,37 @@ export async function PUT(request: Request) {
 
     const existing = stored[index]
 
-    const imageFile = formData.get('image') as File | null
-    let images = existing.images
+    const existingImagesStr = formData.get('existingImages') as string
+    const keepExisting = formData.get('keepExistingImages') === 'true'
+    let images = keepExisting && existingImagesStr ? JSON.parse(existingImagesStr) : existing.images
 
-    if (imageFile && imageFile.size > 0) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-      if (!allowedTypes.includes(imageFile.type)) {
+    const imageFiles = formData.getAll('images') as File[]
+
+    for (const file of imageFiles) {
+      if (file.size === 0) continue
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         return NextResponse.json({
-          error: 'Tipo de arquivo não permitido. Use JPEG, PNG, WebP ou GIF.',
+          error: `Tipo de arquivo não permitido: ${file.name}. Use JPEG, PNG, WebP ou GIF.`,
         }, { status: 400 })
       }
-      const maxSize = 5 * 1024 * 1024
-      if (imageFile.size > maxSize) {
-        return NextResponse.json({ error: 'Imagem deve ter no máximo 5MB.' }, { status: 400 })
+      if (file.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json({ error: `${file.name} deve ter no máximo 5MB.` }, { status: 400 })
       }
-      const ext = imageFile.name.split('.').pop() || 'webp'
-      const filename = `${slug}-${Date.now()}.${ext}`
-      const buffer = Buffer.from(await imageFile.arrayBuffer())
-      const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads')
-      await mkdir(uploadDir, { recursive: true })
-      const filepath = path.join(uploadDir, filename)
-      await writeFile(filepath, buffer)
-      images = [`/images/uploads/${filename}`]
+      const url = await saveImage(file, 'uploads')
+      if (url) images.push(url)
     }
+
+    const brand = brandName && brandSlug
+      ? { id: brandSlug, name: brandName, slug: brandSlug, segment: 'premium' as const }
+      : existing.brand
+    const category = categoryName && categorySlug
+      ? { id: categorySlug, name: categoryName, slug: categorySlug, parentId: existing.category.parentId }
+      : existing.category
 
     const updated: StoredProduct = {
       ...existing,
+      brand,
+      category,
       name: name || existing.name,
       description: description || existing.description,
       price: price || existing.price,
@@ -198,6 +212,10 @@ export async function PUT(request: Request) {
       tags: tags.length > 0 ? tags : existing.tags,
       isNew,
       isTrending,
+      offerStatus: offerStatus as StoredProduct['offerStatus'],
+      offerType: offerType as StoredProduct['offerType'],
+      offerDiscount,
+      featured,
       active,
       sizeGuide,
       images,
@@ -224,13 +242,46 @@ export async function DELETE(request: Request) {
     const { slug } = await request.json()
     if (!slug) return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
 
-    const stored = await readStoredProducts()
+    let stored = await readStoredProducts()
     const index = stored.findIndex((p) => p.slug === slug)
-    if (index === -1) {
+
+    if (index !== -1) {
+      stored.splice(index, 1)
+      await writeStoredProducts(stored)
+      return NextResponse.json({ success: true })
+    }
+
+    const staticProduct = staticProducts.find((p) => p.slug === slug)
+    if (!staticProduct) {
       return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 })
     }
 
-    stored.splice(index, 1)
+    const now = new Date().toISOString()
+    stored.push({
+      id: staticProduct.id,
+      name: staticProduct.name,
+      slug: staticProduct.slug,
+      brand: { id: staticProduct.brand.slug, name: staticProduct.brand.name, slug: staticProduct.brand.slug, segment: staticProduct.brand.segment },
+      category: { id: staticProduct.category.slug, name: staticProduct.category.name, slug: staticProduct.category.slug, parentId: staticProduct.category.parentId },
+      description: staticProduct.description,
+      price: staticProduct.price,
+      compareAtPrice: staticProduct.compareAtPrice ?? null,
+      images: staticProduct.images,
+      colors: staticProduct.colors,
+      sizes: staticProduct.sizes,
+      sizeGuide: staticProduct.sizeGuide,
+      tags: staticProduct.tags,
+      isNew: staticProduct.isNew ?? false,
+      isTrending: staticProduct.isTrending ?? false,
+      offerStatus: staticProduct.offerStatus || 'none',
+      offerType: staticProduct.offerType || 'none',
+      offerDiscount: staticProduct.offerDiscount || 0,
+      featured: staticProduct.featured || false,
+      stock: staticProduct.stock ?? {},
+      active: false,
+      createdAt: now,
+      updatedAt: now,
+    })
     await writeStoredProducts(stored)
 
     return NextResponse.json({ success: true })

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { updateOrderStatus, getOrderById, updatePaymentInfo, getOrderByNumber } from '@/lib/db'
+import { sendOrderConfirmation } from '@/lib/email'
+import { sendShippingUpdate } from '@/lib/email'
 import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
 import { decrementStock } from '@/lib/stock'
@@ -20,6 +22,11 @@ export async function POST(request: Request) {
       logger.error('Webhook: STRIPE_WEBHOOK_SECRET not configured in production')
       return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
     }
+
+    let event: { type: string; data: { object: Record<string, unknown> } }
+
+
+
     if (webhookSecret) {
       const signature = request.headers.get('stripe-signature')
       if (!signature) {
@@ -28,26 +35,26 @@ export async function POST(request: Request) {
       }
       try {
         const stripe = getStripe()
-        const event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret)
-        logger.info('Webhook: signature verified', { ip, type: event.type })
+        event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret) as unknown as typeof event
       } catch (err) {
         logger.warn('Webhook: invalid signature', { ip, error: String(err) })
         return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
       }
+    } else {
+      event = JSON.parse(rawBody)
     }
 
-    const body = JSON.parse(rawBody)
+    logger.info('Webhook received', { type: event.type })
 
-    logger.info('Webhook received', { type: body.type })
-
-    const { type, data } = body
+    const { type, data } = event
 
     if (type === 'payment_intent.succeeded') {
-      const orderId = data.object?.metadata?.orderId || data.object?.metadata?.order_id
+      const metadata = data.object?.metadata as Record<string, string> | undefined
+      const orderId = metadata?.orderId || metadata?.order_id
       let order = orderId ? await getOrderById(orderId) : undefined
 
-      if (!order && data.object?.metadata?.orderNumber) {
-        order = await getOrderByNumber(data.object.metadata.orderNumber)
+      if (!order && metadata?.orderNumber) {
+        order = await getOrderByNumber(metadata.orderNumber)
       }
 
       if (!order) {
@@ -61,21 +68,30 @@ export async function POST(request: Request) {
       }
 
       await updatePaymentInfo(order.id, {
-        gatewayTransactionId: data.object?.id,
+        gatewayTransactionId: (data.object?.id as string) || '',
         gatewayStatus: 'approved',
       })
 
       await updateOrderStatus(order.id, 'approved')
 
+      sendOrderConfirmation({
+        to: order.customer.email,
+        name: order.customer.name,
+        orderNumber: order.orderNumber,
+        total: order.total,
+        paymentMethod: 'Cartão de Crédito/Débito',
+      }).catch((err) => logger.error('Failed to send webhook confirmation', { error: String(err) }))
+
       logger.info('Payment approved via webhook', { orderId: order.id, orderNumber: order.orderNumber })
     }
 
     if (type === 'payment_intent.payment_failed') {
-      const orderId = data.object?.metadata?.orderId || data.object?.metadata?.order_id
+      const metadata = data.object?.metadata as Record<string, string> | undefined
+      const orderId = metadata?.orderId || metadata?.order_id
       let order = orderId ? await getOrderById(orderId) : undefined
 
-      if (!order && data.object?.metadata?.orderNumber) {
-        order = await getOrderByNumber(data.object.metadata.orderNumber)
+      if (!order && metadata?.orderNumber) {
+        order = await getOrderByNumber(metadata.orderNumber)
       }
 
       if (order) {
@@ -83,6 +99,28 @@ export async function POST(request: Request) {
         await updateOrderStatus(order.id, 'rejected')
         logger.info('Payment rejected via webhook', { orderId: order.id })
       }
+    }
+
+    if (type === 'charge.refunded') {
+      const paymentIntentId = data.object?.payment_intent as string | undefined
+      if (!paymentIntentId) {
+        logger.warn('Webhook charge.refunded: missing payment_intent')
+        return NextResponse.json({ received: true })
+      }
+
+      const order = await getOrderById(paymentIntentId)
+      const orderByNumber = order ? undefined : await getOrderByNumber(paymentIntentId)
+
+      const target = order || orderByNumber
+      if (!target) {
+        logger.warn('Webhook charge.refunded: order not found', { paymentIntentId })
+        return NextResponse.json({ received: true })
+      }
+
+      await updateOrderStatus(target.id, 'refunded')
+      await updatePaymentInfo(target.id, { gatewayStatus: 'refunded' })
+
+      logger.info('Order refunded via webhook', { orderId: target.id, orderNumber: target.orderNumber })
     }
 
     return NextResponse.json({ received: true })

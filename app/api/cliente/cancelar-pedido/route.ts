@@ -30,6 +30,6 @@ export async function POST(request: NextRequest) {
     await updateOrderStatus(order.id, 'rejected')
     return NextResponse.json({ success: true, message: 'Pedido cancelado com sucesso' })
   } catch {
-    return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

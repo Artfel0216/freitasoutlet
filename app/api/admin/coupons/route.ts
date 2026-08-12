@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryOne, queryAll, queryRun } from '@/lib/database'
+import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
 
 export async function GET() {
@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const body = await request.json()
+  let body: { code?: string; discountType?: string; discountValue?: number; minOrder?: number; maxUses?: number; expiresAt?: string | null }
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
   const { code, discountType, discountValue, minOrder, maxUses, expiresAt } = body
 
   if (!code || !discountValue) {
@@ -60,7 +61,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const body = await request.json()
+  let body: { id?: string; code?: string; discountType?: string; discountValue?: number; minOrder?: number; maxUses?: number; active?: boolean; expiresAt?: string | null }
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
   const { id, code, discountType, discountValue, minOrder, maxUses, active, expiresAt } = body
 
   if (!id) {
@@ -95,11 +97,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const { code, id } = await request.json()
+  let body: { code?: string; id?: string }
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
+  const { code, id } = body
   if (id) {
     await queryRun('DELETE FROM coupons WHERE id = $1', [id])
   } else if (code) {
     await queryRun('DELETE FROM coupons WHERE code = $1', [code?.toUpperCase()])
+  } else {
+    return NextResponse.json({ error: 'ID ou código é obrigatório' }, { status: 400 })
   }
   return NextResponse.json({ success: true })
 }

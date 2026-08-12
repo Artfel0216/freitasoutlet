@@ -117,6 +117,23 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             <h1 className="font-heading font-black text-2xl lg:text-3xl uppercase tracking-tight">
               {product.name}
             </h1>
+            <div className="flex items-center gap-2 mt-2">
+              {product.offerStatus && product.offerStatus !== 'none' && (
+                <span className={`text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1 ${
+                  product.offerStatus === 'sale' ? 'bg-blue-600 text-white' :
+                  product.offerStatus === 'promotion' ? 'bg-purple-600 text-white' :
+                  'bg-orange-600 text-white'
+                }`}>
+                  {product.offerStatus === 'sale' ? 'Em Oferta' :
+                   product.offerStatus === 'promotion' ? 'Em Promoção' : 'Queima de Estoque'}
+                </span>
+              )}
+              {product.offerType && product.offerType !== 'none' && (
+                <span className="text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1 bg-black text-white">
+                  {product.offerType === 'weekly' ? 'Oferta Semanal' : 'Oferta Mensal'}
+                </span>
+              )}
+            </div>
           </motion.div>
 
           <motion.div

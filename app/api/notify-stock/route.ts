@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryOne, queryRun, sql } from '@/lib/database'
+import { queryOne, queryRun } from '@/lib/database'
 import { rateLimit } from '@/lib/rate-limit'
 
 async function initTable() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS stock_notifications (
-      id TEXT PRIMARY KEY,
-      product_id TEXT NOT NULL,
-      email TEXT NOT NULL,
-      size TEXT,
-      notified INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL
-    )
-  `
+  await queryRun("CREATE TABLE IF NOT EXISTS stock_notifications (id TEXT PRIMARY KEY, product_id TEXT NOT NULL, email TEXT NOT NULL, size TEXT, notified INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)")
 }
 
 export async function POST(request: NextRequest) {
@@ -51,6 +42,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: 'Notificação registrada' }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'Requisição inválida' }, { status: 400 })
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

@@ -1,11 +1,18 @@
 import 'server-only'
 import { cookies } from 'next/headers'
+import { logger } from '@/lib/logger'
 
 const SESSION_COOKIE = 'fo_customer_session'
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000
+const DEFAULT_SESSION_DURATION_MS = 24 * 60 * 60 * 1000
 const SIGNING_SECRET = process.env.SESSION_SECRET
 if (!SIGNING_SECRET) {
-  console.error('[customer-auth] CRITICAL: SESSION_SECRET env variable not set. Customer sessions will fail.')
+  logger.error('[customer-auth] CRITICAL: SESSION_SECRET env variable not set. Customer sessions will fail.')
+}
+
+function getSessionDurationMs(): number {
+  const hours = Number(process.env.SESSION_DURATION_HOURS)
+  if (!Number.isFinite(hours) || hours <= 0) return DEFAULT_SESSION_DURATION_MS
+  return hours * 60 * 60 * 1000
 }
 
 export type CustomerData = {
@@ -50,7 +57,8 @@ async function verify(signedData: string): Promise<string | null> {
 }
 
 export async function createCustomerSession(customer: CustomerData): Promise<void> {
-  const payload = JSON.stringify(customer)
+  const exp = Date.now() + getSessionDurationMs()
+  const payload = JSON.stringify({ ...customer, exp })
   const signature = await sign(payload)
   const signedValue = `${payload}.${signature}`
 
@@ -60,7 +68,7 @@ export async function createCustomerSession(customer: CustomerData): Promise<voi
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
-    expires: new Date(Date.now() + SESSION_DURATION_MS),
+    expires: new Date(exp),
   })
 }
 
@@ -74,6 +82,11 @@ export async function getCustomerSession(): Promise<CustomerData | null> {
     if (!data) return null
 
     const parsed = JSON.parse(data)
+    if (typeof parsed.exp !== 'number' || parsed.exp <= Date.now()) {
+      await clearCustomerSession()
+      return null
+    }
+
     return { id: parsed.id, name: parsed.name, email: parsed.email, phone: parsed.phone }
   } catch {
     return null

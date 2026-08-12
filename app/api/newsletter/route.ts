@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
-import { queryOne, queryRun, sql } from '@/lib/database'
+import { queryOne, queryRun } from '@/lib/database'
 
 async function initTable() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-      id TEXT PRIMARY KEY,
-      email TEXT NOT NULL UNIQUE,
-      active INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL
-    )
-  `
+  await queryRun("CREATE TABLE IF NOT EXISTS newsletter_subscribers (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL)")
 }
 
 export async function POST(request: NextRequest) {

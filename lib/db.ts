@@ -1,5 +1,5 @@
 import 'server-only'
-import { queryOne, queryAll, queryRun, sql } from './database'
+import { queryOne, queryAll, queryRun } from './database'
 
 type OrderItem = {
   productId: string

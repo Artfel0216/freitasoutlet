@@ -34,6 +34,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: 'Solicitação registrada. Entraremos em contato em até 2 dias úteis.' }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }

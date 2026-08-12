@@ -1,14 +1,13 @@
-import { queryOne, queryRun, sql } from './database'
+import { queryOne, queryRun } from './database'
 
 async function initRateLimitTable() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS rate_limits (
-      id TEXT PRIMARY KEY,
-      key TEXT NOT NULL,
-      count INTEGER NOT NULL DEFAULT 1,
-      reset_at BIGINT NOT NULL
-    )
-  `
+  await queryRun("CREATE TABLE IF NOT EXISTS rate_limits (id TEXT PRIMARY KEY, key TEXT NOT NULL, count INTEGER NOT NULL DEFAULT 1, reset_at BIGINT NOT NULL)")
+}
+
+let cleanupCounter = 0
+
+async function cleanupExpired() {
+  await queryRun('DELETE FROM rate_limits WHERE reset_at < $1', [Date.now()])
 }
 
 export async function rateLimit(key: string, maxRequests: number, windowMs: number): Promise<{
@@ -17,6 +16,10 @@ export async function rateLimit(key: string, maxRequests: number, windowMs: numb
   resetAt: number
 }> {
   await initRateLimitTable()
+  cleanupCounter++
+  if (cleanupCounter % 100 === 0) {
+    cleanupExpired().catch(() => {})
+  }
   const now = Date.now()
 
   const row = await queryOne('SELECT * FROM rate_limits WHERE key = $1', [key])

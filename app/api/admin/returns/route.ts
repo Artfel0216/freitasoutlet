@@ -2,12 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
 
+async function initReturnsTable() {
+  const { sql } = await import('@/lib/database')
+  await sql`
+    CREATE TABLE IF NOT EXISTS return_requests (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      order_number TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      details TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `
+}
+
 export async function GET() {
   const session = await getSession()
   if (!session.authenticated) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
+  await initReturnsTable()
   const rows = await queryAll('SELECT * FROM return_requests ORDER BY created_at DESC')
   const returns = rows.map(r => ({
     id: r.id,

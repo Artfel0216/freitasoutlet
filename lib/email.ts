@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { logger } from './logger'
 
 type EmailConfig = {
   host: string
@@ -48,7 +49,10 @@ export async function sendOrderConfirmation(params: {
   paymentMethod: string
 }) {
   const config = getConfig()
-  if (!config) return
+  if (!config) {
+    logger.warn('sendOrderConfirmation skipped: SMTP not configured')
+    return
+  }
 
   const transport = createTransport(config)
   await transport.sendMail({
@@ -79,7 +83,10 @@ export async function sendShippingUpdate(params: {
   status: string
 }) {
   const config = getConfig()
-  if (!config) return
+  if (!config) {
+    logger.warn('sendShippingUpdate skipped: SMTP not configured')
+    return
+  }
 
   const transport = createTransport(config)
   await transport.sendMail({
@@ -103,7 +110,10 @@ export async function sendWelcomeEmail(params: {
   name: string
 }) {
   const config = getConfig()
-  if (!config) return
+  if (!config) {
+    logger.warn('sendWelcomeEmail skipped: SMTP not configured')
+    return
+  }
 
   const transport = createTransport(config)
   await transport.sendMail({
@@ -128,7 +138,10 @@ export async function sendPasswordResetEmail(params: {
   resetUrl: string
 }) {
   const config = getConfig()
-  if (!config) return
+  if (!config) {
+    logger.warn('sendPasswordResetEmail skipped: SMTP not configured')
+    return
+  }
 
   const transport = createTransport(config)
   await transport.sendMail({
@@ -155,7 +168,10 @@ export async function sendEmailVerification(params: {
   verifyUrl: string
 }) {
   const config = getConfig()
-  if (!config) return
+  if (!config) {
+    logger.warn('sendEmailVerification skipped: SMTP not configured')
+    return
+  }
 
   const transport = createTransport(config)
   await transport.sendMail({

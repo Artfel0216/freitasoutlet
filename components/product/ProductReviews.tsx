@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 
@@ -11,6 +12,7 @@ type Review = {
   rating: number
   title: string
   comment: string
+  images: string[]
   verified: boolean
   createdAt: string
 }
@@ -50,6 +52,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({ name: '', rating: 5, title: '', comment: '' })
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
 
   useEffect(() => {
     fetch(`/api/reviews?productId=${productId}`)
@@ -62,6 +66,19 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
       .catch(() => setLoading(false))
   }, [productId])
 
+  function handleImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []).slice(0, 5 - imageFiles.length)
+    setImageFiles((prev) => [...prev, ...files])
+    for (const file of files) {
+      setImagePreviews((prev) => [...prev, URL.createObjectURL(file)])
+    }
+  }
+
+  function removeImage(index: number) {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name.trim()) {
@@ -70,11 +87,17 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     }
     setSubmitting(true)
     try {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, customerName: form.name, rating: form.rating, title: form.title, comment: form.comment }),
-      })
+      const formData = new FormData()
+      formData.append('productId', productId)
+      formData.append('customerName', form.name)
+      formData.append('rating', String(form.rating))
+      formData.append('title', form.title)
+      formData.append('comment', form.comment)
+      for (const file of imageFiles) {
+        formData.append('images', file)
+      }
+
+      const res = await fetch('/api/reviews', { method: 'POST', body: formData })
       if (res.ok) {
         const newReview = await res.json()
         setReviews(prev => [newReview, ...prev])
@@ -83,8 +106,13 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
           count: prev.count + 1,
         }))
         setForm({ name: '', rating: 5, title: '', comment: '' })
+        setImageFiles([])
+        setImagePreviews([])
         setShowForm(false)
         toast.success('Avaliação enviada!')
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Erro ao enviar avaliação')
       }
     } catch {
       toast.error('Erro ao enviar avaliação')
@@ -180,6 +208,31 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                   placeholder="Conte sua experiência com o produto..."
                 />
               </div>
+              <div>
+                <label className="text-xs font-medium uppercase tracking-wider mb-1 block">Fotos (opcional, até 5)</label>
+                <div className="border-2 border-dashed border-border p-4 text-center hover:border-foreground/30 transition-colors cursor-pointer"
+                  onClick={() => document.getElementById('review-image-upload')?.click()}>
+                  <svg className="w-6 h-6 mx-auto mb-1 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-xs text-muted-foreground">Adicionar fotos do produto</p>
+                </div>
+                <input id="review-image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple
+                  onChange={handleImagesChange} className="hidden" disabled={imageFiles.length >= 5} />
+                {imagePreviews.length > 0 && (
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {imagePreviews.map((preview, i) => (
+                      <div key={i} className="relative group w-16 h-16">
+                        <img src={preview} alt={`Foto ${i + 1}`} className="w-full h-full object-cover border border-border" />
+                        <button type="button" onClick={() => removeImage(i)}
+                          className="absolute -top-1.5 -right-1.5 bg-black/60 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 type="submit"
                 disabled={submitting}
@@ -223,7 +276,28 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                 </span>
               </div>
               {review.title && <p className="font-medium text-sm mb-1">{review.title}</p>}
-              {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
+              {review.comment && <p className="text-sm text-muted-foreground mb-3">{review.comment}</p>}
+              {review.images && review.images.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {review.images.map((img, i) => (
+                    <motion.div
+                      key={i}
+                      className="relative w-20 h-20 border border-border overflow-hidden"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Foto do review ${i + 1}`}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           ))
         )}

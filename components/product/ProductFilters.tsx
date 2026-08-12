@@ -48,6 +48,7 @@ export function ProductFilters({ isOpen, onClose }: ProductFiltersProps) {
       isFirstRender.current = false
       return
     }
+
     const params = new URLSearchParams(searchParams.toString())
     if (debouncedMinPrice) {
       params.set('minPreco', debouncedMinPrice)
@@ -59,9 +60,13 @@ export function ProductFilters({ isOpen, onClose }: ProductFiltersProps) {
     } else {
       params.delete('maxPreco')
     }
-    router.push(`/produtos?${params.toString()}`)
-    
-  }, [debouncedMinPrice, debouncedMaxPrice])
+
+    const currentPath = `/produtos${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+    const nextPath = `/produtos${params.toString() ? `?${params.toString()}` : ''}`
+    if (currentPath === nextPath) return
+
+    router.push(nextPath)
+  }, [debouncedMinPrice, debouncedMaxPrice, router, searchParams])
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())

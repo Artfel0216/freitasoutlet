@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 import { getSession } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
-
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const MAX_SIZE = 5 * 1024 * 1024
+import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
 
 export async function POST(request: Request) {
   try {
@@ -27,28 +23,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Arquivo não enviado' }, { status: 400 })
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       return NextResponse.json({ error: 'Tipo de arquivo não permitido. Use JPEG, PNG, WebP ou GIF.' }, { status: 400 })
     }
 
-    if (file.size > MAX_SIZE) {
+    if (file.size > MAX_IMAGE_SIZE) {
       return NextResponse.json({ error: 'Arquivo muito grande. Máximo 5MB.' }, { status: 400 })
     }
 
-    const ext = file.name.split('.').pop() || 'jpg'
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-    const uploadDir = path.join(process.cwd(), 'public', 'images', 'uploads')
+    const url = await saveImage(file, 'uploads')
 
-    await mkdir(uploadDir, { recursive: true })
+    if (!url) {
+      return NextResponse.json({ error: 'Erro ao salvar arquivo' }, { status: 500 })
+    }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    await writeFile(path.join(uploadDir, filename), buffer)
-
-    logger.info('File uploaded', { filename, size: file.size, type: file.type })
+    logger.info('File uploaded', { url, size: file.size, type: file.type })
 
     return NextResponse.json({
       success: true,
-      url: `/images/uploads/${filename}`,
+      url,
     })
   } catch (error) {
     logger.error('Upload error', { error: String(error) })

@@ -6,6 +6,8 @@ import { analyzeOrder } from '@/lib/fraud'
 import { getProductById } from '@/data/products'
 import { sendOrderConfirmation } from '@/lib/email'
 import { calculateShipping } from '@/lib/shipping'
+import { rateLimit } from '@/lib/rate-limit'
+import { decrementStock } from '@/lib/stock'
 import { logger } from '@/lib/logger'
 import { queryOne, queryRun } from '@/lib/database'
 
@@ -32,9 +34,7 @@ async function validateCoupon(code: string, orderTotal: number): Promise<{ valid
 }
 
 async function incrementCouponUsage(code: string): Promise<void> {
-  try {
-    await queryRun('UPDATE coupons SET used_count = used_count + 1 WHERE code = $1', [code.toUpperCase()])
-  } catch {}
+  await queryRun('UPDATE coupons SET used_count = used_count + 1 WHERE code = $1', [code.toUpperCase()])
 }
 
 export async function POST(request: Request) {
@@ -54,6 +54,12 @@ export async function POST(request: Request) {
     }
 
     if (action === 'process') {
+      const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+      const rl = await rateLimit(`checkout:${ip}`, 10, 60_000)
+      if (!rl.allowed) {
+        return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
+      }
+
       const { data, paymentMethod, items, shipping: shippingOption, couponCode, loyaltyDiscountPercent, paymentMethodId } = body
 
       const parsedData = checkoutSchema.safeParse(data)
@@ -210,6 +216,16 @@ export async function POST(request: Request) {
           gatewayStatus: 'processing',
         })
 
+        sendOrderConfirmation({
+          to: data.email,
+          name: data.name,
+          orderNumber: order.orderNumber,
+          total,
+          paymentMethod: paymentMethod === 'credit' ? 'Cartão de Crédito' : 'Cartão de Débito',
+        }).catch((err) => logger.error('Failed to send order confirmation', { error: String(err) }))
+
+        if (couponCode) await incrementCouponUsage(couponCode)
+
         logger.info('Stripe PaymentIntent created', { orderId: order.id, orderNumber: order.orderNumber })
 
         return NextResponse.json({
@@ -249,6 +265,8 @@ export async function POST(request: Request) {
           pixQrCode: result.paymentInfo.pixQrCode,
         })
 
+        await decrementStock(items.map((i: { productId: string; size: string; quantity: number }) => ({ productId: i.productId, size: i.size, quantity: i.quantity })))
+
         sendOrderConfirmation({
           to: data.email,
           name: data.name,
@@ -258,7 +276,7 @@ export async function POST(request: Request) {
         }).catch((err) => logger.error('Failed to send order confirmation', { error: String(err) }))
 
         if (couponCode) await incrementCouponUsage(couponCode)
-        logger.info('Pix order created (stock pending payment confirmation)', { orderId: order.id, orderNumber: order.orderNumber })
+        logger.info('Pix order created', { orderId: order.id, orderNumber: order.orderNumber })
 
         return NextResponse.json({
           success: true,

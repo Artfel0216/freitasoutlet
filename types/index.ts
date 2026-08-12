@@ -27,6 +27,10 @@ export type ProductColor = {
   image?: string
 }
 
+export type OfferStatus = 'none' | 'sale' | 'promotion' | 'clearance'
+
+export type OfferType = 'none' | 'weekly' | 'monthly'
+
 export type Product = {
   id: string
   name: string
@@ -43,8 +47,30 @@ export type Product = {
   tags: string[]
   isNew?: boolean
   isTrending?: boolean
+  offerStatus?: OfferStatus
+  offerType?: OfferType
+  offerDiscount?: number
+  featured?: boolean
   createdAt: string
   stock?: Record<string, number>
+}
+
+export type Review = {
+  id: string
+  productId: string
+  customerName: string
+  customerEmail?: string
+  rating: number
+  title: string
+  comment: string
+  images: string[]
+  verified: boolean
+  createdAt: string
+}
+
+export type ReviewStats = {
+  average: number
+  count: number
 }
 
 export type CartItem = {

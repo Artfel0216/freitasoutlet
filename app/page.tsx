@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { Hero } from '@/components/home/Hero'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { RecentlyViewed } from '@/components/product/RecentlyViewed'
 import { Button } from '@/components/ui/Button'
 import { products } from '@/data/products'
 import { FlashSaleTimer } from '@/components/product/FlashSaleTimer'
-import { getActiveFlashSales, getFlashSaleForProduct } from '@/lib/flash-sales'
+import { getActiveFlashSales } from '@/lib/flash-sales'
 import { FadeIn, FadeUp, staggerItem, stagger, fadeUp } from '@/components/animations'
 
 export default function HomePage() {
@@ -32,58 +33,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <motion.section
-        className="relative bg-black text-white"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="max-w-2xl">
-            <motion.p
-              className="font-heading font-bold text-sm uppercase tracking-[0.2em] mb-4 text-white/70"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              Coleção Inverno 2026
-            </motion.p>
-            <motion.h1
-              className="font-heading font-black text-4xl sm:text-5xl lg:text-7xl leading-tight mb-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.6 }}
-            >
-              STREETWEAR<br />LUXO &<br />PERFORMANCE
-            </motion.h1>
-            <motion.p
-              className="text-base sm:text-lg text-white/70 mb-8 max-w-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              As marcas mais desejadas do mundo em um só lugar. Nike, Gucci, Alexander McQueen, On Cloud e muito mais.
-            </motion.p>
-            <motion.div
-              className="flex flex-wrap gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.65, duration: 0.5 }}
-            >
-              <Link href="/produtos">
-                <Button variant="outline" size="lg" className="text-white border-white hover:bg-white hover:text-black">
-                  COMPRAR AGORA
-                </Button>
-              </Link>
-              <Link href="/categorias/futebol-performance">
-                <Button variant="ghost" size="lg" className="text-white hover:bg-white/10">
-                  FUTEBOL
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
+      <Hero />
 
       {getActiveFlashSales().length > 0 && (
         <div>

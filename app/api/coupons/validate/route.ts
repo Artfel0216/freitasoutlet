@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const row = await queryOne('SELECT * FROM coupons WHERE code = $1', [code.toUpperCase()])
 
     if (!row) {
-      return NextResponse.json({ error: 'Cupom inválido' }, { status: 404 })
+      return NextResponse.json({ error: 'Cupom inválido' }, { status: 400 })
     }
 
     if (!row.active) {

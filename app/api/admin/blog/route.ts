@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryOne, queryAll, queryRun } from '@/lib/database'
+import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
 
+async function initBlogPostsTable() {
+  try { await queryRun("CREATE TABLE IF NOT EXISTS blog_posts (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, excerpt TEXT NOT NULL DEFAULT '', content TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT 'Dicas', published INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)") } catch { /* */ }
+}
+
 export async function GET() {
+  await initBlogPostsTable()
   const rows = await queryAll('SELECT * FROM blog_posts ORDER BY created_at DESC')
   const posts = rows.map(r => ({
     id: r.id, slug: r.slug, title: r.title, excerpt: r.excerpt,
@@ -13,6 +18,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  await initBlogPostsTable()
   const session = await getSession()
   if (!session.authenticated) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
@@ -49,7 +55,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const body = await request.json()
+  let body: Record<string, unknown>
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
   const { id, slug, title, excerpt, content, category, published } = body
 
   if (!id) {
@@ -87,11 +94,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  const { slug, id } = await request.json()
+  let body: { slug?: string; id?: string }
+  try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
+  const { slug, id } = body
   if (id) {
     await queryRun('DELETE FROM blog_posts WHERE id = $1', [id])
   } else if (slug) {
     await queryRun('DELETE FROM blog_posts WHERE slug = $1', [slug])
+  } else {
+    return NextResponse.json({ error: 'ID ou slug é obrigatório' }, { status: 400 })
   }
   return NextResponse.json({ success: true })
 }

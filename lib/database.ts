@@ -64,36 +64,37 @@ function createSqliteSql(): SqlFn {
           discount NUMERIC(10,2) NOT NULL DEFAULT 0,
           total NUMERIC(10,2) NOT NULL,
           fraud_analysis TEXT,
-           tracking_code TEXT,
-           shipped_at TEXT,
-           delivered_at TEXT,
-           unboxing_video_url TEXT,
-           created_at TEXT NOT NULL,
-           updated_at TEXT NOT NULL
-         );
-         CREATE TABLE IF NOT EXISTS rate_limits (
+          tracking_code TEXT,
+          shipped_at TEXT,
+          delivered_at TEXT,
+          unboxing_video_url TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS rate_limits (
           id TEXT PRIMARY KEY,
           key TEXT NOT NULL,
           count INTEGER NOT NULL DEFAULT 1,
           reset_at BIGINT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS coupons (
-          code TEXT PRIMARY KEY,
+          id TEXT PRIMARY KEY,
+          code TEXT NOT NULL UNIQUE,
           discount_type TEXT NOT NULL DEFAULT 'percent',
           discount_value REAL NOT NULL,
-          min_order REAL,
-          max_uses INTEGER,
+          min_order REAL NOT NULL DEFAULT 0,
+          max_uses INTEGER NOT NULL DEFAULT 0,
           used_count INTEGER NOT NULL DEFAULT 0,
           active INTEGER NOT NULL DEFAULT 1,
           expires_at TEXT,
-          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+          created_at TEXT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS tokens (
-          token TEXT PRIMARY KEY,
+          id TEXT PRIMARY KEY,
           email TEXT NOT NULL,
           type TEXT NOT NULL,
-          expires_at TEXT NOT NULL,
-          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+          expires_at BIGINT NOT NULL,
+          created_at TEXT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS products (
           id TEXT PRIMARY KEY,
@@ -117,6 +118,10 @@ function createSqliteSql(): SqlFn {
           updated_at TEXT NOT NULL
         );
       `)
+      try { _db.exec('CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(customer_email)') } catch { /* */ }
+      try { _db.exec('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)') } catch { /* */ }
+      try { _db.exec('CREATE INDEX IF NOT EXISTS idx_stock_notifications_product ON stock_notifications(product_id)') } catch { /* */ }
+      try { _db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_number_unique ON orders(order_number)') } catch { /* */ }
       try { _db.exec(`ALTER TABLE orders ADD COLUMN unboxing_video_url TEXT`) } catch { /* column may already exist */ }
     }
     return _db
@@ -288,6 +293,10 @@ export async function initializeSchema() {
       tags TEXT NOT NULL DEFAULT '[]',
       is_new INTEGER NOT NULL DEFAULT 0,
       is_trending INTEGER NOT NULL DEFAULT 0,
+      offer_status TEXT NOT NULL DEFAULT 'none',
+      offer_type TEXT NOT NULL DEFAULT 'none',
+      offer_discount REAL NOT NULL DEFAULT 0,
+      featured INTEGER NOT NULL DEFAULT 0,
       stock TEXT NOT NULL DEFAULT '{}',
       active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
@@ -297,12 +306,35 @@ export async function initializeSchema() {
 
   await sql`CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email)`
   await sql`CREATE INDEX IF NOT EXISTS idx_addresses_customer ON addresses(customer_id)`
-  await sql`CREATE INDEX IF NOT EXISTS idx_orders_email ON customers(email)`
   await sql`CREATE INDEX IF NOT EXISTS idx_orders_number ON orders(order_number)`
+  await sql`CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(customer_email)`
+  await sql`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_number_unique ON orders(order_number)`
 
   try { await sql`ALTER TABLE orders ADD COLUMN unboxing_video_url TEXT` } catch { /* column may already exist */ }
+
+  try { await sql`ALTER TABLE products ADD COLUMN offer_status TEXT NOT NULL DEFAULT 'none'` } catch { /* column may already exist */ }
+  try { await sql`ALTER TABLE products ADD COLUMN offer_type TEXT NOT NULL DEFAULT 'none'` } catch { /* column may already exist */ }
+  try { await sql`ALTER TABLE products ADD COLUMN offer_discount REAL NOT NULL DEFAULT 0` } catch { /* column may already exist */ }
+  try { await sql`ALTER TABLE products ADD COLUMN featured INTEGER NOT NULL DEFAULT 0` } catch { /* column may already exist */ }
+
   await sql`CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug)`
   await sql`CREATE INDEX IF NOT EXISTS idx_products_active ON products(active)`
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_offers (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL CHECK(type IN ('weekly', 'monthly')),
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      discount_percent REAL NOT NULL DEFAULT 0,
+      active INTEGER NOT NULL DEFAULT 1,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `
 
   await sql`
     CREATE TABLE IF NOT EXISTS tokens (
@@ -393,9 +425,11 @@ export async function initializeSchema() {
       id TEXT PRIMARY KEY,
       product_id TEXT NOT NULL,
       customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL DEFAULT '',
       rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
       title TEXT NOT NULL DEFAULT '',
       comment TEXT NOT NULL DEFAULT '',
+      images TEXT NOT NULL DEFAULT '[]',
       verified INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     )
@@ -421,4 +455,5 @@ export async function initializeSchema() {
       created_at TEXT NOT NULL
     )
   `
+  await sql`CREATE INDEX IF NOT EXISTS idx_stock_notifications_product ON stock_notifications(product_id)`
 }

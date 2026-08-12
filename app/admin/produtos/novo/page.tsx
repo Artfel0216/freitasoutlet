@@ -4,6 +4,8 @@ import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
+import { brands } from '@/data/brands'
+import { categories } from '@/data/categories'
 
 interface ColorInput {
   name: string
@@ -16,9 +18,7 @@ export default function AdminNewProductPage() {
   const [error, setError] = useState('')
 
   const [name, setName] = useState('')
-  const [brandName, setBrandName] = useState('')
   const [brandSlug, setBrandSlug] = useState('')
-  const [categoryName, setCategoryName] = useState('')
   const [categorySlug, setCategorySlug] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -28,9 +28,15 @@ export default function AdminNewProductPage() {
   const [tags, setTags] = useState('')
   const [isNew, setIsNew] = useState(false)
   const [isTrending, setIsTrending] = useState(false)
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
+  const [offerStatus, setOfferStatus] = useState('none')
+  const [offerType, setOfferType] = useState('none')
+  const [offerDiscount, setOfferDiscount] = useState('')
+  const [featured, setFeatured] = useState(false)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [colors, setColors] = useState<ColorInput[]>([{ name: '', hex: '#000000' }])
+
+  const selectedBrand = brands.find((b) => b.slug === brandSlug)
 
   function addColor() {
     setColors([...colors, { name: '', hex: '#000000' }])
@@ -46,12 +52,17 @@ export default function AdminNewProductPage() {
     setColors(colors.filter((_, i) => i !== index))
   }
 
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImage(file)
-      setImagePreview(URL.createObjectURL(file))
+  function handleImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    setImageFiles((prev) => [...prev, ...files])
+    for (const file of files) {
+      setImagePreviews((prev) => [...prev, URL.createObjectURL(file)])
     }
+  }
+
+  function removeImage(index: number) {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -62,13 +73,20 @@ export default function AdminNewProductPage() {
     try {
       const formData = new FormData()
       formData.append('name', name)
-      formData.append('brandName', brandName)
-      formData.append('brandSlug', brandSlug || brandName.toLowerCase().replace(/\s+/g, '-'))
-      formData.append('brandId', brandSlug || brandName.toLowerCase().replace(/\s+/g, '-'))
-      formData.append('brandSegment', 'premium')
-      formData.append('categoryName', categoryName)
-      formData.append('categorySlug', categorySlug || categoryName.toLowerCase().replace(/\s+/g, '-'))
-      formData.append('categoryId', categorySlug || categoryName.toLowerCase().replace(/\s+/g, '-'))
+      const brand = brands.find((b) => b.slug === brandSlug)
+      if (brand) {
+        formData.append('brandName', brand.name)
+        formData.append('brandSlug', brand.slug)
+        formData.append('brandId', brand.id)
+        formData.append('brandSegment', brand.segment)
+      }
+      const cat = findCategory(categorySlug)
+      if (cat) {
+        formData.append('categoryName', cat.name)
+        formData.append('categorySlug', cat.slug)
+        formData.append('categoryId', cat.id)
+        formData.append('categoryParentSlug', cat.parentId || '')
+      }
       formData.append('description', description)
       formData.append('price', price)
       if (compareAtPrice) formData.append('compareAtPrice', compareAtPrice)
@@ -78,8 +96,14 @@ export default function AdminNewProductPage() {
       formData.append('tags', tags)
       formData.append('isNew', String(isNew))
       formData.append('isTrending', String(isTrending))
+      formData.append('offerStatus', offerStatus)
+      formData.append('offerType', offerType)
+      formData.append('offerDiscount', offerDiscount || '0')
+      formData.append('featured', String(featured))
 
-      if (image) formData.append('image', image)
+      for (const file of imageFiles) {
+        formData.append('images', file)
+      }
 
       const res = await fetch('/api/admin/produtos', { method: 'POST', body: formData })
 
@@ -103,13 +127,13 @@ export default function AdminNewProductPage() {
 
       <motion.form
         onSubmit={handleSubmit}
-        className="max-w-2xl space-y-6"
+        className="max-w-3xl space-y-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
         <motion.div
-          className="border border-border bg-white p-6 space-y-4"
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05, duration: 0.3 }}
@@ -120,45 +144,46 @@ export default function AdminNewProductPage() {
             <div className="col-span-2">
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Nome do Produto *</label>
               <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Marca *</label>
-              <input type="text" required value={brandName} onChange={(e) => setBrandName(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Slug da Marca</label>
-              <input type="text" value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black"
-                placeholder={brandName.toLowerCase().replace(/\s+/g, '-')} />
+              <select required value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
+                <option value="">Selecione uma marca</option>
+                {brands.map((b) => (
+                  <option key={b.slug} value={b.slug}>{b.name}</option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Categoria *</label>
-              <input type="text" required value={categoryName} onChange={(e) => setCategoryName(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+              <select required value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
+                <option value="">Selecione uma categoria</option>
+                {categories.map((cat) => (
+                  <optgroup key={cat.id} label={cat.name}>
+                    <option value={cat.slug}>{cat.name} (Todas)</option>
+                    {cat.children?.map((child) => (
+                      <option key={child.slug} value={child.slug}>{child.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Slug da Categoria</label>
-              <input type="text" value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black"
-                placeholder={categoryName.toLowerCase().replace(/\s+/g, '-')} />
+            <div className="col-span-2">
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Descrição</label>
+              <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background resize-vertical" />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium uppercase tracking-wider mb-1">Descrição</label>
-            <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black resize-vertical" />
           </div>
         </motion.div>
 
         <motion.div
-          className="border border-border bg-white p-6 space-y-4"
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
@@ -169,26 +194,26 @@ export default function AdminNewProductPage() {
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço *</label>
               <input type="number" step="0.01" min="0" required value={price} onChange={(e) => setPrice(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço Original (opcional)</label>
               <input type="number" step="0.01" min="0" value={compareAtPrice} onChange={(e) => setCompareAtPrice(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tamanhos (separados por vírgula)</label>
               <input type="text" value={sizes} onChange={(e) => setSizes(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black"
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background"
                 placeholder="P, M, G, GG" />
             </div>
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Guia de Tamanhos</label>
               <select value={sizeGuide} onChange={(e) => setSizeGuide(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-white">
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
                 <option value="shirt">Camiseta</option>
                 <option value="footwear">Calçado</option>
                 <option value="oversized">Oversized</option>
@@ -199,7 +224,7 @@ export default function AdminNewProductPage() {
         </motion.div>
 
         <motion.div
-          className="border border-border bg-white p-6 space-y-4"
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.3 }}
@@ -214,7 +239,7 @@ export default function AdminNewProductPage() {
               <input type="color" value={color.hex} onChange={(e) => updateColor(i, 'hex', e.target.value)}
                 className="w-10 h-10 border border-border cursor-pointer" />
               <input type="text" placeholder="Nome da cor" value={color.name} onChange={(e) => updateColor(i, 'name', e.target.value)}
-                className="flex-1 border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+                className="flex-1 border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
               {colors.length > 1 && (
                 <button type="button" onClick={() => removeColor(i)} className="text-xs text-red-500 hover:underline">Remover</button>
               )}
@@ -223,7 +248,7 @@ export default function AdminNewProductPage() {
         </motion.div>
 
         <motion.div
-          className="border border-border bg-white p-6 space-y-4"
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
@@ -231,28 +256,91 @@ export default function AdminNewProductPage() {
           <h2 className="font-heading font-bold text-sm uppercase tracking-wider">Mídia</h2>
 
           <div>
-            <label className="block text-xs font-medium uppercase tracking-wider mb-1">Imagem do Produto</label>
-            <input type="file" accept="image/*" onChange={handleImageChange}
-              className="w-full text-sm" />
-            {imagePreview && (
-              
-              <img src={imagePreview} alt="Preview" className="mt-2 w-32 h-32 object-cover border border-border" />
+            <label className="block text-xs font-medium uppercase tracking-wider mb-2">Imagens do Produto</label>
+            <div className="border-2 border-dashed border-border p-6 text-center hover:border-foreground/30 transition-colors cursor-pointer"
+              onClick={() => document.getElementById('image-upload')?.click()}>
+              <svg className="w-8 h-8 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-sm text-muted-foreground">Clique para selecionar imagens</p>
+              <p className="text-xs text-muted-foreground mt-1">JPEG, PNG, WebP ou GIF — Máx 5MB cada</p>
+            </div>
+            <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple
+              onChange={handleImagesChange} className="hidden" />
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-4">
+                {imagePreviews.map((preview, i) => (
+                  <div key={i} className="relative group aspect-square">
+                    <img src={preview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover border border-border" />
+                    <button type="button" onClick={() => removeImage(i)}
+                      className="absolute top-1 right-1 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </motion.div>
 
         <motion.div
-          className="border border-border bg-white p-6 space-y-4"
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.3 }}
+        >
+          <h2 className="font-heading font-bold text-sm uppercase tracking-wider">Status de Oferta</h2>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Status da Oferta</label>
+              <select value={offerStatus} onChange={(e) => setOfferStatus(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
+                <option value="none">Normal</option>
+                <option value="sale">Em Oferta</option>
+                <option value="promotion">Em Promoção</option>
+                <option value="clearance">Queima de Estoque</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tipo de Oferta</label>
+              <select value={offerType} onChange={(e) => setOfferType(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
+                <option value="none">Nenhum</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Desconto (%)</label>
+              <input type="number" min="0" max="100" value={offerDiscount} onChange={(e) => setOfferDiscount(e.target.value)}
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
+            </div>
+
+            <div className="flex items-end pb-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)}
+                  className="w-4 h-4" />
+                Produto em Destaque
+              </label>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="border border-border bg-white p-6 space-y-4 rounded-sm shadow-card"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
         >
           <h2 className="font-heading font-bold text-sm uppercase tracking-wider">Tags e Flags</h2>
 
           <div>
             <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tags (separadas por vírgula)</label>
             <input type="text" value={tags} onChange={(e) => setTags(e.target.value)}
-              className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black"
+              className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background"
               placeholder="nike, casual, esportivo" />
           </div>
 
@@ -283,4 +371,13 @@ export default function AdminNewProductPage() {
       </motion.form>
     </div>
   )
+}
+
+function findCategory(slug: string) {
+  for (const cat of categories) {
+    if (cat.slug === slug) return cat
+    const child = cat.children?.find((c) => c.slug === slug)
+    if (child) return child
+  }
+  return null
 }

@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 const menuItems = [
   { label: 'Calçados Masculinos', href: '/categorias/calcados-masculinos' },
@@ -62,7 +61,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-950 border-b border-border">
+    <header className="site-header sticky top-0 z-50 bg-white dark:bg-gray-950 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <motion.button
@@ -117,7 +116,6 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <form action="/busca" method="GET" className="hidden sm:flex items-center">
               <input
                 type="text"
@@ -174,7 +172,7 @@ export function Header() {
       <AnimatePresence>
         {megaOpen && (
           <motion.div
-            className="hidden lg:block absolute left-0 right-0 top-full bg-white dark:bg-gray-950 border-b border-border shadow-lg"
+            className="site-mega hidden lg:block absolute left-0 right-0 top-full bg-white dark:bg-gray-950 border-b border-border shadow-lg"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -247,7 +245,7 @@ export function Header() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="lg:hidden border-t border-border bg-white dark:bg-gray-950 overflow-hidden"
+            className="site-mega lg:hidden border-t border-border bg-white dark:bg-gray-950 overflow-hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
