@@ -93,6 +93,7 @@ export function Header() {
                 />
               )}
             </svg>
+            
           </motion.button>
 
           <Link href="/" className="font-heading text-xl lg:text-2xl font-black tracking-tighter mr-6">
