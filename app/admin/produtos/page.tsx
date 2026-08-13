@@ -7,9 +7,10 @@ import { AdminProductsTable } from './AdminProductsTable'
 
 export default async function AdminProductsPage() {
   const storedProducts = await readStoredProducts()
+  const hiddenSlugs = new Set(storedProducts.filter((s) => s.active === false).map((s) => s.slug))
   const allProducts: (Product | StoredProduct)[] = [
     ...storedProducts.filter((sp) => !staticProducts.some((p) => p.slug === sp.slug)),
-    ...staticProducts,
+    ...staticProducts.filter((p) => !hiddenSlugs.has(p.slug)),
   ]
 
   return (

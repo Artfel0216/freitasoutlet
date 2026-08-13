@@ -6,6 +6,7 @@ async function migrateProductsTable() {
   try { await queryRun("ALTER TABLE products ADD COLUMN offer_type TEXT NOT NULL DEFAULT 'none'") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN offer_discount REAL NOT NULL DEFAULT 0") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN featured INTEGER NOT NULL DEFAULT 0") } catch { /* */ }
+  try { await queryRun("ALTER TABLE products ADD COLUMN video TEXT NOT NULL DEFAULT ''") } catch { /* */ }
 }
 
 export type OfferStatus = 'none' | 'sale' | 'promotion' | 'clearance'
@@ -21,6 +22,7 @@ export type StoredProduct = {
   price: number
   compareAtPrice: number | null
   images: string[]
+  video: string
   colors: { name: string; hex: string }[]
   sizes: string[]
   sizeGuide: string
@@ -46,12 +48,12 @@ export async function readStoredProducts(): Promise<StoredProduct[]> {
 async function upsertProductQuery(p: StoredProduct): Promise<void> {
   await queryRun(`
     INSERT INTO products (id, name, slug, brand, category, description, price, compare_at_price,
-      images, colors, sizes, size_guide, tags, is_new, is_trending, offer_status, offer_type, offer_discount, featured, stock, active, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+      images, video, colors, sizes, size_guide, tags, is_new, is_trending, offer_status, offer_type, offer_discount, featured, stock, active, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
     ON CONFLICT(slug) DO UPDATE SET
       name = EXCLUDED.name, brand = EXCLUDED.brand, category = EXCLUDED.category,
       description = EXCLUDED.description, price = EXCLUDED.price, compare_at_price = EXCLUDED.compare_at_price,
-      images = EXCLUDED.images, colors = EXCLUDED.colors, sizes = EXCLUDED.sizes,
+      images = EXCLUDED.images, video = EXCLUDED.video, colors = EXCLUDED.colors, sizes = EXCLUDED.sizes,
       size_guide = EXCLUDED.size_guide, tags = EXCLUDED.tags, is_new = EXCLUDED.is_new,
       is_trending = EXCLUDED.is_trending, offer_status = EXCLUDED.offer_status, offer_type = EXCLUDED.offer_type,
       offer_discount = EXCLUDED.offer_discount, featured = EXCLUDED.featured, stock = EXCLUDED.stock, active = EXCLUDED.active,
@@ -59,7 +61,7 @@ async function upsertProductQuery(p: StoredProduct): Promise<void> {
   `, [
     p.id, p.name, p.slug, JSON.stringify(p.brand), JSON.stringify(p.category),
     p.description, p.price, p.compareAtPrice,
-    JSON.stringify(p.images), JSON.stringify(p.colors), JSON.stringify(p.sizes),
+    JSON.stringify(p.images), p.video || '', JSON.stringify(p.colors), JSON.stringify(p.sizes),
     p.sizeGuide, JSON.stringify(p.tags), p.isNew ? 1 : 0, p.isTrending ? 1 : 0,
     p.offerStatus || 'none', p.offerType || 'none', p.offerDiscount || 0, p.featured ? 1 : 0,
     JSON.stringify(p.stock || {}), p.active ? 1 : 0, p.createdAt, p.updatedAt,
@@ -105,12 +107,12 @@ export async function upsertStoredProduct(product: StoredProduct): Promise<void>
   await migrateProductsTable()
   await queryRun(`
     INSERT INTO products (id, name, slug, brand, category, description, price, compare_at_price,
-      images, colors, sizes, size_guide, tags, is_new, is_trending, offer_status, offer_type, offer_discount, featured, stock, active, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+      images, video, colors, sizes, size_guide, tags, is_new, is_trending, offer_status, offer_type, offer_discount, featured, stock, active, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
     ON CONFLICT(slug) DO UPDATE SET
       name = EXCLUDED.name, brand = EXCLUDED.brand, category = EXCLUDED.category,
       description = EXCLUDED.description, price = EXCLUDED.price, compare_at_price = EXCLUDED.compare_at_price,
-      images = EXCLUDED.images, colors = EXCLUDED.colors, sizes = EXCLUDED.sizes,
+      images = EXCLUDED.images, video = EXCLUDED.video, colors = EXCLUDED.colors, sizes = EXCLUDED.sizes,
       size_guide = EXCLUDED.size_guide, tags = EXCLUDED.tags, is_new = EXCLUDED.is_new,
       is_trending = EXCLUDED.is_trending, offer_status = EXCLUDED.offer_status, offer_type = EXCLUDED.offer_type,
       offer_discount = EXCLUDED.offer_discount, featured = EXCLUDED.featured, stock = EXCLUDED.stock, active = EXCLUDED.active,
@@ -118,7 +120,7 @@ export async function upsertStoredProduct(product: StoredProduct): Promise<void>
   `, [
     product.id, product.name, product.slug, JSON.stringify(product.brand), JSON.stringify(product.category),
     product.description, product.price, product.compareAtPrice,
-    JSON.stringify(product.images), JSON.stringify(product.colors), JSON.stringify(product.sizes),
+    JSON.stringify(product.images), product.video || '', JSON.stringify(product.colors), JSON.stringify(product.sizes),
     product.sizeGuide, JSON.stringify(product.tags), product.isNew ? 1 : 0, product.isTrending ? 1 : 0,
     product.offerStatus || 'none', product.offerType || 'none', product.offerDiscount || 0, product.featured ? 1 : 0,
     JSON.stringify(product.stock || {}), product.active ? 1 : 0, product.createdAt, product.updatedAt,
@@ -136,6 +138,7 @@ function rowToStoredProduct(row: Record<string, unknown>): StoredProduct {
     price: Number(row.price),
     compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : null,
     images: JSON.parse(row.images as string),
+    video: (row.video as string) || '',
     colors: JSON.parse(row.colors as string),
     sizes: JSON.parse(row.sizes as string),
     sizeGuide: row.size_guide as string,

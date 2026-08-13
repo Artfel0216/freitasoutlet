@@ -18,6 +18,7 @@ import { CompareButton } from '@/components/product/CompareButton'
 import { NotifyWhenAvailable } from '@/components/product/NotifyWhenAvailable'
 import { FlashSaleTimer } from '@/components/product/FlashSaleTimer'
 import { getFlashSaleForProduct } from '@/lib/flash-sales'
+import { UnboxingVideoPlayer } from '@/components/ui/UnboxingVideoPlayer'
 
 interface ProductDetailClientProps {
   product: Product
@@ -98,6 +99,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </motion.div>
             ))}
           </motion.div>
+          {product.video && (
+            <motion.div
+              className="aspect-video relative overflow-hidden bg-black"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.4 }}
+            >
+              <UnboxingVideoPlayer url={product.video} />
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div

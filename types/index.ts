@@ -41,6 +41,7 @@ export type Product = {
   price: number
   compareAtPrice?: number
   images: string[]
+  video?: string
   colors: ProductColor[]
   sizes: string[]
   sizeGuide: SizeGuide['type']

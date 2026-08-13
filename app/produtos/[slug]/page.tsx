@@ -19,6 +19,7 @@ async function getDbProductBySlug(slug: string) {
       price: Number(row.price),
       compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : undefined,
       images: JSON.parse((row.images as string) || '[]'),
+      video: (row.video as string) || '',
       colors: JSON.parse((row.colors as string) || '[]'),
       sizes: JSON.parse((row.sizes as string) || '[]'),
       sizeGuide: (row.size_guide as 'footwear' | 'shirt' | 'oversized' | 'pants') || 'shirt',
@@ -36,6 +37,10 @@ async function getDbProductBySlug(slug: string) {
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const dbProduct = await getDbProductBySlug(slug)
+
+  const hiddenRow = await queryOne<{ slug: string }>('SELECT slug FROM products WHERE slug = $1 AND active = 0', [slug]).catch(() => undefined)
+  if (!dbProduct && hiddenRow) notFound()
+
   const staticProduct = !dbProduct ? getProductBySlug(slug) : null
   const product = dbProduct || staticProduct
 

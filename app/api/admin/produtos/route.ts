@@ -55,6 +55,7 @@ export async function POST(request: Request) {
     const categorySlug = formData.get('categorySlug') as string
     const categoryParentSlug = formData.get('categoryParentSlug') as string
     const description = formData.get('description') as string
+    const video = (formData.get('video') as string) || ''
     const price = Number(formData.get('price'))
     const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
     const sizes: string[] = JSON.parse((formData.get('sizes') as string) || '[]')
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       .trim()
 
     const imageFiles = formData.getAll('images') as File[]
-    let images: string[] = []
+    const images: string[] = []
 
     for (const file of imageFiles) {
       if (file.size === 0) continue
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
       price,
       compareAtPrice,
       images,
+      video,
       colors,
       sizes,
       sizeGuide,
@@ -150,6 +152,7 @@ export async function PUT(request: Request) {
     const categoryName = formData.get('categoryName') as string
     const categorySlug = formData.get('categorySlug') as string
     const description = formData.get('description') as string
+    const video = (formData.get('video') as string) || ''
     const price = Number(formData.get('price'))
     const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
     const sizes: string[] = JSON.parse((formData.get('sizes') as string) || '[]')
@@ -174,7 +177,7 @@ export async function PUT(request: Request) {
 
     const existingImagesStr = formData.get('existingImages') as string
     const keepExisting = formData.get('keepExistingImages') === 'true'
-    let images = keepExisting && existingImagesStr ? JSON.parse(existingImagesStr) : existing.images
+    const images = keepExisting && existingImagesStr ? JSON.parse(existingImagesStr) : existing.images
 
     const imageFiles = formData.getAll('images') as File[]
 
@@ -207,6 +210,7 @@ export async function PUT(request: Request) {
       description: description || existing.description,
       price: price || existing.price,
       compareAtPrice: compareAtPrice !== null ? compareAtPrice : existing.compareAtPrice,
+      video,
       sizes: sizes.length > 0 ? sizes : existing.sizes,
       colors: colors.length > 0 ? colors : existing.colors,
       tags: tags.length > 0 ? tags : existing.tags,
@@ -242,8 +246,49 @@ export async function DELETE(request: Request) {
     const { slug } = await request.json()
     if (!slug) return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
 
-    let stored = await readStoredProducts()
+    const stored = await readStoredProducts()
     const index = stored.findIndex((p) => p.slug === slug)
+    const staticProduct = staticProducts.find((p) => p.slug === slug)
+
+    if (staticProduct) {
+      const now = new Date().toISOString()
+      const copy: StoredProduct = index !== -1
+        ? { ...stored[index] }
+        : {
+            id: staticProduct.id,
+            name: staticProduct.name,
+            slug: staticProduct.slug,
+            brand: { id: staticProduct.brand.slug, name: staticProduct.brand.name, slug: staticProduct.brand.slug, segment: staticProduct.brand.segment },
+            category: { id: staticProduct.category.slug, name: staticProduct.category.name, slug: staticProduct.category.slug, parentId: staticProduct.category.parentId },
+            description: staticProduct.description,
+            price: staticProduct.price,
+            compareAtPrice: staticProduct.compareAtPrice ?? null,
+            images: staticProduct.images,
+            video: staticProduct.video || '',
+            colors: staticProduct.colors,
+            sizes: staticProduct.sizes,
+            sizeGuide: staticProduct.sizeGuide,
+            tags: staticProduct.tags,
+            isNew: staticProduct.isNew ?? false,
+            isTrending: staticProduct.isTrending ?? false,
+            offerStatus: staticProduct.offerStatus || 'none',
+            offerType: staticProduct.offerType || 'none',
+            offerDiscount: staticProduct.offerDiscount || 0,
+            featured: staticProduct.featured || false,
+            stock: staticProduct.stock ?? {},
+            active: false,
+            createdAt: now,
+            updatedAt: now,
+          }
+      copy.active = false
+      copy.updatedAt = now
+
+      if (index !== -1) stored[index] = copy
+      else stored.push(copy)
+      await writeStoredProducts(stored)
+
+      return NextResponse.json({ success: true })
+    }
 
     if (index !== -1) {
       stored.splice(index, 1)
@@ -251,40 +296,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: true })
     }
 
-    const staticProduct = staticProducts.find((p) => p.slug === slug)
-    if (!staticProduct) {
-      return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 })
-    }
-
-    const now = new Date().toISOString()
-    stored.push({
-      id: staticProduct.id,
-      name: staticProduct.name,
-      slug: staticProduct.slug,
-      brand: { id: staticProduct.brand.slug, name: staticProduct.brand.name, slug: staticProduct.brand.slug, segment: staticProduct.brand.segment },
-      category: { id: staticProduct.category.slug, name: staticProduct.category.name, slug: staticProduct.category.slug, parentId: staticProduct.category.parentId },
-      description: staticProduct.description,
-      price: staticProduct.price,
-      compareAtPrice: staticProduct.compareAtPrice ?? null,
-      images: staticProduct.images,
-      colors: staticProduct.colors,
-      sizes: staticProduct.sizes,
-      sizeGuide: staticProduct.sizeGuide,
-      tags: staticProduct.tags,
-      isNew: staticProduct.isNew ?? false,
-      isTrending: staticProduct.isTrending ?? false,
-      offerStatus: staticProduct.offerStatus || 'none',
-      offerType: staticProduct.offerType || 'none',
-      offerDiscount: staticProduct.offerDiscount || 0,
-      featured: staticProduct.featured || false,
-      stock: staticProduct.stock ?? {},
-      active: false,
-      createdAt: now,
-      updatedAt: now,
-    })
-    await writeStoredProducts(stored)
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 })
   } catch (error) {
     logger.error('[ADMIN_PRODUTOS_DELETE]', { error: String(error) })
     return NextResponse.json({ error: 'Erro ao deletar produto' }, { status: 500 })

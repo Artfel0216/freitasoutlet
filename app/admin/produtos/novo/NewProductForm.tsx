@@ -5,8 +5,16 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { categories } from '@/data/categories'
-import type { OfferStatus, OfferType, Brand } from '@/types'
-import type { EditableProduct } from './page'
+import type { Brand } from '@/types'
+
+interface ColorInput {
+  name: string
+  hex: string
+}
+
+interface NewProductFormProps {
+  brands: Brand[]
+}
 
 const brandSegments = [
   { value: 'sportswear', label: 'Sportswear' },
@@ -15,33 +23,30 @@ const brandSegments = [
   { value: 'streetwear', label: 'Streetwear' },
 ]
 
-export function AdminEditProductForm({ product, brands }: { product: EditableProduct; brands: Brand[] }) {
+export function NewProductForm({ brands }: NewProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [deleting, setDeleting] = useState(false)
 
-  const [name, setName] = useState(product.name)
-  const [brandSlug, setBrandSlug] = useState(product.brand?.slug || '')
-  const [categorySlug, setCategorySlug] = useState(product.category?.slug || '')
-  const [description, setDescription] = useState(product.description)
-  const [price, setPrice] = useState(String(product.price))
-  const [compareAtPrice, setCompareAtPrice] = useState(product.compareAtPrice ? String(product.compareAtPrice) : '')
-  const [sizes, setSizes] = useState(product.sizes.join(', '))
-  const [sizeGuide, setSizeGuide] = useState(product.sizeGuide || 'shirt')
-  const [tags, setTags] = useState(product.tags.join(', '))
-  const [isNew, setIsNew] = useState(product.isNew || false)
-  const [isTrending, setIsTrending] = useState(product.isTrending || false)
-  const [offerStatus, setOfferStatus] = useState<OfferStatus>(product.offerStatus || 'none')
-  const [offerType, setOfferType] = useState<OfferType>(product.offerType || 'none')
-  const [offerDiscount, setOfferDiscount] = useState(String(product.offerDiscount ?? ''))
-  const [featured, setFeatured] = useState(product.featured || false)
+  const [name, setName] = useState('')
+  const [brandSlug, setBrandSlug] = useState('')
+  const [categorySlug, setCategorySlug] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const [compareAtPrice, setCompareAtPrice] = useState('')
+  const [sizes, setSizes] = useState('')
+  const [sizeGuide, setSizeGuide] = useState('shirt')
+  const [tags, setTags] = useState('')
+  const [isNew, setIsNew] = useState(false)
+  const [isTrending, setIsTrending] = useState(false)
+  const [offerStatus, setOfferStatus] = useState('none')
+  const [offerType, setOfferType] = useState('none')
+  const [offerDiscount, setOfferDiscount] = useState('')
+  const [featured, setFeatured] = useState(false)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
-  const [colors, setColors] = useState<{ name: string; hex: string }[]>(
-    product.colors.length > 0 ? product.colors : [{ name: '', hex: '#000000' }]
-  )
-  const [video, setVideo] = useState('video' in product ? (product.video as string) || '' : '')
+  const [colors, setColors] = useState<ColorInput[]>([{ name: '', hex: '#000000' }])
+  const [video, setVideo] = useState('')
 
   const [brandOptions, setBrandOptions] = useState<Brand[]>(brands)
   const [showNewBrand, setShowNewBrand] = useState(false)
@@ -49,13 +54,11 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
   const [newBrandSegment, setNewBrandSegment] = useState('premium')
   const [savingBrand, setSavingBrand] = useState(false)
 
-  const existingImages: string[] = product.images || []
-
   function addColor() {
     setColors([...colors, { name: '', hex: '#000000' }])
   }
 
-  function updateColor(index: number, field: 'name' | 'hex', value: string) {
+  function updateColor(index: number, field: keyof ColorInput, value: string) {
     const updated = [...colors]
     updated[index] = { ...updated[index], [field]: value }
     setColors(updated)
@@ -73,13 +76,9 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
     }
   }
 
-  function removeNewImage(index: number) {
+  function removeImage(index: number) {
     setImageFiles((prev) => prev.filter((_, i) => i !== index))
     setImagePreviews((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  function removeExistingImage(index: number) {
-    setImageFiles((prev) => [...prev]) // trigger re-render
   }
 
   async function handleCreateBrand(e: FormEvent) {
@@ -118,23 +117,27 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
 
     try {
       const formData = new FormData()
-      formData.append('slug', product.slug)
       formData.append('name', name)
       const brand = brandOptions.find((b) => b.slug === brandSlug)
       if (brand) {
         formData.append('brandName', brand.name)
         formData.append('brandSlug', brand.slug)
+        formData.append('brandId', brand.id)
+        formData.append('brandSegment', brand.segment)
       }
       const cat = findCategory(categorySlug)
       if (cat) {
         formData.append('categoryName', cat.name)
         formData.append('categorySlug', cat.slug)
+        formData.append('categoryId', cat.id)
+        formData.append('categoryParentSlug', cat.parentId || '')
       }
       formData.append('description', description)
       formData.append('video', video)
       formData.append('price', price)
       if (compareAtPrice) formData.append('compareAtPrice', compareAtPrice)
       formData.append('sizes', JSON.stringify(sizes.split(',').map((s) => s.trim()).filter(Boolean)))
+      formData.append('colors', JSON.stringify(colors.filter((c) => c.name)))
       formData.append('sizeGuide', sizeGuide)
       formData.append('tags', tags)
       formData.append('isNew', String(isNew))
@@ -143,60 +146,30 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
       formData.append('offerType', offerType)
       formData.append('offerDiscount', offerDiscount || '0')
       formData.append('featured', String(featured))
-      formData.append('colors', JSON.stringify(colors.filter((c) => c.name)))
-      formData.append('keepExistingImages', 'true')
-      formData.append('existingImages', JSON.stringify(existingImages))
 
       for (const file of imageFiles) {
         formData.append('images', file)
       }
 
-      const res = await fetch('/api/admin/produtos', { method: 'PUT', body: formData })
+      const res = await fetch('/api/admin/produtos', { method: 'POST', body: formData })
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Erro ao atualizar produto')
+        throw new Error(data.error || 'Erro ao criar produto')
       }
 
       router.push('/admin/produtos')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar produto')
+      setError(err instanceof Error ? err.message : 'Erro ao criar produto')
     } finally {
       setLoading(false)
     }
   }
 
-  async function handleDelete() {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return
-
-    setDeleting(true)
-    try {
-      const res = await fetch('/api/admin/produtos', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: product.slug }),
-      })
-
-      if (!res.ok) throw new Error('Erro ao excluir produto')
-
-      router.push('/admin/produtos')
-      router.refresh()
-    } catch {
-      setError('Erro ao excluir produto')
-    } finally {
-      setDeleting(false)
-    }
-  }
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-heading font-black text-2xl uppercase tracking-tighter">{product.name}</h1>
-        <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleting}>
-          {deleting ? 'EXCLUINDO...' : 'EXCLUIR'}
-        </Button>
-      </div>
+      <h1 className="font-heading font-black text-2xl uppercase tracking-tighter mb-8">Novo Produto</h1>
 
       <motion.form
         onSubmit={handleSubmit}
@@ -215,14 +188,14 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Nome do Produto</label>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Nome do Produto (Título) *</label>
               <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Marca</label>
-              <select value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)}
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Marca *</label>
+              <select required value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
                 <option value="">Selecione uma marca</option>
                 {brandOptions.map((b) => (
@@ -257,8 +230,8 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Categoria</label>
-              <select value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Categoria *</label>
+              <select required value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
                 <option value="">Selecione uma categoria</option>
                 {categories.map((cat) => (
@@ -290,13 +263,13 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço</label>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço *</label>
               <input type="number" step="0.01" min="0" required value={price} onChange={(e) => setPrice(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
 
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço Original</label>
+              <label className="block text-xs font-medium uppercase tracking-wider mb-1">Preço Original (opcional)</label>
               <input type="number" step="0.01" min="0" value={compareAtPrice} onChange={(e) => setCompareAtPrice(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
             </div>
@@ -304,7 +277,8 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tamanhos (separados por vírgula)</label>
               <input type="text" value={sizes} onChange={(e) => setSizes(e.target.value)}
-                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
+                className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background"
+                placeholder="P, M, G, GG" />
             </div>
 
             <div>
@@ -353,34 +327,23 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
           <h2 className="font-heading font-bold text-sm uppercase tracking-wider">Mídia</h2>
 
           <div>
-            <label className="block text-xs font-medium uppercase tracking-wider mb-2">Imagens do Produto</label>
-
-            {existingImages.length > 0 && (
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {existingImages.map((img, i) => (
-                  <div key={i} className="relative group aspect-square">
-                    <img src={img} alt={`${product.name} - ${i + 1}`} className="w-full h-full object-cover border border-border" />
-                  </div>
-                ))}
-              </div>
-            )}
-
+            <label className="block text-xs font-medium uppercase tracking-wider mb-2">Imagens do Produto (Fotos)</label>
             <div className="border-2 border-dashed border-border p-6 text-center hover:border-foreground/30 transition-colors cursor-pointer"
-              onClick={() => document.getElementById('edit-image-upload')?.click()}>
+              onClick={() => document.getElementById('image-upload')?.click()}>
               <svg className="w-8 h-8 mx-auto mb-2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-sm text-muted-foreground">Clique para adicionar mais imagens</p>
+              <p className="text-sm text-muted-foreground">Clique para selecionar imagens</p>
               <p className="text-xs text-muted-foreground mt-1">JPEG, PNG, WebP ou GIF — Máx 5MB cada</p>
             </div>
-            <input id="edit-image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple
+            <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple
               onChange={handleImagesChange} className="hidden" />
             {imagePreviews.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mt-4">
                 {imagePreviews.map((preview, i) => (
                   <div key={i} className="relative group aspect-square">
                     <img src={preview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover border border-border" />
-                    <button type="button" onClick={() => removeNewImage(i)}
+                    <button type="button" onClick={() => removeImage(i)}
                       className="absolute top-1 right-1 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       &times;
                     </button>
@@ -410,7 +373,7 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Status da Oferta</label>
-              <select value={offerStatus} onChange={(e) => setOfferStatus(e.target.value as OfferStatus)}
+              <select value={offerStatus} onChange={(e) => setOfferStatus(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
                 <option value="none">Normal</option>
                 <option value="sale">Em Oferta</option>
@@ -421,7 +384,7 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
 
             <div>
               <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tipo de Oferta</label>
-              <select value={offerType} onChange={(e) => setOfferType(e.target.value as OfferType)}
+              <select value={offerType} onChange={(e) => setOfferType(e.target.value)}
                 className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background">
                 <option value="none">Nenhum</option>
                 <option value="weekly">Semanal</option>
@@ -456,16 +419,19 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
           <div>
             <label className="block text-xs font-medium uppercase tracking-wider mb-1">Tags (separadas por vírgula)</label>
             <input type="text" value={tags} onChange={(e) => setTags(e.target.value)}
-              className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background" />
+              className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-background"
+              placeholder="nike, casual, esportivo" />
           </div>
 
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" checked={isNew} onChange={(e) => setIsNew(e.target.checked)} className="w-4 h-4" />
+              <input type="checkbox" checked={isNew} onChange={(e) => setIsNew(e.target.checked)}
+                className="w-4 h-4" />
               Novo
             </label>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" checked={isTrending} onChange={(e) => setIsTrending(e.target.checked)} className="w-4 h-4" />
+              <input type="checkbox" checked={isTrending} onChange={(e) => setIsTrending(e.target.checked)}
+                className="w-4 h-4" />
               Trending
             </label>
           </div>
@@ -473,19 +439,14 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <motion.div
-          className="flex items-center gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-        >
+        <div className="flex items-center gap-4">
           <Button variant="primary" size="lg" type="submit" disabled={loading}>
-            {loading ? 'SALVANDO...' : 'SALVAR ALTERAÇÕES'}
+            {loading ? 'SALVANDO...' : 'SALVAR PRODUTO'}
           </Button>
           <button type="button" onClick={() => router.back()} className="text-sm underline hover:no-underline">
             Cancelar
           </button>
-        </motion.div>
+        </div>
       </motion.form>
     </div>
   )

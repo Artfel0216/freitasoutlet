@@ -106,6 +106,7 @@ function createSqliteSql(): SqlFn {
           price REAL NOT NULL,
           compare_at_price REAL,
           images TEXT NOT NULL DEFAULT '[]',
+          video TEXT NOT NULL DEFAULT '',
           colors TEXT NOT NULL DEFAULT '[]',
           sizes TEXT NOT NULL DEFAULT '[]',
           size_guide TEXT NOT NULL DEFAULT 'shirt',
@@ -123,6 +124,7 @@ function createSqliteSql(): SqlFn {
       try { _db.exec('CREATE INDEX IF NOT EXISTS idx_stock_notifications_product ON stock_notifications(product_id)') } catch { /* */ }
       try { _db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_number_unique ON orders(order_number)') } catch { /* */ }
       try { _db.exec(`ALTER TABLE orders ADD COLUMN unboxing_video_url TEXT`) } catch { /* column may already exist */ }
+      try { _db.exec(`ALTER TABLE products ADD COLUMN video TEXT NOT NULL DEFAULT ''`) } catch { /* column may already exist */ }
     }
     return _db
   }
@@ -287,6 +289,7 @@ export async function initializeSchema() {
       price NUMERIC(10,2) NOT NULL,
       compare_at_price NUMERIC(10,2),
       images TEXT NOT NULL DEFAULT '[]',
+      video TEXT NOT NULL DEFAULT '',
       colors TEXT NOT NULL DEFAULT '[]',
       sizes TEXT NOT NULL DEFAULT '[]',
       size_guide TEXT NOT NULL DEFAULT 'shirt',
@@ -317,6 +320,7 @@ export async function initializeSchema() {
   try { await sql`ALTER TABLE products ADD COLUMN offer_type TEXT NOT NULL DEFAULT 'none'` } catch { /* column may already exist */ }
   try { await sql`ALTER TABLE products ADD COLUMN offer_discount REAL NOT NULL DEFAULT 0` } catch { /* column may already exist */ }
   try { await sql`ALTER TABLE products ADD COLUMN featured INTEGER NOT NULL DEFAULT 0` } catch { /* column may already exist */ }
+  try { await sql`ALTER TABLE products ADD COLUMN video TEXT NOT NULL DEFAULT ''` } catch { /* column may already exist */ }
 
   await sql`CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug)`
   await sql`CREATE INDEX IF NOT EXISTS idx_products_active ON products(active)`
