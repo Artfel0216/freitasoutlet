@@ -2,25 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { motion } from 'framer-motion'
 import type { Product } from '@/types'
 import { staggerItem } from '@/components/animations'
 import { WishlistButton } from '@/components/product/WishlistButton'
 import { CompareButton } from '@/components/product/CompareButton'
 
-const ZOOM = 2.4
-const LENS_SIZE = 'h-40 w-40'
-const LENS_RADIUS = 80
-
 interface ProductCardProps {
   product: Product
-}
-
-interface ZoomState {
-  x: number
-  y: number
-  on: boolean
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -29,33 +18,10 @@ export function ProductCard({ product }: ProductCardProps) {
     ? Math.round((1 - product.price / product.compareAtPrice!) * 100)
     : 0
 
-  const imageRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState<ZoomState>({ x: 0, y: 0, on: false })
-
-  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
-    const el = imageRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    setZoom({ x, y, on: true })
-  }
-
-  const handleMouseLeave = () => {
-    setZoom((z) => ({ ...z, on: false }))
-  }
-
   return (
     <motion.div variants={staggerItem}>
       <Link href={`/produtos/${product.slug}`} className="group block">
-        <motion.div
-          ref={imageRef}
-          className="product-card-media relative aspect-square bg-muted overflow-hidden mb-3"
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-        >
+        <div className="product-card-media relative card-3d aspect-square bg-muted overflow-hidden mb-3">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -65,90 +31,71 @@ export function ProductCard({ product }: ProductCardProps) {
           />
 
           <motion.div
-            className="absolute inset-0 bg-black"
+            className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent"
             initial={{ opacity: 0 }}
-            whileHover={{ opacity: 0.05 }}
+            whileHover={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           />
 
           <div className="card-shine" />
 
-          {zoom.on && (
-            <div
-              className="pointer-events-none absolute inset-0 z-20"
-              style={{ clipPath: `circle(${LENS_RADIUS}px at ${zoom.x}px ${zoom.y}px)` }}
-            >
-              <div
-                className="absolute inset-0"
-                style={{
-                  transformOrigin: '0 0',
-                  transform: `translate(${zoom.x * (1 - ZOOM)}px, ${zoom.y * (1 - ZOOM)}px) scale(${ZOOM})`,
-                }}
-              >
-                <Image
-                  src={product.images[0]}
-                  alt=""
-                  fill
-                  draggable={false}
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          )}
-
-          {zoom.on && (
-            <div
-              className={`pointer-events-none absolute z-30 ${LENS_SIZE} rounded-full border border-white/80 shadow-[0_2px_24px_rgba(0,0,0,0.35)]`}
-              style={{ left: zoom.x, top: zoom.y, transform: 'translate(-50%, -50%)' }}
-            />
-          )}
-
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.isNew && (
               <motion.span
-                className="bg-black text-white text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1"
+                className="relative overflow-hidden bg-white text-foreground text-[10px] font-heading font-bold uppercase tracking-wider px-2.5 py-1"
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
+                style={{ boxShadow: '0 0 8px rgba(212, 175, 55, 0.3)' }}
               >
-                Novo
+                <span className="relative z-10">Novo</span>
+                <span className="absolute inset-0 bg-gradient-to-r from-gold/20 to-silver/20 opacity-50" />
               </motion.span>
             )}
             {product.offerStatus && product.offerStatus !== 'none' && (
               <motion.span
-                className={`text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1 ${
-                  product.offerStatus === 'sale' ? 'bg-blue-600 text-white' :
-                  product.offerStatus === 'promotion' ? 'bg-purple-600 text-white' :
-                  'bg-orange-600 text-white'
+                className={`relative overflow-hidden text-[10px] font-heading font-bold uppercase tracking-wider px-2.5 py-1 ${
+                  product.offerStatus === 'sale' ? 'bg-gradient-to-r from-blue-500 to-electric text-white' :
+                  product.offerStatus === 'promotion' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
+                  'bg-gradient-to-r from-orange-500 to-red-500 text-white'
                 }`}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.22 }}
               >
-                {product.offerStatus === 'sale' ? 'Oferta' :
-                 product.offerStatus === 'promotion' ? 'Promoção' : 'Queima'}
+                <span className="relative z-10">
+                  {product.offerStatus === 'sale' ? 'Oferta' :
+                   product.offerStatus === 'promotion' ? 'Promoção' : 'Queima'}
+                </span>
               </motion.span>
             )}
           </div>
           {discountPercent > 0 && (
             <motion.span
-              className="absolute top-2 right-2 bg-black text-white text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1"
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
+              className={`${discountPercent >= 25 ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' : 'bg-gradient-to-r from-gold to-silver text-white'} text-[10px] font-heading font-bold uppercase tracking-wider px-2.5 py-1 absolute top-2 right-2 relative overflow-hidden`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25, type: 'spring', stiffness: 300 }}
             >
-              -{discountPercent}%
+              <span className="relative z-10">-{discountPercent}%</span>
+              <motion.span
+                className="absolute inset-0 opacity-30"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%)',
+                }}
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </motion.span>
           )}
           <span className="absolute bottom-2 right-2 z-10">
-            <WishlistButton productId={product.id} className="text-white/80 hover:text-red-400 transition-colors bg-black/30 backdrop-blur-sm rounded-full" />
+            <WishlistButton productId={product.id} className="bg-white/60 backdrop-blur-sm rounded-full text-foreground hover:text-red-400 transition-colors" />
           </span>
-        </motion.div>
+        </div>
 
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{product.brand.name}</p>
-          <h3 className="text-sm font-semibold leading-tight">{product.name}</h3>
+          <h3 className="text-sm font-semibold leading-tight group-hover:text-gold transition-colors">{product.name}</h3>
           <div className="flex items-center gap-2">
             <motion.span
               className="text-sm font-heading font-bold"
@@ -166,10 +113,10 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
           {product.colors.length > 1 && (
             <div className="flex items-center gap-1 pt-1">
-              {product.colors.map((color, i) => (
+              {product.colors.slice(0, 4).map((color, i) => (
                 <motion.span
                   key={color.hex}
-                  className="block w-3 h-3 rounded-full border border-border"
+                  className="relative block w-4 h-4 rounded-full border-2 border-background"
                   style={{ backgroundColor: color.hex }}
                   title={color.name}
                   initial={{ opacity: 0, scale: 0 }}

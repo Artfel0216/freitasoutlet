@@ -44,13 +44,13 @@ export function HeroCanvas() {
         size: 0.5 + Math.random() * 1.6,
         vx: (Math.random() - 0.5) * 0.12,
         vy: -0.05 - Math.random() * 0.16,
-        baseAlpha: 0.12 + Math.random() * 0.45,
+        baseAlpha: 0.1 + Math.random() * 0.25,
         flicker: 0.4 + Math.random() * 1.4,
       }))
     }
 
     const drawGrid = () => {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)'
       ctx.lineWidth = 1
       const gap = 64
       ctx.beginPath()
@@ -65,40 +65,47 @@ export function HeroCanvas() {
       ctx.stroke()
     }
 
-    const drawSpotlight = () => {
-      const radius = Math.min(width, height) * 0.6
+    const drawAmbientLight = () => {
+      const radius = Math.min(width, height) * 0.5
       const g = ctx.createRadialGradient(light.x, light.y, 0, light.x, light.y, radius)
-      g.addColorStop(0, 'rgba(255, 255, 255, 0.12)')
-      g.addColorStop(0.35, 'rgba(255, 255, 255, 0.04)')
+      g.addColorStop(0, 'rgba(212, 175, 55, 0.04)')
+      g.addColorStop(0.35, 'rgba(212, 175, 55, 0.02)')
+      g.addColorStop(0.6, 'rgba(192, 192, 192, 0.01)')
       g.addColorStop(1, 'rgba(255, 255, 255, 0)')
       ctx.fillStyle = g
       ctx.fillRect(0, 0, width, height)
     }
 
-    const drawVignette = () => {
+    const drawSubtleVignette = () => {
       const radius = Math.min(width, height) * 0.95
-      const g = ctx.createRadialGradient(light.x, light.y, radius * 0.2, light.x, light.y, radius)
-      g.addColorStop(0, 'rgba(0, 0, 0, 0)')
-      g.addColorStop(1, 'rgba(0, 0, 0, 0.5)')
+      const g = ctx.createRadialGradient(light.x, light.y, radius * 0.1, light.x, light.y, radius)
+      g.addColorStop(0, 'rgba(255, 255, 255, 0)')
+      g.addColorStop(1, 'rgba(0, 0, 0, 0.02)')
       ctx.fillStyle = g
       ctx.fillRect(0, 0, width, height)
     }
 
     const drawParticles = (t: number) => {
-      const lightRadius = Math.min(width, height) * 0.45
+      const lightRadius = Math.min(width, height) * 0.4
       for (const p of particles) {
         const distToLight = Math.hypot(p.x - light.x, p.y - light.y)
         const glow = Math.max(0, 1 - distToLight / lightRadius)
-        const alpha = Math.min(1, p.baseAlpha + glow * 0.35)
+        const alpha = Math.min(1, p.baseAlpha + glow * 0.15)
         ctx.globalAlpha = alpha
-        ctx.fillStyle = '#ffffff'
+        ctx.fillStyle = '#d4af37'
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
         ctx.fill()
+        ctx.globalAlpha = alpha * 0.3
+        ctx.fillStyle = '#c0c0c0'
+        ctx.beginPath()
+        ctx.arc(p.x + 0.3, p.y + 0.3, p.size * 0.6, 0, Math.PI * 2)
+        ctx.fill()
         if (!reduceMotion && Math.sin(t * 0.001 * p.flicker + p.x * 0.1) > 0.985) {
-          ctx.globalAlpha = alpha * 0.5
+          ctx.globalAlpha = alpha * 0.4
+          ctx.fillStyle = '#3b82f6'
           ctx.beginPath()
-          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2)
+          ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2)
           ctx.fill()
         }
       }
@@ -107,12 +114,10 @@ export function HeroCanvas() {
 
     const frame = (t: number) => {
       ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = '#000000'
-      ctx.fillRect(0, 0, width, height)
       drawGrid()
-      light.x += (mouse.x - light.x) * 0.05
-      light.y += (mouse.y - light.y) * 0.05
-      drawSpotlight()
+      light.x += (mouse.x - light.x) * 0.06
+      light.y += (mouse.y - light.y) * 0.06
+      drawAmbientLight()
       for (const p of particles) {
         p.x += p.vx
         p.y += p.vy
@@ -124,7 +129,7 @@ export function HeroCanvas() {
         if (p.x > width + 4) p.x = -4
       }
       drawParticles(t)
-      drawVignette()
+      drawSubtleVignette()
       raf = requestAnimationFrame(frame)
     }
 
@@ -150,12 +155,10 @@ export function HeroCanvas() {
     light.y = height / 2
 
     if (reduceMotion) {
-      ctx.fillStyle = '#000000'
-      ctx.fillRect(0, 0, width, height)
       drawGrid()
-      drawSpotlight()
+      drawAmbientLight()
       drawParticles(0)
-      drawVignette()
+      drawSubtleVignette()
     } else {
       running = true
       raf = requestAnimationFrame(frame)

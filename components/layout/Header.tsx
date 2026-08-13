@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
+import { Logo3D } from '@/components/3d/Logo3D'
+import { Canvas } from '@react-three/fiber'
 
 const menuItems = [
   { label: 'Calçados Masculinos', href: '/categorias/calcados-masculinos' },
@@ -43,6 +45,19 @@ const megaAjuda = [
   { label: 'Trocas e Devoluções', href: '/trocas-e-devolucoes' },
 ]
 
+function Logo3DCanvas() {
+  return (
+    <div className="h-10 w-48">
+      <Canvas camera={{ position: [0, 0, 6], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+        <ambientLight intensity={0.8} />
+        <pointLight position={[5, 5, 5]} intensity={0.8} color="#d4af37" />
+        <pointLight position={[-3, -2, -2]} intensity={0.4} color="#ffffff" />
+        <Logo3D scale={0.5} interactive={false} />
+      </Canvas>
+    </div>
+  )
+}
+
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [megaOpen, setMegaOpen] = useState(false)
@@ -61,7 +76,7 @@ export function Header() {
   }
 
   return (
-    <header className="site-header sticky top-0 z-50 bg-white dark:bg-gray-950 border-b border-border">
+    <header className="site-header sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <motion.button
@@ -96,66 +111,84 @@ export function Header() {
             
           </motion.button>
 
-          <Link href="/" className="font-heading text-xl lg:text-2xl font-black tracking-tighter mr-6">
-            FREITAS OUTLET
+          <Link href="/" className="flex items-center">
+            <Logo3DCanvas />
           </Link>
 
           <nav
-            className="hidden lg:flex items-center gap-12"
+            className="hidden lg:flex items-center gap-2"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
             {menuItems.map((item) => (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className="text-sm font-medium uppercase tracking-wider hover:text-muted-foreground transition-colors"
+                className="menu-item-3d"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                {item.label}
-              </Link>
+                <Link
+                  href={item.href}
+                  className="relative block px-4 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors"
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
             ))}
           </nav>
 
           <div className="flex items-center gap-4">
-            <form action="/busca" method="GET" className="hidden sm:flex items-center">
-              <input
-                type="text"
-                name="q"
-                placeholder="Buscar..."
-                className="w-36 lg:w-48 border border-border px-3 py-1.5 text-xs focus:outline-none focus:border-black dark:bg-gray-900 dark:text-white"
-                aria-label="Buscar produtos"
-              />
-              <button type="submit" className="p-1.5 border border-l-0 border-border hover:bg-muted transition-colors" aria-label="Pesquisar">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative hidden sm:block">
+              <div className="glass flex items-center gap-2 px-3 py-1.5 rounded-lg">
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-            </form>
-            <Link href="/busca" className="sm:hidden p-2 hover:text-muted-foreground transition-colors" aria-label="Buscar">
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Buscar produtos..."
+                  className="w-36 lg:w-48 bg-transparent text-sm focus:outline-none placeholder-muted-foreground"
+                  aria-label="Buscar produtos"
+                />
+              </div>
+              <form action="/busca" method="GET" className="absolute inset-0 flex items-center">
+                <input type="hidden" name="q" value="" />
+              </form>
+            </div>
+
+            <Link href="/busca" className="sm:hidden p-2 text-muted-foreground hover:text-foreground transition-colors" aria-label="Buscar">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
 
-            <Link href="/favoritos" className="hidden sm:block p-2 hover:text-muted-foreground transition-colors" aria-label="Favoritos">
+            <Link href="/favoritos" className="p-2 text-muted-foreground hover:text-gold transition-colors" aria-label="Favoritos">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
               </svg>
             </Link>
-            <Link href="/minha-conta" className="hidden sm:block p-2 hover:text-muted-foreground transition-colors" aria-label="Minha conta">
+
+            <Link href="/minha-conta" className="hidden sm:block p-2 text-muted-foreground hover:text-gold transition-colors" aria-label="Minha conta">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </Link>
-            <Link href="/carrinho" className="relative p-2 hover:text-muted-foreground transition-colors" aria-label="Carrinho">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <Link href="/carrinho" className="relative p-2 text-muted-foreground hover:text-gold transition-colors" aria-label="Carrinho">
+              <motion.svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                whileHover={{ scale: 1.1 }}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+              </motion.svg>
               <AnimatePresence>
                 {totalItems > 0 && (
                   <motion.span
-                    className="absolute -top-1 -right-1 bg-black text-white text-xs w-4 h-4 flex items-center justify-center rounded-full"
+                    className="absolute -top-1 -right-1 bg-gold text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-heading font-bold"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
@@ -173,7 +206,7 @@ export function Header() {
       <AnimatePresence>
         {megaOpen && (
           <motion.div
-            className="site-mega hidden lg:block absolute left-0 right-0 top-full bg-white dark:bg-gray-950 border-b border-border shadow-lg"
+            className="hidden lg:block absolute left-0 right-0 top-full site-mega border-b"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -182,7 +215,7 @@ export function Header() {
             onMouseLeave={handleMouseLeave}
           >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="grid grid-cols-3 gap-12">
+              <div className="grid grid-cols-4 gap-12">
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider mb-4 text-muted-foreground">
                     Categorias
@@ -192,7 +225,7 @@ export function Header() {
                       <li key={cat.href}>
                         <Link
                           href={cat.href}
-                          className="text-sm font-medium hover:text-muted-foreground transition-colors"
+                          className="text-sm font-medium hover:text-gold transition-colors"
                           onClick={() => setMegaOpen(false)}
                         >
                           {cat.label}
@@ -210,7 +243,7 @@ export function Header() {
                       <li key={marca.href}>
                         <Link
                           href={marca.href}
-                          className="text-sm font-medium hover:text-muted-foreground transition-colors"
+                          className="text-sm font-medium hover:text-gold transition-colors"
                           onClick={() => setMegaOpen(false)}
                         >
                           {marca.label}
@@ -219,16 +252,18 @@ export function Header() {
                     ))}
                   </ul>
                 </div>
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider mb-4 text-muted-foreground">
-                    Ajuda
-                  </h3>
-                  <ul className="space-y-3">
+                <div className="col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Ajuda
+                    </h3>
+                  </div>
+                  <ul className="grid grid-cols-2 gap-3">
                     {megaAjuda.map((item) => (
                       <li key={item.href}>
                         <Link
                           href={item.href}
-                          className="text-sm font-medium hover:text-muted-foreground transition-colors"
+                          className="text-sm font-medium hover:text-gold transition-colors"
                           onClick={() => setMegaOpen(false)}
                         >
                           {item.label}
@@ -246,7 +281,7 @@ export function Header() {
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            className="site-mega lg:hidden border-t border-border bg-white dark:bg-gray-950 overflow-hidden"
+            className="lg:hidden border-t site-mega overflow-hidden"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -262,7 +297,7 @@ export function Header() {
                 >
                   <Link
                     href={item.href}
-                    className="block text-sm font-medium uppercase tracking-wider py-2"
+                    className="block text-sm font-medium uppercase tracking-wider py-2 text-foreground hover:text-gold transition-colors"
                     onClick={() => setMenuOpen(false)}
                   >
                     {item.label}
@@ -277,7 +312,7 @@ export function Header() {
               >
                 <Link
                   href="/favoritos"
-                  className="block text-sm font-medium uppercase tracking-wider py-2"
+                  className="block text-sm font-medium uppercase tracking-wider py-2 text-foreground hover:text-gold transition-colors"
                   onClick={() => setMenuOpen(false)}
                 >
                   Favoritos
@@ -290,36 +325,10 @@ export function Header() {
               >
                 <Link
                   href="/minha-conta"
-                  className="block text-sm font-medium uppercase tracking-wider py-2"
+                  className="block text-sm font-medium uppercase tracking-wider py-2 text-foreground hover:text-gold transition-colors"
                   onClick={() => setMenuOpen(false)}
                 >
                   Minha Conta
-                </Link>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: (menuItems.length + 2) * 0.05 }}
-              >
-                <Link
-                  href="/fidelidade"
-                  className="block text-sm font-medium uppercase tracking-wider py-2"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Fidelidade
-                </Link>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: (menuItems.length + 3) * 0.05 }}
-              >
-                <Link
-                  href="/blog"
-                  className="block text-sm font-medium uppercase tracking-wider py-2"
-                  onClick={() => setMenuOpen(false)}
-                  >
-                  Blog
                 </Link>
               </motion.div>
             </nav>

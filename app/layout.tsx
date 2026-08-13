@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Inter } from 'next/font/google'
+import { Inter, Montserrat } from 'next/font/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartProvider } from '@/context/CartContext'
@@ -11,7 +11,6 @@ import { LoyaltyProvider } from '@/context/LoyaltyContext'
 import { CompareBar } from '@/components/product/CompareBar'
 import { WhatsAppChat } from '@/components/ui/WhatsAppChat'
 import { InstallPWA } from '@/components/ui/InstallPWA'
-import { CursorLantern } from '@/components/ui/CursorLantern'
 import { Suspense } from 'react'
 import { Analytics } from '@/components/Analytics'
 import { ToastProvider } from '@/components/ToastProvider'
@@ -23,6 +22,12 @@ const inter = Inter({
   display: 'swap',
 })
 
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: 'Freitas Outlet | Streetwear, Luxo & Performance',
   description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais. Streetwear, luxo e performance esportiva.',
@@ -30,30 +35,29 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`dark ${inter.variable}`}>
+    <html lang="pt-BR" className={`light ${inter.variable} ${montserrat.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#ffffff" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <Script id="sw-register" strategy="afterInteractive">
           {`if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js')}`}
         </Script>
       </head>
-      <body className="min-h-screen bg-black font-sans text-white antialiased">
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <CartProvider>
           <WishlistProvider>
             <RecentlyViewedProvider>
               <CompareProvider>
                 <LoyaltyProvider>
-                  <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-black focus:text-white focus:px-4 focus:py-2 focus:text-sm">
+                  <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:text-sm">
                     Pular para o conteúdo
                   </a>
                   <ToastProvider />
                   <Header />
-                  <CursorLantern />
                   <main id="main-content">{children}</main>
                   <Footer />
                   <CompareBar />

@@ -47,9 +47,10 @@ export function FlashSaleTimer({ endsAt, label = 'OFERTA RELÂMPAGO', variant = 
           transition={{ duration: 0.3 }}
         >
           {variant === 'banner' ? (
-            <div className="bg-red-600 text-white text-center py-3 px-4">
-              <p className="font-heading font-bold text-sm uppercase tracking-widest">{label}</p>
-              <div className="flex items-center justify-center gap-3 mt-1">
+            <div className="relative overflow-hidden border-b border-border bg-gradient-to-r from-red-600 to-orange-600 px-4 py-3 text-white">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+              <p className="font-heading font-bold text-sm uppercase tracking-widest relative z-10">{label}</p>
+              <div className="flex items-center justify-center gap-3 mt-1 relative z-10">
                 {Object.entries(timeLeft).map(([unit, value]) => (
                   <div key={unit} className="flex items-center gap-1">
                     <span className="font-heading font-black text-xl tabular-nums">{String(value).padStart(2, '0')}</span>
@@ -59,11 +60,11 @@ export function FlashSaleTimer({ endsAt, label = 'OFERTA RELÂMPAGO', variant = 
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 px-3 py-2">
-              <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-red-600 dark:text-red-400 shrink-0">
+            <div className="flex items-center gap-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 px-3 py-2 rounded-lg">
+              <span className="text-[10px] font-heading font-bold uppercase tracking-widest text-red-600 shrink-0">
                 {label}
               </span>
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <div className="flex items-center gap-2 text-red-600">
                 {Object.entries(timeLeft).map(([unit, value], i) => (
                   <div key={unit} className="flex items-center gap-1">
                     <span className="font-heading font-black text-sm tabular-nums">{String(value).padStart(2, '0')}</span>

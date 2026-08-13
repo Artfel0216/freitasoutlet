@@ -33,14 +33,14 @@ export function SceneSetup({
       gl={{ antialias: true, alpha: true, stencil: false }}
     >
       <color attach="background" args={['#ffffff']} />
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.8} />
       <directionalLight
         position={[5, 10, 5]}
-        intensity={1.2}
+        intensity={1.5}
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight position={[-5, -5, -5]} intensity={0.3} color="#d4af37" />
+      <pointLight position={[-5, -5, -5]} intensity={0.4} color="#d4af37" />
 
       {enableEnvironment && <Environment preset="apartment" />}
 
@@ -68,7 +68,6 @@ export function SceneSetup({
           />
           <ChromaticAberration
             offset={[0.0002, 0.0002]}
-            multiplier={0.4}
           />
         </EffectComposer>
       )}

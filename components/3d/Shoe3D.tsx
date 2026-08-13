@@ -2,25 +2,82 @@
 
 import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useGL, useTexture, Html } from '@react-three/drei'
+import { useTexture } from '@react-three/drei'
 import { Group, Vector3 } from 'three'
 import { useReducedMotion } from 'framer-motion'
-import { motion } from 'framer-motion'
 
 interface Shoe3DProps {
   imageUrl?: string
   autoRotate?: boolean
   explodeOnHover?: boolean
-  modelPath?: string
   position?: [number, number, number]
   scale?: number
+}
+
+type ShoeMaterials = Record<string, Record<string, unknown>>
+
+function ShoePart({
+  name,
+  position: pos,
+  args,
+  geomType = 'box',
+  matKey,
+  scale: s,
+  materials,
+  onPointerEnter,
+  onPointerLeave,
+}: {
+  name: string
+  position: [number, number, number]
+  args: number[]
+  geomType?: 'box' | 'cylinder' | 'sphere' | 'torus' | 'cone'
+  matKey?: 'upperMat' | 'soleMat' | 'accentMat'
+  scale?: [number, number, number]
+  materials: ShoeMaterials
+  onPointerEnter: () => void
+  onPointerLeave: () => void
+}) {
+  const geom = useMemo(() => {
+    switch (geomType) {
+      case 'cylinder':
+        return <cylinderGeometry args={args as [number, number, number, number?]} />
+      case 'sphere':
+        return <sphereGeometry args={args as [number, number, number?]} />
+      case 'torus':
+        return <torusGeometry args={args as [number, number, number?, number?]} />
+      case 'cone':
+        return <coneGeometry args={args as [number, number, number?, number?]} />
+      default:
+        return <boxGeometry args={args as [number, number, number]} />
+    }
+  }, [geomType, args])
+
+  const matColor = useMemo(() => {
+    if (matKey === 'soleMat') return materials.soleMat
+    if (matKey === 'accentMat') return materials.accentMat
+    return materials.upperMat
+  }, [matKey, materials])
+
+  return (
+    <mesh
+      name={name}
+      castShadow
+      receiveShadow
+      position={pos}
+      scale={s}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    >
+      {geom}
+      <meshStandardMaterial {...(matColor as Record<string, unknown>)} />
+    </mesh>
+  )
 }
 
 export function Shoe3D({
   imageUrl,
   autoRotate = true,
   explodeOnHover = false,
-  modelPath,
   position = [0, -1.2, 0],
   scale = 2.4,
 }: Shoe3DProps) {
@@ -29,9 +86,9 @@ export function Shoe3D({
   const [isExploded, setIsExploded] = useState(false)
   const reduceMotion = useReducedMotion()
 
-  const texture = imageUrl ? useTexture(imageUrl) : null
+  const texture = useTexture(imageUrl || '/placeholder.png')
 
-  const materials = useMemo(() => {
+  const materials = useMemo<ShoeMaterials>(() => {
     const textureProps = texture ? { map: texture } : {}
     return {
       upperMat: {
@@ -54,28 +111,6 @@ export function Shoe3D({
     }
   }, [texture])
 
-  const explodedPositions = useMemo(() => {
-    const result: Record<string, [number, number, number]> = {}
-    result.sole = [0, -0.5, 0]
-    result.midsole = [0, 0.1, -0.2]
-    result.upper = [0, 0.6, 0.2]
-    result.tongue = [0, 0.9, 0.15]
-    result.eyelets = [0, 0.5, 0.3]
-    result.laces = [0, 0.45, 0.25]
-    return result
-  }, [])
-
-  const restPositions = useMemo(() => {
-    const result: Record<string, [number, number, number]> = {}
-    result.sole = [0, -0.5, 0]
-    result.midsole = [0, 0.05, 0]
-    result.upper = [0, 0.55, 0]
-    result.tongue = [0, 0.85, 0.1]
-    result.eyes = [0, 0.5, 0.25]
-    result.laces = [0, 0.42, 0.2]
-    return result
-  }, [])
-
   useFrame((state, delta) => {
     if (reduceMotion) return
 
@@ -87,9 +122,8 @@ export function Shoe3D({
       }
 
       if (isExploded) {
-        const parts = groupRef.current.children
-        parts.forEach((child, i) => {
-          const target = child.userData.targetPos
+        groupRef.current.children.forEach((child) => {
+          const target = child.userData.targetPos as [number, number, number] | undefined
           if (target) {
             child.position.lerp(
               new Vector3(target[0] * 4, target[1] * 4, target[2] * 4 + Math.sin(t * 2) * 0.1),
@@ -99,7 +133,7 @@ export function Shoe3D({
         })
       } else {
         groupRef.current.children.forEach((child) => {
-          const rest = child.userData.restPos
+          const rest = child.userData.restPos as [number, number, number] | undefined
           if (rest) {
             child.position.lerp(new Vector3(rest[0], rest[1], rest[2]), 0.15)
           }
@@ -118,144 +152,127 @@ export function Shoe3D({
     if (explodeOnHover) setIsExploded(false)
   }
 
-  const ShoePart = ({
-    name,
-    position: pos,
-    args,
-    geomType = 'box',
-    mat = 'upperMat',
-    scale: s,
-  }: {
-    name: string
-    position: [number, number, number]
-    args: any[]
-    geomType?: 'box' | 'cylinder' | 'sphere' | 'torus' | 'cone'
-    mat?: 'upperMat' | 'soleMat' | 'accentMat'
-    scale?: [number, number, number]
-  }) => {
-    const geom = useMemo(() => {
-      const common: any = { key: name }
-      switch (geomType) {
-        case 'cylinder':
-          return <cylinderGeometry args={args as [any]} />
-        case 'sphere':
-          return <sphereGeometry args={args as [any]} />
-        case 'torus':
-          return <torusGeometry args={args as [any]} />
-        case 'cone':
-          return <coneGeometry args={args as [any]} />
-        default:
-          return <boxGeometry args={args as [any]} />
-      }
-    }, [geomType, args, name])
-
-    const matColor = useMemo(() => {
-      if (mat === 'soleMat') return materials.soleMat
-      if (mat === 'accentMat') return materials.accentMat
-      return materials.upperMat
-    }, [mat])
-
-    return (
-      <mesh
-        name={name}
-        castShadow
-        receiveShadow
-        position={pos}
-        scale={s}
-        onPointerEnter={handlePointerEnter}
-        onPointerLeave={handlePointerLeave}
-      >
-        {geom}
-        <meshStandardMaterial {...matColor} />
-      </mesh>
-    )
-  }
-
   return (
     <group ref={groupRef} position={position} scale={scale} dispose={null}>
       <ShoePart
         name="sole"
         geomType="box"
         args={[0.9, 0.25, 0.35]}
-        mat="soleMat"
+        matKey="soleMat"
         position={[0, -0.5, 0]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="midsole"
         geomType="box"
         args={[0.85, 0.18, 0.3]}
-        mat="soleMat"
+        matKey="soleMat"
         position={[0, -0.28, 0]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="upper"
         geomType="box"
         args={[0.75, 0.85, 0.32]}
-        mat="upperMat"
+        matKey="upperMat"
         position={[0, 0.15, 0]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="tongue"
         geomType="box"
         args={[0.45, 0.35, 0.1]}
-        mat="upperMat"
+        matKey="upperMat"
         position={[0, 0.55, 0.28]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletL1"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[-0.12, 0.5, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletL2"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[-0.1, 0.35, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletL3"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[-0.08, 0.2, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletR1"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[0.12, 0.5, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletR2"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[0.1, 0.35, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="eyeletR3"
         geomType="torus"
         args={[0.04, 0.012, 8, 20]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[0.08, 0.2, 0.26]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="heel"
         geomType="box"
         args={[0.6, 0.25, 0.12]}
-        mat="upperMat"
+        matKey="upperMat"
         position={[0, -0.05, -0.18]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
       <ShoePart
         name="accentStripe"
         geomType="torus"
         args={[0.42, 0.03, 8, 30, Math.PI, Math.PI]}
-        mat="accentMat"
+        matKey="accentMat"
         position={[0, 0.4, 0.285]}
+        materials={materials}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       />
     </group>
   )

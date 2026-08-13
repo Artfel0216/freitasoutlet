@@ -4,15 +4,20 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from './Button'
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
 export function InstallPWA() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [show, setShow] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
-  useEffect(() => {
+   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e)
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
       setShow(true)
     }
     window.addEventListener('beforeinstallprompt', handler)
@@ -38,20 +43,35 @@ export function InstallPWA() {
     <AnimatePresence>
       {show && !dismissed && (
         <motion.div
-          className="fixed bottom-20 left-4 right-4 z-50 max-w-sm mx-auto bg-white dark:bg-black border border-border shadow-lg p-4"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 40 }}
-          transition={{ duration: 0.3 }}
+          className="glass fixed bottom-20 left-4 right-4 z-50 max-w-sm mx-auto rounded-2xl border p-4 shadow-xl"
+          initial={{ opacity: 0, y: 60, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 60, scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-          <p className="font-heading font-bold text-sm uppercase tracking-wider mb-1">Instalar App</p>
-          <p className="text-xs text-muted-foreground mb-3">Instale o Freitas Outlet na tela inicial do seu dispositivo para uma experiência rápida e offline.</p>
+          <motion.p
+            className="font-heading font-bold text-sm uppercase tracking-wider mb-1 flex items-center gap-2"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <span className="text-gold">●</span>
+            Instalar App
+          </motion.p>
+          <motion.p
+            className="text-xs text-muted-foreground mb-3"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            Instale o Freitas Outlet na tela inicial do seu dispositivo para uma experiência rápida e offline.
+          </motion.p>
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={handleInstall}>
-              INSTALAR
+              Instalar
             </Button>
             <Button variant="ghost" size="sm" onClick={handleDismiss}>
-              AGORA NÃO
+              Agora Não
             </Button>
           </div>
         </motion.div>
