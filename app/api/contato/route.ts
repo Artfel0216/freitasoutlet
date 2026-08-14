@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { getClientIp } from '@/lib/client-ip'
 
 function sanitize(str: string): string {
   return str.replace(/[<>&"']/g, (c) => {
@@ -11,7 +12,7 @@ function sanitize(str: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`contato:${ip}`, 5, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })

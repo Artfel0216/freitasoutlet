@@ -9,12 +9,23 @@ async function getDbProductBySlug(slug: string) {
   try {
     const row = await queryOne('SELECT * FROM products WHERE slug = $1 AND active = 1', [slug])
     if (!row) return null
+    const parseField = (raw: unknown, name = '') => {
+      const value = String(raw ?? '')
+      if (!value) return { id: 'catalogo', name: name || 'Catálogo', slug: 'catalogo', parentId: null }
+      try {
+        return JSON.parse(value)
+      } catch {
+        return { id: value.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown', name: value, slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown', parentId: null }
+      }
+    }
+    const brandRaw = parseField(row.brand, row.name as string)
+    const categoryRaw = parseField(row.category, row.name as string)
     return {
       id: row.id as string,
       name: row.name as string,
       slug: row.slug as string,
-      brand: { id: row.brand as string, name: row.brand as string, slug: row.brand as string, segment: 'premium' as const },
-      category: { id: row.category as string, name: row.category as string, slug: row.category as string, parentId: null },
+      brand: { id: brandRaw.id, name: brandRaw.name, slug: brandRaw.slug, segment: 'premium' as const },
+      category: { id: categoryRaw.id, name: categoryRaw.name, slug: categoryRaw.slug, parentId: categoryRaw.parentId ?? null },
       description: row.description as string,
       price: Number(row.price),
       compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : undefined,

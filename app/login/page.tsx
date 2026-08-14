@@ -112,6 +112,10 @@ export default function LoginPage() {
               className="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
           </div>
 
+          <div className="flex justify-end">
+            <Link href="/esqueci-senha" className="text-xs underline hover:no-underline">Esqueci minha senha</Link>
+          </div>
+
           {error && <p className="text-xs text-red-500">{error}</p>}
 
           <Button variant="primary" size="lg" fullWidth type="submit" disabled={loading}>

@@ -17,6 +17,7 @@ import { SocialShare } from '@/components/product/SocialShare'
 import { CompareButton } from '@/components/product/CompareButton'
 import { NotifyWhenAvailable } from '@/components/product/NotifyWhenAvailable'
 import { FlashSaleTimer } from '@/components/product/FlashSaleTimer'
+import { OfferBadge } from '@/components/product/OfferBadge'
 import { getFlashSaleForProduct } from '@/lib/flash-sales'
 import { UnboxingVideoPlayer } from '@/components/ui/UnboxingVideoPlayer'
 
@@ -129,21 +130,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {product.name}
             </h1>
             <div className="flex items-center gap-2 mt-2">
-              {product.offerStatus && product.offerStatus !== 'none' && (
-                <span className={`text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1 ${
-                  product.offerStatus === 'sale' ? 'bg-blue-600 text-white' :
-                  product.offerStatus === 'promotion' ? 'bg-purple-600 text-white' :
-                  'bg-orange-600 text-white'
-                }`}>
-                  {product.offerStatus === 'sale' ? 'Em Oferta' :
-                   product.offerStatus === 'promotion' ? 'Em Promoção' : 'Queima de Estoque'}
-                </span>
-              )}
-              {product.offerType && product.offerType !== 'none' && (
-                <span className="text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-1 bg-black text-white">
-                  {product.offerType === 'weekly' ? 'Oferta Semanal' : 'Oferta Mensal'}
-                </span>
-              )}
+              <OfferBadge offerStatus={product.offerStatus} offerType={product.offerType} detailed />
             </div>
           </motion.div>
 

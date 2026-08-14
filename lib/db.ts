@@ -21,6 +21,7 @@ export type PaymentInfo = {
   installments?: number
   gatewayTransactionId?: string
   gatewayStatus?: string
+  clientSecret?: string
 }
 
 export type FraudAnalysis = {
@@ -67,16 +68,23 @@ export async function readOrders(): Promise<Order[]> {
   return rows.map(rowToOrder)
 }
 
-export async function createOrder(order: Omit<Order, 'createdAt' | 'updatedAt' | 'id' | 'orderNumber'>): Promise<Order> {
+export async function createOrder(order: Omit<Order, 'createdAt' | 'updatedAt' | 'id' | 'orderNumber'>, idempotencyKey?: string): Promise<Order> {
   const id = crypto.randomUUID()
   const orderNumber = `FO-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`
   const now = new Date().toISOString()
 
+  if (idempotencyKey) {
+    const existing = await getOrderByIdempotencyKey(idempotencyKey)
+    if (existing) return existing
+  }
+
+  const onConflict = idempotencyKey ? 'ON CONFLICT(idempotency_key) DO NOTHING' : ''
   await queryRun(`
     INSERT INTO orders (id, order_number, status, customer_name, customer_email, customer_cpf, customer_phone,
       address_cep, address_street, address_number, address_neighborhood, address_city, address_state,
-      items, payment_method, payment_info, subtotal, shipping, discount, total, fraud_analysis, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+      items, payment_method, payment_info, subtotal, shipping, discount, total, fraud_analysis, idempotency_key, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+    ${onConflict}
   `, [
     id, orderNumber, order.status,
     order.customer.name, order.customer.email, order.customer.cpf, order.customer.phone,
@@ -84,8 +92,14 @@ export async function createOrder(order: Omit<Order, 'createdAt' | 'updatedAt' |
     JSON.stringify(order.items), order.payment.method, JSON.stringify(order.payment),
     order.subtotal, order.shipping, order.discount, order.total,
     order.fraudAnalysis ? JSON.stringify(order.fraudAnalysis) : null,
+    idempotencyKey || null,
     now, now,
   ])
+
+  if (idempotencyKey) {
+    const existing = await getOrderByIdempotencyKey(idempotencyKey)
+    if (existing) return existing
+  }
 
   return {
     ...order,
@@ -94,6 +108,11 @@ export async function createOrder(order: Omit<Order, 'createdAt' | 'updatedAt' |
     createdAt: now,
     updatedAt: now,
   }
+}
+
+export async function getOrderByIdempotencyKey(key: string): Promise<Order | undefined> {
+  const row = await queryOne('SELECT * FROM orders WHERE idempotency_key = $1', [key])
+  return row ? rowToOrder(row) : undefined
 }
 
 export async function getOrderById(id: string): Promise<Order | undefined> {

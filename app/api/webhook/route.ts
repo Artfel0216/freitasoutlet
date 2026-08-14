@@ -6,10 +6,11 @@ import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
 import { decrementStock } from '@/lib/stock'
 import { getStripe } from '@/lib/stripe'
+import { getClientIp } from '@/lib/client-ip'
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`webhook:${ip}`, 100, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
@@ -18,30 +19,25 @@ export async function POST(request: Request) {
     const rawBody = await request.text()
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-    if (!webhookSecret && process.env.NODE_ENV === 'production') {
-      logger.error('Webhook: STRIPE_WEBHOOK_SECRET not configured in production')
+    if (!webhookSecret) {
+      logger.error('Webhook: STRIPE_WEBHOOK_SECRET not configured')
       return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+    }
+
+    const signature = request.headers.get('stripe-signature')
+    if (!signature) {
+      logger.warn('Webhook: missing stripe-signature header')
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
     }
 
     let event: { type: string; data: { object: Record<string, unknown> } }
 
-
-
-    if (webhookSecret) {
-      const signature = request.headers.get('stripe-signature')
-      if (!signature) {
-        logger.warn('Webhook: missing stripe-signature header')
-        return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
-      }
-      try {
-        const stripe = getStripe()
-        event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret) as unknown as typeof event
-      } catch (err) {
-        logger.warn('Webhook: invalid signature', { ip, error: String(err) })
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-      }
-    } else {
-      event = JSON.parse(rawBody)
+    try {
+      const stripe = getStripe()
+      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret) as unknown as typeof event
+    } catch (err) {
+      logger.warn('Webhook: invalid signature', { ip, error: String(err) })
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
 
     logger.info('Webhook received', { type: event.type })

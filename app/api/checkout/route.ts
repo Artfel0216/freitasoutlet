@@ -1,6 +1,7 @@
+import { createHash } from 'crypto'
 import { NextResponse } from 'next/server'
 import { checkoutSchema } from '@/lib/validations'
-import { createOrder, updatePaymentInfo } from '@/lib/db'
+import { createOrder, updatePaymentInfo, getOrderByIdempotencyKey } from '@/lib/db'
 import { createStripePaymentIntent, processPixPayment } from '@/lib/payment'
 import { analyzeOrder } from '@/lib/fraud'
 import { getProductById } from '@/data/products'
@@ -9,6 +10,7 @@ import { calculateShipping } from '@/lib/shipping'
 import { rateLimit } from '@/lib/rate-limit'
 import { decrementStock } from '@/lib/stock'
 import { logger } from '@/lib/logger'
+import { getClientIp } from '@/lib/client-ip'
 import { queryOne, queryRun } from '@/lib/database'
 
 async function validateCoupon(code: string, orderTotal: number): Promise<{ valid: boolean; discount: number; error?: string }> {
@@ -54,13 +56,66 @@ export async function POST(request: Request) {
     }
 
     if (action === 'process') {
-      const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+      const ip = getClientIp(request)
       const rl = await rateLimit(`checkout:${ip}`, 10, 60_000)
       if (!rl.allowed) {
         return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
       }
 
       const { data, paymentMethod, items, shipping: shippingOption, couponCode, loyaltyDiscountPercent, paymentMethodId } = body
+
+      const idempotencyKey = createHash('sha256')
+        .update(JSON.stringify({
+          data: { email: data?.email, cpf: data?.cpf, name: data?.name, phone: data?.phone, cep: data?.cep },
+          items: (items || []).map((i: { productId: string; size: string; color: string; quantity: number }) => [i.productId, i.size, i.color, i.quantity]),
+          paymentMethod,
+          shipping: shippingOption,
+          couponCode,
+          loyaltyDiscountPercent,
+        }))
+        .digest('hex')
+
+      const existingOrder = await getOrderByIdempotencyKey(idempotencyKey)
+      if (existingOrder && existingOrder.status === 'rejected') {
+        return NextResponse.json({
+          error: 'Transação rejeitada pela análise de segurança',
+          orderId: existingOrder.id,
+          orderNumber: existingOrder.orderNumber,
+        }, { status: 403 })
+      }
+      if (existingOrder) {
+        const payment = existingOrder.payment
+        if (payment.method === 'pix' && payment.pixKey && payment.pixQrCode) {
+          return NextResponse.json({
+            success: true,
+            orderId: existingOrder.id,
+            orderNumber: existingOrder.orderNumber,
+            status: existingOrder.status,
+            paymentStatus: payment.gatewayStatus,
+            pix: {
+              pixKey: payment.pixKey.replace(/(\d{3})\d{6}(\d{2})/, '$1******$2'),
+              pixQrCode: payment.pixQrCode,
+            },
+          })
+        }
+        if ((payment.method === 'credit' || payment.method === 'debit') && payment.clientSecret) {
+          return NextResponse.json({
+            success: true,
+            orderId: existingOrder.id,
+            orderNumber: existingOrder.orderNumber,
+            status: existingOrder.status,
+            clientSecret: payment.clientSecret,
+            paymentIntentId: payment.gatewayTransactionId,
+          })
+        }
+        return NextResponse.json({
+          success: true,
+          orderId: existingOrder.id,
+          orderNumber: existingOrder.orderNumber,
+          status: existingOrder.status,
+          paymentStatus: payment.gatewayStatus,
+        })
+      }
 
       const parsedData = checkoutSchema.safeParse(data)
       if (!parsedData.success) {
@@ -161,7 +216,7 @@ export async function POST(request: Request) {
           discount: discountValue,
           total,
           fraudAnalysis: fraudResult,
-        })
+        }, idempotencyKey)
 
         logger.warn('Order rejected by fraud analysis', { orderId: order.id, score: fraudResult.score })
 
@@ -195,7 +250,7 @@ export async function POST(request: Request) {
           discount: discountValue,
           total,
           fraudAnalysis: fraudResult,
-        })
+        }, idempotencyKey)
 
         const piResult = await createStripePaymentIntent({
           amount: total,
@@ -214,6 +269,7 @@ export async function POST(request: Request) {
         await updatePaymentInfo(order.id, {
           gatewayTransactionId: piResult.paymentIntentId || '',
           gatewayStatus: 'processing',
+          clientSecret: piResult.clientSecret,
         })
 
         sendOrderConfirmation({
@@ -258,7 +314,7 @@ export async function POST(request: Request) {
           discount: discountValue,
           total,
           fraudAnalysis: fraudResult,
-        })
+        }, idempotencyKey)
 
         await updatePaymentInfo(order.id, {
           pixKey: result.paymentInfo.pixKey,

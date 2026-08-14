@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   const session = await getSession()
@@ -30,11 +31,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  let body: { code?: string; discountType?: string; discountValue?: number; minOrder?: number; maxUses?: number; expiresAt?: string | null }
+  let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
-  const { code, discountType, discountValue, minOrder, maxUses, expiresAt } = body
 
-  if (!code || !discountValue) {
+  const code = body.code as string | undefined
+  const discountValue = (body.discountValue ?? body.discount_value) as number | undefined
+  const discountType = (body.discountType ?? body.discount_type) as string | undefined
+  const minOrder = (body.minOrder ?? body.min_order) as number | undefined
+  const maxUses = (body.maxUses ?? body.max_uses) as number | undefined
+  const expiresAt = (body.expiresAt ?? body.expires_at) as string | null | undefined
+
+  if (!code || typeof discountValue !== 'number') {
     return NextResponse.json({ error: 'Código e valor são obrigatórios' }, { status: 400 })
   }
 
@@ -45,8 +52,9 @@ export async function POST(request: NextRequest) {
     await queryRun('INSERT INTO coupons (id, code, discount_type, discount_value, min_order, max_uses, active, expires_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, 1, $7, $8)', [
       id, code.toUpperCase(), discountType || 'percent', discountValue, minOrder || 0, maxUses || 0, expiresAt || null, now
     ])
-  } catch {
-    return NextResponse.json({ error: 'Cupom já existe' }, { status: 409 })
+  } catch (error) {
+    logger.error('Coupon create error', { error: String(error) })
+    return NextResponse.json({ error: 'Não foi possível criar o cupom' }, { status: 500 })
   }
 
   return NextResponse.json({
@@ -61,9 +69,17 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
-  let body: { id?: string; code?: string; discountType?: string; discountValue?: number; minOrder?: number; maxUses?: number; active?: boolean; expiresAt?: string | null }
+  let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
-  const { id, code, discountType, discountValue, minOrder, maxUses, active, expiresAt } = body
+
+  const id = body.id as string | undefined
+  const code = body.code as string | undefined
+  const discountValue = (body.discountValue ?? body.discount_value) as number | undefined
+  const discountType = (body.discountType ?? body.discount_type) as string | undefined
+  const minOrder = (body.minOrder ?? body.min_order) as number | undefined
+  const maxUses = (body.maxUses ?? body.max_uses) as number | undefined
+  const active = body.active as boolean | undefined
+  const expiresAt = (body.expiresAt ?? body.expires_at) as string | null | undefined
 
   if (!id) {
     return NextResponse.json({ error: 'ID é obrigatório' }, { status: 400 })

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, type ReactNode } from 'react'
 import {
   motion,
   useScroll,
@@ -16,6 +16,17 @@ const Hero3D = dynamic(() => import('./Hero3D').then((mod) => mod.Hero3D), {
   ssr: false,
   loading: () => <div className="h-full w-full" />,
 })
+
+function DeferredMount({ children, delay = 500 }: { children: ReactNode; delay?: number }) {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setReady(true), delay)
+    return () => window.clearTimeout(id)
+  }, [delay])
+
+  return <>{ready ? children : <div className="h-full w-full" />}</>
+}
 
 const heroProduct = {
   name: 'Nike Air Max Infinity',
@@ -215,7 +226,9 @@ export function Hero() {
                   <div className="absolute -inset-6 animate-spin-slow rounded-full border-2 border-dashed border-gold/15" />
 
                   <div className="relative mx-auto aspect-square h-[420px] w-full max-w-md overflow-hidden rounded-3xl">
-                    <Hero3D />
+                    <DeferredMount>
+                      <Hero3D />
+                    </DeferredMount>
                   </div>
 
                   <motion.div

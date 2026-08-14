@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
 import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
+import { getClientIp } from '@/lib/client-ip'
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`upload:${ip}`, 20, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas requisições' }, { status: 429 })

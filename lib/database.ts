@@ -68,6 +68,7 @@ function createSqliteSql(): SqlFn {
           shipped_at TEXT,
           delivered_at TEXT,
           unboxing_video_url TEXT,
+          idempotency_key TEXT,
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL
         );
@@ -125,8 +126,73 @@ function createSqliteSql(): SqlFn {
       try { _db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_number_unique ON orders(order_number)') } catch { /* */ }
       try { _db.exec(`ALTER TABLE orders ADD COLUMN unboxing_video_url TEXT`) } catch { /* column may already exist */ }
       try { _db.exec(`ALTER TABLE products ADD COLUMN video TEXT NOT NULL DEFAULT ''`) } catch { /* column may already exist */ }
+      try { _db.exec(`ALTER TABLE orders ADD COLUMN idempotency_key TEXT`) } catch { /* column may already exist */ }
+      try { _db.exec('DROP INDEX IF EXISTS idx_orders_idempotency_key') } catch { /* */ }
+      try { _db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders(idempotency_key)') } catch { /* */ }
+      migrateSqliteSchema(_db)
     }
     return _db
+  }
+
+  function migrateSqliteSchema(db: Database.Database) {
+    const hasColumn = (table: string, column: string): boolean => {
+      const info = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]
+      return info.some((c) => c.name === column)
+    }
+
+    if (hasColumn('tokens', 'token') && !hasColumn('tokens', 'id')) {
+      db.exec(`
+        ALTER TABLE tokens RENAME COLUMN token TO id;
+      `)
+    }
+
+    if (hasColumn('coupons', 'code') && !hasColumn('coupons', 'id')) {
+      db.exec(`
+        CREATE TABLE coupons_migrated (
+          id TEXT PRIMARY KEY,
+          code TEXT NOT NULL UNIQUE,
+          discount_type TEXT NOT NULL DEFAULT 'percent',
+          discount_value REAL NOT NULL,
+          min_order REAL NOT NULL DEFAULT 0,
+          max_uses INTEGER NOT NULL DEFAULT 0,
+          used_count INTEGER NOT NULL DEFAULT 0,
+          active INTEGER NOT NULL DEFAULT 1,
+          expires_at TEXT,
+          created_at TEXT NOT NULL
+        );
+        INSERT INTO coupons_migrated (id, code, discount_type, discount_value, min_order, max_uses, used_count, active, expires_at, created_at)
+          SELECT lower(hex(randomblob(16))), code, discount_type, discount_value, min_order, max_uses, used_count, active, expires_at, created_at FROM coupons;
+        DROP TABLE coupons;
+        ALTER TABLE coupons_migrated RENAME TO coupons;
+      `)
+    }
+
+    if (hasColumn('products', 'brand')) {
+      const rows = db.prepare('SELECT id, brand, category FROM products').all() as {
+        id: string
+        brand: string
+        category: string
+      }[]
+      const update = db.prepare('UPDATE products SET brand = ?, category = ? WHERE id = ?')
+      for (const row of rows) {
+        let brand = row.brand
+        let category = row.category
+        let changed = false
+        try {
+          JSON.parse(brand)
+        } catch {
+          brand = JSON.stringify({ id: brand.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown', name: brand, slug: brand.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown', segment: 'premium' })
+          changed = true
+        }
+        try {
+          JSON.parse(category)
+        } catch {
+          category = JSON.stringify({ id: category.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'catalogo', name: category, slug: category.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'catalogo', parentId: null })
+          changed = true
+        }
+        if (changed) update.run(brand, category, row.id)
+      }
+    }
   }
 
   function convertPostgresParams(query: string): string {
@@ -273,6 +339,7 @@ export async function initializeSchema() {
       shipped_at TEXT,
       delivered_at TEXT,
       unboxing_video_url TEXT,
+      idempotency_key TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )
@@ -315,6 +382,8 @@ export async function initializeSchema() {
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_number_unique ON orders(order_number)`
 
   try { await sql`ALTER TABLE orders ADD COLUMN unboxing_video_url TEXT` } catch { /* column may already exist */ }
+  try { await sql`ALTER TABLE orders ADD COLUMN idempotency_key TEXT` } catch { /* column may already exist */ }
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders(idempotency_key)`
 
   try { await sql`ALTER TABLE products ADD COLUMN offer_status TEXT NOT NULL DEFAULT 'none'` } catch { /* column may already exist */ }
   try { await sql`ALTER TABLE products ADD COLUMN offer_type TEXT NOT NULL DEFAULT 'none'` } catch { /* column may already exist */ }

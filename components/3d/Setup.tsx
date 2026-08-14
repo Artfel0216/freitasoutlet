@@ -1,7 +1,7 @@
 'use client'
 
 import { Canvas } from '@react-three/fiber'
-import { Environment, ContactShadows, Stats } from '@react-three/drei'
+import { Environment, ContactShadows } from '@react-three/drei'
 import { Bloom, EffectComposer, ChromaticAberration } from '@react-three/postprocessing'
 import { useReducedMotion } from 'framer-motion'
 import { type ReactNode, Suspense } from 'react'
@@ -72,7 +72,6 @@ export function SceneSetup({
         </EffectComposer>
       )}
 
-      {process.env.NODE_ENV === 'development' && <Stats />}
     </Canvas>
   )
 }

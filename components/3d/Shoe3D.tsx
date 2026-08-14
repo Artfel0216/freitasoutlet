@@ -3,7 +3,7 @@
 import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
-import { Group, Vector3 } from 'three'
+import { Group, Vector3, type Texture } from 'three'
 import { useReducedMotion } from 'framer-motion'
 
 interface Shoe3DProps {
@@ -81,12 +81,32 @@ export function Shoe3D({
   position = [0, -1.2, 0],
   scale = 2.4,
 }: Shoe3DProps) {
+  if (imageUrl) return <TexturedShoe imageUrl={imageUrl} autoRotate={autoRotate} explodeOnHover={explodeOnHover} position={position} scale={scale} />
+  return <Shoe3DBase autoRotate={autoRotate} explodeOnHover={explodeOnHover} position={position} scale={scale} texture={null} />
+}
+
+function TexturedShoe({
+  imageUrl,
+  autoRotate = true,
+  explodeOnHover = false,
+  position = [0, -1.2, 0],
+  scale = 2.4,
+}: Shoe3DProps & { imageUrl: string }) {
+  const texture = useTexture(imageUrl)
+  return <Shoe3DBase autoRotate={autoRotate} explodeOnHover={explodeOnHover} position={position} scale={scale} texture={texture} />
+}
+
+function Shoe3DBase({
+  autoRotate = true,
+  explodeOnHover = false,
+  position = [0, -1.2, 0],
+  scale = 2.4,
+  texture,
+}: Shoe3DProps & { texture: Texture | null }) {
   const groupRef = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
   const [isExploded, setIsExploded] = useState(false)
   const reduceMotion = useReducedMotion()
-
-  const texture = useTexture(imageUrl || '/placeholder.png')
 
   const materials = useMemo<ShoeMaterials>(() => {
     const textureProps = texture ? { map: texture } : {}
@@ -111,10 +131,13 @@ export function Shoe3D({
     }
   }, [texture])
 
-  useFrame((state, delta) => {
+  const elapsedRef = useRef(0)
+
+  useFrame((_, delta) => {
     if (reduceMotion) return
 
-    const t = state.clock.elapsedTime
+    elapsedRef.current += delta
+    const t = elapsedRef.current
 
     if (groupRef.current) {
       if (autoRotate && !hovered) {

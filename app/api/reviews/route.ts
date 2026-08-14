@@ -4,6 +4,7 @@ import { getCustomerSession } from '@/lib/customer-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
+import { getClientIp } from '@/lib/client-ip'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`reviews:${ip}`, 10, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })

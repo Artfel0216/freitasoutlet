@@ -2,11 +2,12 @@ import { getCustomerSession, createCustomerSession } from '@/lib/customer-auth'
 import { findCustomerById, hashPassword, verifyPassword, findCustomerByEmail, updateCustomer } from '@/lib/customer-db'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { getClientIp } from '@/lib/client-ip'
 import { NextResponse } from 'next/server'
 
 export async function PUT(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`profile:${ip}`, 10, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })

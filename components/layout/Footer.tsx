@@ -1,8 +1,5 @@
-'use client'
-
 import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
-import { motion } from 'framer-motion'
 
 const footerLinks = {
   Categorias: [
@@ -73,14 +70,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="sm:col-span-2 lg:col-span-1">
-            <motion.h3
-              className="font-heading font-black text-xl uppercase tracking-wider text-gold mb-4 relative inline-block"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
+            <h3 className="font-heading font-black text-xl uppercase tracking-wider text-gold mb-4 relative inline-block">
               Freitas Outlet
-            </motion.h3>
+            </h3>
             <p className="text-sm text-muted-foreground mb-4">
               Sua loja multimarcas premium. Streetwear, luxo e performance esportiva em um só lugar.
             </p>
@@ -89,15 +81,9 @@ export function Footer() {
 
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
-              <motion.h4
-                className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-              >
+              <h4 className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground">
                 {title}
-              </motion.h4>
+              </h4>
               <ul className="space-y-2.5 text-sm">
                 {links.map((link) => (
                   <li key={link.href}>
@@ -116,90 +102,60 @@ export function Footer() {
 
         <div className="border-t border-border mt-12 pt-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
           <div>
-            <motion.h4
-              className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground"
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
+            <h4 className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground">
               Redes Sociais
-            </motion.h4>
+            </h4>
             <div className="flex gap-4">
               {socialLinks.map((social) => (
-                <motion.a
+                <a
                   key={social.label}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-gold hover:border-gold transition-all"
                   aria-label={social.label}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 >
                   <FooterIcon type={social.icon} />
                   <span className="absolute sr-only">{social.label}</span>
-                </motion.a>
+                </a>
               ))}
             </div>
           </div>
 
           <div>
-            <motion.h4
-              className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground"
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
+            <h4 className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground">
               Formas de Pagamento
-            </motion.h4>
+            </h4>
             <div className="flex flex-wrap gap-2">
               {paymentMethods.map((method) => (
-                <motion.span
+                <span
                   key={method}
                   className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold bg-white border border-border text-foreground"
-                  whileHover={{ scale: 1.05, backgroundColor: '#d4af37', color: '#ffffff' }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 >
                   {method}
-                </motion.span>
+                </span>
               ))}
             </div>
           </div>
 
           <div>
-            <motion.h4
-              className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground"
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
+            <h4 className="font-heading font-bold text-xs uppercase tracking-wider mb-4 text-muted-foreground">
               Segurança
-            </motion.h4>
+            </h4>
             <div className="flex flex-col gap-2">
-              <motion.span
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
-                whileHover={{ x: 4 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
                 SSL Seguro
-              </motion.span>
-              <motion.span
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground"
-                whileHover={{ x: 4 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
+              </span>
+              <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 Site Protegido
-              </motion.span>
+              </span>
             </div>
           </div>
         </div>

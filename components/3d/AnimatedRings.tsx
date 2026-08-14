@@ -28,6 +28,7 @@ export function AnimatedRings({
   colors = ['gold', 'silver', 'electric'],
 }: AnimatedRingsProps) {
   const groupRef = useRef<Group>(null)
+  const elapsedRef = useRef(0)
   const reduceMotion = useReducedMotion()
 
   const rings = useMemo(
@@ -46,9 +47,10 @@ export function AnimatedRings({
     [count, radius, colors]
   )
 
-  useFrame((state) => {
+  useFrame((_, delta) => {
     if (reduceMotion || !groupRef.current) return
-    const t = state.clock.elapsedTime
+    elapsedRef.current += delta
+    const t = elapsedRef.current
 
     groupRef.current.children.forEach((ring) => {
       const cfg = rings.find((r) => r.id === (ring.userData.id as number))

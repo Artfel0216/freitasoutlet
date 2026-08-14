@@ -14,6 +14,7 @@ import { InstallPWA } from '@/components/ui/InstallPWA'
 import { Suspense } from 'react'
 import { Analytics } from '@/components/Analytics'
 import { ToastProvider } from '@/components/ToastProvider'
+import { ThreeConsoleShim } from '@/components/ThreeConsoleShim'
 import './globals.css'
 
 const inter = Inter({
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     Pular para o conteúdo
                   </a>
                   <ToastProvider />
+                  <ThreeConsoleShim />
                   <Header />
                   <main id="main-content">{children}</main>
                   <Footer />

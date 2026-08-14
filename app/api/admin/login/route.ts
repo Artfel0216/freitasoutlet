@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server'
 import { verifyPassword, setSession } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { getClientIp } from '@/lib/client-ip'
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`admin-login:${ip}`, 5, 300_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em 5 minutos.' }, { status: 429 })

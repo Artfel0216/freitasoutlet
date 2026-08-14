@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryOne } from '@/lib/database'
 import { rateLimit } from '@/lib/rate-limit'
+import { getClientIp } from '@/lib/client-ip'
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'anonymous'
+    const ip = getClientIp(request)
     const rl = await rateLimit(`coupon-validate:${ip}`, 20, 60_000)
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })

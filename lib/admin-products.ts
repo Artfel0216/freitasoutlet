@@ -127,13 +127,33 @@ export async function upsertStoredProduct(product: StoredProduct): Promise<void>
   ])
 }
 
+function parseJsonOrPlain<T>(value: string, fallback: (plain: string) => T): T {
+  const trimmed = String(value ?? '').trim()
+  if (!trimmed) return fallback('')
+  try {
+    return JSON.parse(trimmed) as T
+  } catch {
+    return fallback(trimmed)
+  }
+}
+
 function rowToStoredProduct(row: Record<string, unknown>): StoredProduct {
   return {
     id: row.id as string,
     name: row.name as string,
     slug: row.slug as string,
-    brand: JSON.parse(row.brand as string),
-    category: JSON.parse(row.category as string),
+    brand: parseJsonOrPlain<StoredProduct['brand']>(row.brand as string, (plain) => ({
+      id: plain.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown',
+      name: plain || 'Desconhecida',
+      slug: plain.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'unknown',
+      segment: 'premium',
+    })),
+    category: parseJsonOrPlain<StoredProduct['category']>(row.category as string, (plain) => ({
+      id: plain.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'catalogo',
+      name: plain || 'Catálogo',
+      slug: plain.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'catalogo',
+      parentId: null,
+    })),
     description: row.description as string,
     price: Number(row.price),
     compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : null,

@@ -7,6 +7,7 @@ import type { Product } from '@/types'
 import { staggerItem } from '@/components/animations'
 import { WishlistButton } from '@/components/product/WishlistButton'
 import { CompareButton } from '@/components/product/CompareButton'
+import { OfferBadge } from '@/components/product/OfferBadge'
 
 interface ProductCardProps {
   product: Product
@@ -52,23 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <span className="absolute inset-0 bg-gradient-to-r from-gold/20 to-silver/20 opacity-50" />
               </motion.span>
             )}
-            {product.offerStatus && product.offerStatus !== 'none' && (
-              <motion.span
-                className={`relative overflow-hidden text-[10px] font-heading font-bold uppercase tracking-wider px-2.5 py-1 ${
-                  product.offerStatus === 'sale' ? 'bg-gradient-to-r from-blue-500 to-electric text-white' :
-                  product.offerStatus === 'promotion' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' :
-                  'bg-gradient-to-r from-orange-500 to-red-500 text-white'
-                }`}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.22 }}
-              >
-                <span className="relative z-10">
-                  {product.offerStatus === 'sale' ? 'Oferta' :
-                   product.offerStatus === 'promotion' ? 'Promoção' : 'Queima'}
-                </span>
-              </motion.span>
-            )}
+            <OfferBadge offerStatus={product.offerStatus} />
           </div>
           {discountPercent > 0 && (
             <motion.span

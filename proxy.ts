@@ -28,15 +28,16 @@ export function proxy(request: NextRequest) {
     const isPublic = PUBLIC_API_PATHS.some((p) => pathname.startsWith(p))
     if (!isPublic) {
       const origin = request.headers.get('origin')
-      if (origin) {
-        const allowedOrigins = [
-          process.env.NEXT_PUBLIC_SITE_URL,
-          'http://localhost:3000',
-        ].filter(Boolean)
+      const allowedOrigins = [
+        process.env.NEXT_PUBLIC_SITE_URL,
+        'http://localhost:3000',
+      ].filter(Boolean)
 
-        if (!allowedOrigins.some((o) => origin.startsWith(o || ''))) {
-          return NextResponse.json({ error: 'Origem não autorizada' }, { status: 403 })
-        }
+      if (!origin) {
+        return NextResponse.json({ error: 'Origem não autorizada' }, { status: 403 })
+      }
+      if (!allowedOrigins.some((o) => origin.startsWith(o || ''))) {
+        return NextResponse.json({ error: 'Origem não autorizada' }, { status: 403 })
       }
     }
   }

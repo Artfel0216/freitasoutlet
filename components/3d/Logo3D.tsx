@@ -14,6 +14,7 @@ interface Logo3DProps {
 
 export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }: Logo3DProps) {
   const groupRef = useRef<Group>(null)
+  const elapsedRef = useRef(0)
   const reduceMotion = useReducedMotion()
 
   const goldMat = useMemo(() => {
@@ -26,9 +27,10 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
 
   const letters = 'FREITAS OUTLET'.split('')
 
-  useFrame((state) => {
+  useFrame((_, delta) => {
     if (reduceMotion || !groupRef.current || !interactive) return
-    const t = state.clock.elapsedTime
+    elapsedRef.current += delta
+    const t = elapsedRef.current
     groupRef.current.rotation.y = Math.sin(t * 0.3) * 0.05
   })
 
