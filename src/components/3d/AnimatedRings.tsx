@@ -15,7 +15,7 @@ interface AnimatedRingsProps {
 }
 
 const neonColors: Record<NeonColor, [number, number, number]> = {
-  gold: [0.831, 0.69, 0.2],
+  gold: [0.0, 0.0, 0.0],
   silver: [0.753, 0.753, 0.753],
   electric: [0.14, 0.6, 1],
   pink: [1, 0.25, 0.75],

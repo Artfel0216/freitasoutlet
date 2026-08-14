@@ -92,7 +92,7 @@ export function HeroCanvas() {
         const glow = Math.max(0, 1 - distToLight / lightRadius)
         const alpha = Math.min(1, p.baseAlpha + glow * 0.15)
         ctx.globalAlpha = alpha
-        ctx.fillStyle = '#d4af37'
+        ctx.fillStyle = '#0a0a0a'
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
         ctx.fill()

@@ -122,10 +122,10 @@ function Shoe3DBase({
         roughness: 0.25,
       },
       accentMat: {
-        color: '#d4af37',
+        color: '#0a0a0a',
         metalness: 0.9,
         roughness: 0.1,
-        emissive: '#d4af37',
+        emissive: '#0a0a0a',
         emissiveIntensity: 0.3,
       },
     }

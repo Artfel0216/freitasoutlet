@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import { useRef, useState, useEffect, type ReactNode } from 'react'
+import Image from 'next/image'
+import { useRef, useState } from 'react'
 import {
   motion,
   useScroll,
@@ -11,22 +11,6 @@ import {
   type Variants,
 } from 'framer-motion'
 import { HeroCanvas } from './HeroCanvas'
-
-const Hero3D = dynamic(() => import('./Hero3D').then((mod) => mod.Hero3D), {
-  ssr: false,
-  loading: () => <div className="h-full w-full" />,
-})
-
-function DeferredMount({ children, delay = 500 }: { children: ReactNode; delay?: number }) {
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    const id = window.setTimeout(() => setReady(true), delay)
-    return () => window.clearTimeout(id)
-  }, [delay])
-
-  return <>{ready ? children : <div className="h-full w-full" />}</>
-}
 
 const heroProduct = {
   name: 'Nike Air Max Infinity',
@@ -74,7 +58,7 @@ function BrandMarquee() {
                 className="flex items-center gap-6 px-6 py-4 font-heading text-sm font-black uppercase tracking-[0.35em] text-muted-foreground/30"
               >
                 {brand}
-                <span className="h-1.5 w-1.5 rotate-45 bg-gold/40" />
+                <span className="h-1.5 w-1.5 rotate-45 bg-foreground/30" />
               </span>
             ))}
           </div>
@@ -128,7 +112,7 @@ export function Hero() {
                 <motion.div variants={item} className="mb-6 flex items-center gap-3">
                   <motion.span variants={lineGrow} className="block h-px w-12 origin-left bg-foreground/60" />
                   <p className="font-heading text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                    Coleção Inverno 2026
+                    Outlet Premium
                   </p>
                 </motion.div>
 
@@ -136,20 +120,20 @@ export function Hero() {
                   variants={item}
                   className="font-heading text-[13vw] font-black uppercase leading-[0.92] tracking-tighter sm:text-6xl lg:text-7xl xl:text-8xl"
                 >
-                  <span className="block">Streetwear</span>
-                  <span className="block">Luxo &amp;</span>
+                  <span className="block">O Luxo</span>
+                  <span className="block">Mais</span>
                   <motion.span
                     className="inline-block"
                     animate={reduceMotion ? undefined : { rotateY: mousePos.x * 15 }}
                     transition={{ type: 'spring', stiffness: 100, damping: 20 }}
                   >
-                    Performance
+                    Acessível
                   </motion.span>
                 </motion.h1>
 
                 <motion.p variants={item} className="mt-6 max-w-lg text-base text-muted-foreground sm:text-lg">
                   As marcas mais desejadas do mundo em um só lugar. Nike, Gucci, Alexander
-                  McQueen, On Cloud e muito mais — agora com visualização 3D interativa.
+                  McQueen, On e muito mais — com preços de outlet.
                 </motion.p>
 
                 <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-4">
@@ -160,7 +144,7 @@ export function Hero() {
                   >
                     <Link
                       href="/produtos"
-                      className="btn-3d-inner relative inline-flex items-center gap-3 bg-gold px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:bg-gold/90"
+                      className="btn-3d-inner relative inline-flex items-center gap-3 bg-foreground px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.2em] text-background transition-colors duration-300 hover:bg-foreground/90"
                     >
                       <span>Comprar Agora</span>
                       <motion.svg
@@ -183,7 +167,7 @@ export function Hero() {
                   >
                     <Link
                       href="/categorias/futebol-performance"
-                      className="btn-3d-inner relative inline-flex items-center gap-2 border-2 border-foreground/20 px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.2em] text-foreground transition-all duration-300 hover:border-gold hover:bg-gold/5"
+                      className="btn-3d-inner relative inline-flex items-center gap-2 border-2 border-foreground/20 px-10 py-4 font-heading text-sm font-bold uppercase tracking-[0.2em] text-foreground transition-all duration-300 hover:border-foreground hover:bg-foreground/5"
                     >
                       <span>Futebol</span>
                     </Link>
@@ -196,7 +180,7 @@ export function Hero() {
                 >
                   {heroTags.map((tag, i) => (
                     <span key={i} className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                       {tag.label}
                     </span>
                   ))}
@@ -223,12 +207,17 @@ export function Hero() {
                 </motion.span>
 
                 <motion.div variants={item} className="relative z-[1]">
-                  <div className="absolute -inset-6 animate-spin-slow rounded-full border-2 border-dashed border-gold/15" />
+                  <div className="absolute -inset-6 animate-spin-slow rounded-full border-2 border-dashed border-foreground/15" />
 
-                  <div className="relative mx-auto aspect-square h-[420px] w-full max-w-md overflow-hidden rounded-3xl">
-                    <DeferredMount>
-                      <Hero3D />
-                    </DeferredMount>
+                  <div className="relative mx-auto aspect-square h-[420px] w-full max-w-md overflow-hidden rounded-3xl bg-muted">
+                    <Image
+                      src={heroProduct.image}
+                      alt={heroProduct.name}
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 28rem"
+                      className="object-cover"
+                    />
                   </div>
 
                   <motion.div
@@ -245,10 +234,10 @@ export function Hero() {
                     </div>
                     <Link
                       href={`/produtos/${heroProduct.slug}`}
-                      className="group flex flex-col items-end gap-1 font-heading font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-gold"
+                      className="group flex flex-col items-end gap-1 font-heading font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <span className="text-base text-foreground">{heroProduct.price}</span>
-                      <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-hover:text-gold">
+                      <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-hover:text-foreground">
                         <span className="line-through">{heroProduct.compareAtPrice}</span>
                         <svg
                           className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1"

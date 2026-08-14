@@ -18,7 +18,7 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
   const reduceMotion = useReducedMotion()
 
   const goldMat = useMemo(() => {
-    return new MeshStandardMaterial({ color: '#d4af37', metalness: 0.85, roughness: 0.15 })
+    return new MeshStandardMaterial({ color: '#0a0a0a', metalness: 0.85, roughness: 0.15 })
   }, [])
 
   const chromeMat = useMemo(() => {
@@ -41,7 +41,7 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
         const x = (i - 7) * 0.55
         const y = i < 7 ? 0.2 : -0.3
         const mat = i < 7 ? goldMat : chromeMat
-        const color = i < 7 ? '#d4af37' : '#c0c0c0'
+        const color = i < 7 ? '#0a0a0a' : '#c0c0c0'
 
         return (
           <Text
@@ -62,7 +62,7 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
       <pointLight
         position={[0, 0.5, 1]}
         intensity={0.6}
-        color="#d4af37"
+        color="#ffffff"
         decay={2}
         distance={3}
       />

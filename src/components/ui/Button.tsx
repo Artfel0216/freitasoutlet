@@ -20,10 +20,10 @@ interface ButtonProps {
 const base = 'inline-flex items-center justify-center font-heading font-bold uppercase tracking-wider focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed btn-3d'
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-gold text-foreground hover:bg-white hover:text-gold hover:border-2 hover:border-gold relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-gold before:to-silver before:opacity-0 before:transition-opacity hover:before:opacity-10',
-  outline: 'bg-transparent text-foreground border-2 border-foreground hover:bg-gold hover:text-white',
-  ghost: 'bg-transparent text-foreground hover:bg-gold/10',
-  black: 'bg-gradient-to-br from-gold to-silver text-foreground hover:brightness-110',
+  primary: 'bg-foreground text-background hover:bg-white hover:text-foreground hover:border-2 hover:border-foreground relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-foreground before:to-foreground/40 before:opacity-0 before:transition-opacity hover:before:opacity-10',
+  outline: 'bg-transparent text-foreground border-2 border-foreground hover:bg-foreground hover:text-background',
+  ghost: 'bg-transparent text-foreground hover:bg-foreground/10',
+  black: 'bg-foreground text-background hover:brightness-110',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

@@ -6,10 +6,10 @@ import type { LoyaltyTier } from '@/context/LoyaltyContext'
 const tierConfig = {
   bronze: {
     label: 'Bronze',
-    bg: 'bg-amber-100',
-    text: 'text-amber-800',
-    border: 'border-amber-300',
-    dot: 'bg-amber-600',
+    bg: 'bg-zinc-100',
+    text: 'text-zinc-700',
+    border: 'border-zinc-300',
+    dot: 'bg-zinc-500',
   },
   prata: {
     label: 'Prata',
@@ -20,17 +20,17 @@ const tierConfig = {
   },
   ouro: {
     label: 'Ouro',
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-300',
-    dot: 'bg-yellow-500',
+    bg: 'bg-zinc-900',
+    text: 'text-white',
+    border: 'border-zinc-900',
+    dot: 'bg-zinc-900',
   },
   diamante: {
     label: 'Diamante',
-    bg: 'bg-cyan-100',
-    text: 'text-cyan-800',
-    border: 'border-cyan-300',
-    dot: 'bg-cyan-500',
+    bg: 'bg-zinc-50',
+    text: 'text-zinc-900',
+    border: 'border-zinc-300',
+    dot: 'bg-zinc-800',
   },
 }
 

@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Sobre Nós | Freitas Outlet',
-  description: 'Conheça a história da Freitas Outlet, sua loja multimarcas premium de streetwear, luxo e performance esportiva.',
+  description: 'Conheça a história da Freitas Outlet, sua loja multimarcas premium com o luxo mais acessível.',
 }
 
 export default function SobrePage() {

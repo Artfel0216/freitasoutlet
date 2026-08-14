@@ -74,7 +74,7 @@ export function Footer() {
               Freitas Outlet
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Sua loja multimarcas premium. Streetwear, luxo e performance esportiva em um só lugar.
+              Sua loja multimarcas premium. O luxo mais acessível em um só lugar.
             </p>
             <NewsletterForm />
           </div>

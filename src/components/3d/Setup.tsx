@@ -40,7 +40,7 @@ export function SceneSetup({
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-      <pointLight position={[-5, -5, -5]} intensity={0.4} color="#d4af37" />
+      <pointLight position={[-5, -5, -5]} intensity={0.4} color="#ffffff" />
 
       {enableEnvironment && <Environment preset="apartment" />}
 

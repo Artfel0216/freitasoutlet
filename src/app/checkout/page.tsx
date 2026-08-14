@@ -80,8 +80,14 @@ function CheckoutPage({ clientSecret, onClientSecret }: { clientSecret: string |
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/auth/me')
-        const { customer } = await res.json()
+        const [res, addrRes] = await Promise.all([
+          fetch('/api/auth/me'),
+          fetch('/api/cliente/endereco'),
+        ])
+        const [{ customer }, { addresses }] = await Promise.all([
+          res.json(),
+          addrRes.json(),
+        ])
         if (customer) {
           setFormData((prev) => ({
             ...prev,
@@ -90,8 +96,6 @@ function CheckoutPage({ clientSecret, onClientSecret }: { clientSecret: string |
             phone: customer.phone || '',
           }))
         }
-        const addrRes = await fetch('/api/cliente/endereco')
-        const { addresses } = await addrRes.json()
         if (addresses?.length) {
           setSavedAddresses(addresses)
           const defaultAddr = addresses.find((a: SavedAddress) => a.isDefault) || addresses[0]

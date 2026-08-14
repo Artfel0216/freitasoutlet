@@ -16,7 +16,7 @@ export function Hero3D() {
       <color attach="background" args={['#ffffff']} />
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 10, 5]} intensity={1.2} />
-      <pointLight position={[-3, -3, -3]} intensity={0.3} color="#d4af37" />
+      <pointLight position={[-3, -3, -3]} intensity={0.3} color="#ffffff" />
 
       <Shoe3D autoRotate={true} explodeOnHover={true} scale={2.8} />
       <AnimatedRings count={3} radius={1.8} colors={['gold', 'silver', 'electric']} />

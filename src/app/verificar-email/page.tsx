@@ -1,12 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 
 export default function VerificarEmailPage() {
+  return (
+    <Suspense fallback={<div className="max-w-md mx-auto px-4 py-20 text-center">Carregando...</div>}>
+      <VerificarEmailContent />
+    </Suspense>
+  )
+}
+
+function VerificarEmailContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>(() => token ? 'loading' : 'error')

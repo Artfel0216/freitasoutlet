@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Product } from '@/types'
-import { ProductFilters } from '@/components/product/ProductFilters'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { Button } from '@/components/ui/Button'
 import { fadeUp } from '@/components/animations'
@@ -12,6 +12,11 @@ import { brands } from '@/data/brands'
 import { categories } from '@/data/categories'
 import { products as allProducts } from '@/data/products'
 import { ProductGridSkeleton } from '@/components/Skeleton'
+
+const ProductFilters = dynamic(() => import('@/components/product/ProductFilters').then((mod) => mod.ProductFilters), {
+  ssr: false,
+  loading: () => null,
+})
 
 const ITEMS_PER_PAGE = 12
 
@@ -112,7 +117,7 @@ export function CatalogClient({ products, totalCount }: CatalogClientProps) {
     setIsLoading(false)
   }, [])
 
-  const visibleProducts = products.slice(0, visibleCount)
+  const visibleProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount])
   const hasMore = visibleCount < products.length
 
   return (

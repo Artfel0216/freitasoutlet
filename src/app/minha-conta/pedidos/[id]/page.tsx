@@ -21,7 +21,7 @@ const statusLabel: Record<string, string> = {
 }
 
 const statusColor: Record<string, string> = {
-  pending: 'border-yellow-500 text-yellow-600',
+  pending: 'border-zinc-400 text-zinc-600',
   approved: 'border-green-500 text-green-600',
   rejected: 'border-red-500 text-red-600',
   refunded: 'border-gray-500 text-gray-600',

@@ -4,6 +4,13 @@ import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
 
+export async function GET() {
+  return NextResponse.json({ error: 'Método não permitido. Use POST.' }, {
+    status: 405,
+    headers: { Allow: 'POST' },
+  })
+}
+
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request)

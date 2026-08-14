@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Product } from '@/types'
@@ -9,17 +10,33 @@ import { SizeGuide } from '@/components/product/SizeGuide'
 import { SizeRecommendation } from '@/components/product/SizeRecommendation'
 import { useCart } from '@/context/CartContext'
 import { useRecentlyViewed } from '@/lib/recently-viewed'
-import { RecentlyViewed } from '@/components/product/RecentlyViewed'
 import { stagger, staggerItem } from '@/components/animations'
 import { WishlistButton } from '@/components/product/WishlistButton'
-import { ProductReviews } from '@/components/product/ProductReviews'
-import { SocialShare } from '@/components/product/SocialShare'
 import { CompareButton } from '@/components/product/CompareButton'
 import { NotifyWhenAvailable } from '@/components/product/NotifyWhenAvailable'
 import { FlashSaleTimer } from '@/components/product/FlashSaleTimer'
 import { OfferBadge } from '@/components/product/OfferBadge'
 import { getFlashSaleForProduct } from '@/lib/flash-sales'
-import { UnboxingVideoPlayer } from '@/components/ui/UnboxingVideoPlayer'
+
+const ProductReviews = dynamic(() => import('@/components/product/ProductReviews').then((mod) => mod.ProductReviews), {
+  ssr: false,
+  loading: () => null,
+})
+
+const RecentlyViewed = dynamic(() => import('@/components/product/RecentlyViewed').then((mod) => mod.RecentlyViewed), {
+  ssr: false,
+  loading: () => null,
+})
+
+const SocialShare = dynamic(() => import('@/components/product/SocialShare').then((mod) => mod.SocialShare), {
+  ssr: false,
+  loading: () => null,
+})
+
+const UnboxingVideoPlayer = dynamic(() => import('@/components/ui/UnboxingVideoPlayer').then((mod) => mod.UnboxingVideoPlayer), {
+  ssr: false,
+  loading: () => null,
+})
 
 interface ProductDetailClientProps {
   product: Product

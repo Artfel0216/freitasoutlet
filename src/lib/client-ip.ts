@@ -7,20 +7,41 @@ function looksLikeIp(value: string): boolean {
   return /^[0-9a-fA-F:]+$/.test(trimmed) && trimmed.includes(':')
 }
 
+function fromForwardedFor(value: string, fromRight: boolean): string | undefined {
+  const candidates = value.split(',').map((part) => part.trim()).filter(Boolean)
+  const order = fromRight ? candidates.slice().reverse() : candidates
+  for (const candidate of order) {
+    const cleaned = candidate.replace(/^::ffff:/, '')
+    if (looksLikeIp(cleaned)) return cleaned
+  }
+  return undefined
+}
+
 export function getClientIp(request: Request): string {
+  const trustProxy = process.env.TRUST_PROXY === 'true'
   const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    const candidates = forwarded.split(',').map((part) => part.trim()).filter(Boolean)
-    for (let i = candidates.length - 1; i >= 0; i--) {
-      const candidate = candidates[i].replace(/^::ffff:/, '')
-      if (looksLikeIp(candidate)) return candidate
+  const realIp = request.headers.get('x-real-ip')
+  const clientIp = request.headers.get('x-client-ip')
+
+  if (trustProxy) {
+    if (forwarded) {
+      const ip = fromForwardedFor(forwarded, true)
+      if (ip) return ip
     }
+    if (realIp && looksLikeIp(realIp)) return realIp.replace(/^::ffff:/, '')
+    if (clientIp && looksLikeIp(clientIp)) return clientIp.replace(/^::ffff:/, '')
+    return 'unknown'
   }
 
-  const realIp = request.headers.get('x-real-ip')
-  if (realIp && looksLikeIp(realIp)) return realIp.replace(/^::ffff:/, '')
+  if (process.env.NODE_ENV === 'production') {
+    return 'unknown'
+  }
 
-  const clientIp = request.headers.get('x-client-ip')
+  if (forwarded) {
+    const ip = fromForwardedFor(forwarded, false)
+    if (ip) return ip
+  }
+  if (realIp && looksLikeIp(realIp)) return realIp.replace(/^::ffff:/, '')
   if (clientIp && looksLikeIp(clientIp)) return clientIp.replace(/^::ffff:/, '')
 
   return 'anonymous'
