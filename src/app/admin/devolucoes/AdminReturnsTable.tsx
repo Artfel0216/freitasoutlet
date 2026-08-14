@@ -68,7 +68,7 @@ export function AdminReturnsTable() {
                 <td className="p-3 text-xs text-muted-foreground max-w-xs truncate">{r.details || '—'}</td>
                 <td className="p-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    r.status === 'pending' ? 'bg-yellow-50 text-yellow-700' :
+                    r.status === 'pending' ? 'bg-zinc-100 text-zinc-700' :
                     r.status === 'approved' ? 'bg-green-50 text-green-700' :
                     'bg-red-50 text-red-700'
                   }`}>

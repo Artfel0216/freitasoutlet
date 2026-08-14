@@ -3,14 +3,12 @@ import Script from 'next/script'
 import { Inter, Montserrat } from 'next/font/google'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { FloatingElements } from '@/components/layout/FloatingElements'
 import { CartProvider } from '@/context/CartContext'
 import { WishlistProvider } from '@/lib/wishlist-context'
 import { RecentlyViewedProvider } from '@/lib/recently-viewed'
 import { CompareProvider } from '@/context/CompareContext'
 import { LoyaltyProvider } from '@/context/LoyaltyContext'
-import { CompareBar } from '@/components/product/CompareBar'
-import { WhatsAppChat } from '@/components/ui/WhatsAppChat'
-import { InstallPWA } from '@/components/ui/InstallPWA'
 import { Suspense } from 'react'
 import { Analytics } from '@/components/Analytics'
 import { ToastProvider } from '@/components/ToastProvider'
@@ -30,8 +28,8 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: 'Freitas Outlet | Streetwear, Luxo & Performance',
-  description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais. Streetwear, luxo e performance esportiva.',
+  title: 'Freitas Outlet | O Luxo Mais Acessível',
+  description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais. O luxo mais acessível em um só lugar.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -62,9 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Header />
                   <main id="main-content">{children}</main>
                   <Footer />
-                  <CompareBar />
-                  <WhatsAppChat />
-                  <InstallPWA />
+                  <FloatingElements />
                   <Suspense fallback={null}>
                     <Analytics />
                   </Suspense>

@@ -65,7 +65,7 @@ export function AdminCustomersTable() {
                 <td className="p-3 text-muted-foreground">{customer.phone || '-'}</td>
                 <td className="p-3 text-muted-foreground font-mono text-xs">{customer.cpf || '-'}</td>
                 <td className="p-3">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${customer.emailVerified ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${customer.emailVerified ? 'bg-green-50 text-green-700' : 'bg-zinc-100 text-zinc-700'}`}>
                     {customer.emailVerified ? 'Sim' : 'Não'}
                   </span>
                 </td>

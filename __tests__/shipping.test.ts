@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateShipping } from '../lib/shipping'
+import { calculateShipping } from '@/lib/shipping'
 
 describe('calculateShipping', () => {
   it('returns PAC and SEDEX options for SP', () => {

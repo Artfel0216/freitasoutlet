@@ -91,7 +91,7 @@ export function AdminProductsTable({ products }: AdminProductsTableProps) {
                   )}
                   {'featured' in product && product.featured && (
                     <div>
-                      <span className="text-xs px-2 py-0.5 font-medium bg-yellow-100 text-yellow-700 inline-block">
+                      <span className="text-xs px-2 py-0.5 font-medium bg-zinc-100 text-zinc-700 inline-block">
                         Destaque
                       </span>
                     </div>

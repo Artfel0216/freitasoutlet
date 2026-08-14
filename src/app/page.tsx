@@ -12,10 +12,10 @@ import { getActiveFlashSales } from '@/lib/flash-sales'
 import { FadeIn, FadeUp, staggerItem, stagger, fadeUp } from '@/components/animations'
 
 const categories = [
-  { label: 'Calçados', href: '/categorias/calcados-masculinos', count: '12 itens', color: '#d4af37' },
+  { label: 'Calçados', href: '/categorias/calcados-masculinos', count: '12 itens', color: '#0a0a0a' },
   { label: 'Vestuário Premium', href: '/categorias/vestuario-premium', count: '8 itens', color: '#c0c0c0' },
   { label: 'Futebol', href: '/categorias/futebol-performance', count: '6 itens', color: '#3b82f6' },
-  { label: 'Alta Costura', href: '/marcas/gucci', count: '4 itens', color: '#d4af37' },
+  { label: 'Alta Costura', href: '/marcas/gucci', count: '4 itens', color: '#0a0a0a' },
 ]
 
 const luxuryBrands = [
@@ -56,7 +56,7 @@ export default function HomePage() {
       )}
 
       <motion.section
-        className="border-b border-border bg-gradient-to-b from-muted/30 to-background"
+        className="border-b border-border bg-linear-to-b from-muted/30 to-background"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
@@ -82,7 +82,7 @@ export default function HomePage() {
                   className="group relative block overflow-hidden rounded-2xl border border-border bg-white"
                 >
                   <div className="relative flex h-32 flex-col items-center justify-center">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gold/20 to-silver/20 mb-2" />
+                    <div className="h-12 w-12 rounded-full bg-linear-to-br from-gold/20 to-silver/20 mb-2" />
                     <motion.h3
                       className="font-heading text-center text-lg font-black uppercase tracking-tight group-hover:text-gold transition-all"
                       style={{ textShadow: '0 0 8px currentColor' }}
@@ -144,7 +144,7 @@ export default function HomePage() {
         whileInView="visible"
         viewport={{ once: true, margin: '-40px' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30" />
+        <div className="absolute inset-0 bg-linear-to-br from-muted/50 via-background to-muted/30" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -159,7 +159,7 @@ export default function HomePage() {
                 className="font-heading font-black text-3xl lg:text-5xl uppercase leading-tight mb-6 relative"
                 variants={fadeUp}
                 style={{
-                  background: 'linear-gradient(90deg, #000000 0%, #d4af37 50%, #000000 100%)',
+                  background: 'linear-gradient(90deg, #000000 0%, #ffffff 50%, #000000 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -194,7 +194,7 @@ export default function HomePage() {
                   transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   style={{ backgroundColor: brand.bg }}
                 >
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gold/30 to-silver/30 mb-1" />
+                  <div className="h-8 w-8 rounded-full bg-linear-to-br from-gold/30 to-silver/30 mb-1" />
                   <motion.p
                     className="font-heading font-black text-xs uppercase tracking-wider"
                     style={{ color: brand.color, textShadow: '0 0 8px rgba(0,0,0,0.1)' }}
@@ -243,7 +243,7 @@ export default function HomePage() {
                   className="group"
                 >
                   <motion.div
-                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gold/20 to-silver/20 group-hover:from-gold/40 group-hover:to-silver/40 transition-all"
+                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-gold/20 to-silver/20 group-hover:from-gold/40 group-hover:to-silver/40 transition-all"
                     whileHover={{ rotate: 360, scale: 1.1 }}
                     transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
                   >

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { Product } from '@/types'
 import { products as staticProducts } from '@/data/products'
-import { readStoredProducts, writeStoredProducts, type StoredProduct } from '@/lib/admin-products'
+import { readStoredProducts, writeStoredProducts, deleteStoredProduct, type StoredProduct } from '@/lib/admin-products'
 import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
 import { getSession } from '@/lib/auth'
 import { logger } from '@/lib/logger'
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const categoryName = formData.get('categoryName') as string
     const categorySlug = formData.get('categorySlug') as string
     const categoryParentSlug = formData.get('categoryParentSlug') as string
-    const description = formData.get('description') as string
+    const description = (formData.get('description') as string) || ''
     const video = (formData.get('video') as string) || ''
     const price = Number(formData.get('price'))
     const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
@@ -291,8 +291,7 @@ export async function DELETE(request: Request) {
     }
 
     if (index !== -1) {
-      stored.splice(index, 1)
-      await writeStoredProducts(stored)
+      await deleteStoredProduct(slug)
       return NextResponse.json({ success: true })
     }
 

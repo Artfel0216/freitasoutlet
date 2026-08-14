@@ -19,7 +19,7 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
+  pending: 'bg-zinc-100 text-zinc-700',
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
   refunded: 'bg-gray-100 text-gray-700',
@@ -90,7 +90,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
         <tbody>
           {localOrders.map((order, i) => {
             const fraudStatus = order.fraudAnalysis?.status
-            const fraudColor = fraudStatus === 'approved' ? 'text-green-600' : fraudStatus === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+            const fraudColor = fraudStatus === 'approved' ? 'text-green-600' : fraudStatus === 'rejected' ? 'text-red-600' : 'text-zinc-600'
             const nextOps = nextStatuses[order.status] || []
 
             return (

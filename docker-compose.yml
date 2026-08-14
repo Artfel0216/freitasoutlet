@@ -5,6 +5,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - TRUST_PROXY=${TRUST_PROXY:-false}
       - DATABASE_URL=${DATABASE_URL}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT:-587}

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { slugExists } from '@/lib/valid-slugs'
 
 const ADMIN_LOGIN_PATH = '/admin/login'
 const ADMIN_API_PATH = '/api/admin'
@@ -15,14 +16,6 @@ export function proxy(request: NextRequest) {
   const isAdminLoginPage = pathname === ADMIN_LOGIN_PATH
   const isAdminApiRoute = pathname.startsWith(ADMIN_API_PATH)
   const isStaticAsset = pathname.startsWith('/_next') || pathname.startsWith('/images') || pathname === '/favicon.ico'
-
-  if (isAdminRoute && !isAdminLoginPage && !isAdminApiRoute && !isStaticAsset) {
-    const sessionToken = request.cookies.get('fo_admin_session')
-    if (!sessionToken?.value) {
-      const loginUrl = new URL(ADMIN_LOGIN_PATH, request.url)
-      return NextResponse.redirect(loginUrl)
-    }
-  }
 
   if (pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD' && request.method !== 'OPTIONS') {
     const isPublic = PUBLIC_API_PATHS.some((p) => pathname.startsWith(p))
@@ -42,6 +35,22 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  const slugMatch = pathname.match(/^\/(produtos|blog|modelos)\/([^/]+)$/)
+  if (slugMatch && request.method === 'GET') {
+    const [, route, slug] = slugMatch
+    if (!slugExists(route as 'produtos' | 'blog' | 'modelos', slug)) {
+      return NextResponse.rewrite(new URL('/_slug-nao-encontrado/', request.url))
+    }
+  }
+
+  if (isAdminRoute && !isAdminLoginPage && !isAdminApiRoute && !isStaticAsset) {
+    const sessionToken = request.cookies.get('fo_admin_session')
+    if (!sessionToken?.value) {
+      const loginUrl = new URL(ADMIN_LOGIN_PATH, request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.stripe.com https://www.google.com https://www.gstatic.com",
@@ -49,7 +58,7 @@ export function proxy(request: NextRequest) {
     "img-src 'self' data: blob: https://*.stripe.com",
     "font-src 'self' https://fonts.gstatic.com",
     "frame-src 'self' https://*.stripe.com",
-    "connect-src 'self' https://*.stripe.com https://viacep.com.br",
+    "connect-src 'self' https://*.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
