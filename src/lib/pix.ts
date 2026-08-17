@@ -13,7 +13,7 @@ type PixPayload = {
   expiresAt: string
 }
 
-export function generatePixPayload(cpf: string, value: number, name: string): PixPayload {
+export function generatePixPayload(cpf: string, value: number): PixPayload {
   const txId = crypto.randomUUID().replace(/-/g, '').toUpperCase().slice(0, 25)
   const valueFormatted = value.toFixed(2).replace('.', '')
   const nameFormatted = STORE_NAME.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().slice(0, 25)

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       if (purchased) verified = true
     }
 
-    let images: string[] = []
+    const images: string[] = []
 
     if (imageFiles.length > 0) {
       for (const file of imageFiles) {
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       verified,
     })
 
-    const { customerEmail: _, ...safe } = review
+    const { customerEmail: _customerEmail, ...safe } = review
 
     return NextResponse.json(safe, { status: 201 })
   } catch (err) {

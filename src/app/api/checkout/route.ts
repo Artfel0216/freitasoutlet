@@ -229,8 +229,6 @@ export async function POST(request: Request) {
         }, { status: 403 })
       }
 
-      const customerName = data.name
-
       if (paymentMethod === 'credit' || paymentMethod === 'debit') {
         if (!paymentMethodId) {
           return NextResponse.json({ error: 'Dados do pagamento são obrigatórios' }, { status: 400 })
@@ -296,7 +294,7 @@ export async function POST(request: Request) {
       }
 
       if (paymentMethod === 'pix') {
-        const result = await processPixPayment(data.cpf, total, customerName)
+        const result = await processPixPayment(data.cpf, total)
 
         const order = await createOrder({
           status: 'pending',

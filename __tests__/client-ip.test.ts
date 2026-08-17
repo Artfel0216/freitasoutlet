@@ -1,19 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { getClientIp } from '@/lib/client-ip'
-
-const originalEnv = { ...process.env }
 
 function makeRequest(headers: Record<string, string>): Request {
   return new Request('http://localhost:3000/api/health', { headers })
 }
 
 beforeEach(() => {
-  process.env.NODE_ENV = 'test'
-  process.env.TRUST_PROXY = ''
+  vi.stubEnv('NODE_ENV', 'test')
+  vi.stubEnv('TRUST_PROXY', '')
 })
 
 afterEach(() => {
-  process.env = { ...originalEnv }
+  vi.unstubAllEnvs()
 })
 
 describe('getClientIp', () => {
@@ -27,26 +25,26 @@ describe('getClientIp', () => {
   })
 
   it('trustProxy=true: uses right-most valid IP', () => {
-    process.env.TRUST_PROXY = 'true'
+    vi.stubEnv('TRUST_PROXY', 'true')
     const req = makeRequest({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8' })
     expect(getClientIp(req)).toBe('5.6.7.8')
   })
 
   it('trustProxy=true: uses x-real-ip fallback', () => {
-    process.env.TRUST_PROXY = 'true'
+    vi.stubEnv('TRUST_PROXY', 'true')
     const req = makeRequest({ 'x-real-ip': '10.1.1.1' })
     expect(getClientIp(req)).toBe('10.1.1.1')
   })
 
   it('production without TRUST_PROXY: ignores client-controlled headers', () => {
-    process.env.NODE_ENV = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
     const req = makeRequest({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8', 'x-real-ip': '10.0.0.99', 'x-client-ip': '198.51.100.1' })
     expect(getClientIp(req)).toBe('unknown')
   })
 
   it('production with TRUST_PROXY=true: trusts right-most IP', () => {
-    process.env.NODE_ENV = 'production'
-    process.env.TRUST_PROXY = 'true'
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('TRUST_PROXY', 'true')
     const req = makeRequest({ 'x-forwarded-for': '9.9.9.9, 203.0.113.7' })
     expect(getClientIp(req)).toBe('203.0.113.7')
   })

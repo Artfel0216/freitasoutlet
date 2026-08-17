@@ -1,9 +1,0 @@
-⚠ Port 3000 is in use by process 5160, using available port 3001 instead.
-⨯ Another next dev server is already running.
-
-- Local:        http://localhost:3000
-- PID:          5160
-- Dir:          C:\Users\Artfe\Desenvolvimento\freitasoutlet
-- Log:          .next\dev\logs\next-development.log
-
-Run taskkill /PID 5160 /F to stop it.

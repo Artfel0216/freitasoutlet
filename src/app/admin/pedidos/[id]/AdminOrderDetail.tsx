@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { UnboxingVideoPlayer } from '@/components/ui/UnboxingVideoPlayer'
 import type { Order } from '@/lib/db'

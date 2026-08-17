@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { updateOrderStatus, getOrderById, updatePaymentInfo, getOrderByNumber } from '@/lib/db'
 import { sendOrderConfirmation } from '@/lib/email'
-import { sendShippingUpdate } from '@/lib/email'
 import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
 import { decrementStock } from '@/lib/stock'

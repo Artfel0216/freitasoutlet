@@ -78,10 +78,6 @@ export function AdminEditProductForm({ product, brands }: { product: EditablePro
     setImagePreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
-  function removeExistingImage(index: number) {
-    setImageFiles((prev) => [...prev]) // trigger re-render
-  }
-
   async function handleCreateBrand(e: FormEvent) {
     e.preventDefault()
     if (!newBrandName.trim()) return

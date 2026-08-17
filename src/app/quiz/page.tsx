@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { products as allProducts } from '@/data/products'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { Button } from '@/components/ui/Button'
-import { fadeUp, staggerItem, stagger } from '@/components/animations'
+import { stagger } from '@/components/animations'
 
 type QuizAnswer = string | null
 

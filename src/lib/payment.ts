@@ -67,15 +67,14 @@ export async function confirmStripePayment(paymentIntentId: string): Promise<{
 
 export async function processPixPayment(
   cpf: string,
-  amount: number,
-  customerName: string
+  amount: number
 ): Promise<{
   success: boolean
   transactionId: string
   status: string
   paymentInfo: Pick<PaymentInfo, 'pixKey' | 'pixQrCode'>
 }> {
-  const pix = generatePixPayload(cpf, amount, customerName)
+  const pix = generatePixPayload(cpf, amount)
 
   return {
     success: true,

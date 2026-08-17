@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import {
   motion,
@@ -10,7 +11,11 @@ import {
   useReducedMotion,
   type Variants,
 } from 'framer-motion'
-import { HeroCanvas } from './HeroCanvas'
+
+const HeroCanvas = dynamic(() => import('./HeroCanvas').then((mod) => mod.HeroCanvas), {
+  ssr: false,
+  loading: () => null,
+})
 
 const heroProduct = {
   name: 'Nike Air Max Infinity',

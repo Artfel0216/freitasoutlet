@@ -1,49 +1,99 @@
-﻿const CACHE_NAME = 'freitasoutlet-v1'
-const STATIC_ASSETS = [
-  '/',
+﻿const CACHE_NAME = 'freitasoutlet-v2'
+const PRECACHE_ASSETS = [
   '/icon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
   '/offline',
 ]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS)
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
   )
   self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+    )
   )
   self.clients.claim()
 })
 
+function isNavigationRequest(request) {
+  return request.mode === 'navigate'
+}
+
+function isStaticAsset(request) {
+  const url = new URL(request.url)
+  return (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/images/') ||
+    url.pathname.startsWith('/fonts/')
+  )
+}
+
+function isApiRequest(request) {
+  return new URL(request.url).pathname.startsWith('/api/')
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
+  if (event.request.url.includes('stripe.com')) return
+
+  if (isNavigationRequest(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          return response
+        })
+        .catch(() =>
+          caches.match(event.request).then(
+            (cached) => cached || caches.match('/offline')
+          )
+        )
+    )
+    return
+  }
+
+  if (isStaticAsset(event.request)) {
+    event.respondWith(
+      caches.match(event.request).then(
+        (cached) =>
+          cached ||
+          fetch(event.request).then((response) => {
+            if (response.status === 200) {
+              const clone = response.clone()
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+            }
+            return response
+          })
+      )
+    )
+    return
+  }
+
+  if (isApiRequest(event.request)) {
+    event.respondWith(fetch(event.request))
+    return
+  }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        if (response.status === 200) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone)
-          })
-        }
-        return response
-      }).catch(() => {
-        return caches.match('/offline')
-      })
-    })
+    caches.match(event.request).then(
+      (cached) =>
+        cached ||
+        fetch(event.request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return response
+        })
+    )
   )
 })
 
