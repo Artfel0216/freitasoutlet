@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import {
@@ -9,75 +8,15 @@ import {
   useScroll,
   useTransform,
   useReducedMotion,
-  type Variants,
 } from 'framer-motion'
+import { BrandMarquee } from './BrandMarquee'
+import { HeroProductCard } from './HeroProductCard'
+import { container, heroTags, item, lineGrow } from './hero-data'
 
 const HeroCanvas = dynamic(() => import('./HeroCanvas').then((mod) => mod.HeroCanvas), {
   ssr: false,
   loading: () => null,
 })
-
-const heroProduct = {
-  name: 'Nike Air Max Infinity',
-  slug: 'tenis-nike-air-max-infinity',
-  price: 'R$ 799,90',
-  compareAtPrice: 'R$ 999,90',
-  image: '/images/products/catalogo/tenis/nike/air-max-infinity/cinza-lateral.jpg',
-}
-
-const brands = [
-  'Nike',
-  'Adidas',
-  'Gucci',
-  'Alexander McQueen',
-  'Louis Vuitton',
-  'Hugo Boss',
-  'On',
-  'Puma',
-]
-
-const container: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-}
-
-const item: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
-}
-
-const lineGrow: Variants = {
-  hidden: { scaleX: 0, opacity: 0 },
-  visible: { scaleX: 1, opacity: 1, transition: { duration: 0.7, ease: 'easeOut' } },
-}
-
-function BrandMarquee() {
-  return (
-    <div className="relative overflow-hidden border-y border-border" aria-hidden="true">
-      <div className="flex w-max animate-marquee">
-        {[0, 1].map((n) => (
-          <div key={n} className="flex shrink-0 items-center">
-            {brands.map((brand) => (
-              <span
-                key={`${n}-${brand}`}
-                className="flex items-center gap-6 px-6 py-4 font-heading text-sm font-black uppercase tracking-[0.35em] text-muted-foreground/30"
-              >
-                {brand}
-                <span className="h-1.5 w-1.5 rotate-45 bg-foreground/30" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const heroTags = [
-  { label: 'Frete Grátis +R$ 299' },
-  { label: '12x sem juros' },
-  { label: '100% original' },
-]
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -94,14 +33,18 @@ export function Hero() {
   const scale = useTransform(scrollYProgress, [0, 1], [1, reduceMotion ? 1 : 0.94])
 
   return (
-    <section ref={sectionRef} className="relative isolate overflow-hidden text-foreground" onMouseMove={(e) => {
-      if (reduceMotion) return
-      const rect = e.currentTarget.getBoundingClientRect()
-      setMousePos({
-        x: (e.clientX - rect.left) / rect.width - 0.5,
-        y: (e.clientY - rect.top) / rect.height - 0.5,
-      })
-    }}>
+    <section
+      ref={sectionRef}
+      className="relative isolate overflow-hidden text-foreground"
+      onMouseMove={(e) => {
+        if (reduceMotion) return
+        const rect = e.currentTarget.getBoundingClientRect()
+        setMousePos({
+          x: (e.clientX - rect.left) / rect.width - 0.5,
+          y: (e.clientY - rect.top) / rect.height - 0.5,
+        })
+      }}
+    >
       <HeroCanvas />
 
       <div className="relative z-10">
@@ -197,66 +140,7 @@ export function Hero() {
               style={{ y: shoeY, opacity: fade, scale }}
               className="relative lg:pl-6"
             >
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={container}
-                className="relative"
-              >
-                <motion.span
-                  variants={item}
-                  aria-hidden
-                  className="pointer-events-none absolute -top-10 left-1/2 z-0 -translate-x-1/2 select-none whitespace-nowrap font-heading text-[clamp(5rem,16vw,11rem)] font-black uppercase leading-none text-stroke-strong"
-                >
-                  LUXO
-                </motion.span>
-
-                <motion.div variants={item} className="relative z-[1]">
-                  <div className="absolute -inset-6 animate-spin-slow rounded-full border-2 border-dashed border-foreground/15" />
-
-                  <div className="relative mx-auto aspect-square h-[420px] w-full max-w-md overflow-hidden rounded-3xl bg-muted">
-                    <Image
-                      src={heroProduct.image}
-                      alt={heroProduct.name}
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 100vw, 28rem"
-                      className="object-cover"
-                    />
-                  </div>
-
-                  <motion.div
-                    variants={item}
-                    className="glass-card absolute bottom-3 left-0 right-0 z-10 flex items-end justify-between gap-4 rounded-xl px-4 py-3 text-xs"
-                  >
-                    <div>
-                      <p className="font-heading text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-                        Destaque da Semana
-                      </p>
-                      <p className="mt-1 font-heading text-sm font-bold uppercase tracking-wider text-foreground">
-                        {heroProduct.name}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/produtos/${heroProduct.slug}`}
-                      className="group flex flex-col items-end gap-1 font-heading font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <span className="text-base text-foreground">{heroProduct.price}</span>
-                      <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground group-hover:text-foreground">
-                        <span className="line-through">{heroProduct.compareAtPrice}</span>
-                        <svg
-                          className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </span>
-                    </Link>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
+              <HeroProductCard />
             </motion.div>
           </div>
         </div>

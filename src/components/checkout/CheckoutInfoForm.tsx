@@ -2,11 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
-import type { SavedAddress, ShippingOption, FieldErrors } from '@/components/checkout/checkout-utils'
+import type { SavedAddress, ShippingOption, FieldErrors, CheckoutFormData } from '@/components/checkout/checkout-utils'
 import { formatCPF, formatCEP, formatPhone } from '@/components/checkout/checkout-utils'
 
 interface CheckoutInfoFormProps {
-  formData: Record<string, string>
+  formData: CheckoutFormData
   errors: FieldErrors
   updateField: (field: string, value: string) => void
   savedAddresses: SavedAddress[]

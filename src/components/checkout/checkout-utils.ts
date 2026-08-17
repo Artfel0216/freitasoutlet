@@ -15,6 +15,19 @@ export type PaymentMethod = 'pix' | 'credit' | 'debit'
 export type Step = 'info' | 'payment' | 'success' | 'error'
 export type FieldErrors = Record<string, string>
 
+export type CheckoutFormData = {
+  name: string
+  email: string
+  cpf: string
+  phone: string
+  cep: string
+  street: string
+  number: string
+  neighborhood: string
+  city: string
+  state: string
+}
+
 export type ShippingOption = {
   service: string
   description: string

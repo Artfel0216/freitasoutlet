@@ -1,16 +1,20 @@
 import { NextResponse } from 'next/server'
-import type { Product } from '@/types'
 import { products as staticProducts } from '@/data/products'
-import { readStoredProducts, writeStoredProducts, deleteStoredProduct, type StoredProduct } from '@/lib/admin-products'
-import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
-import { getSession } from '@/lib/auth'
+import {
+  readStoredProducts,
+  writeStoredProducts,
+  deleteStoredProduct,
+  type StoredProduct,
+} from '@/lib/admin-products'
+import { requireAdmin } from '@/lib/admin/require-auth'
+import { parseProductFormData } from '@/lib/admin/product-form-data'
+import { processImageUploads } from '@/lib/admin/product-images'
+import { createInactiveCopy } from '@/lib/admin/static-product-copy'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: Request) {
-  const session = await getSession()
-  if (!session.authenticated) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  }
+  const unauthorized = await requireAdmin()
+  if (unauthorized) return unauthorized
 
   const { searchParams } = new URL(request.url)
   const search = searchParams.get('search')?.toLowerCase()
@@ -19,13 +23,15 @@ export async function GET(request: Request) {
 
   const stored = await readStoredProducts()
   const hiddenSlugs = new Set(stored.filter((s) => s.active === false).map((s) => s.slug))
-  const all: (Product | StoredProduct)[] = [
+  const all: (typeof staticProducts[number] | StoredProduct)[] = [
     ...stored.filter((sp) => !staticProducts.some((p) => p.slug === sp.slug) && sp.active !== false),
     ...staticProducts.filter((p) => !hiddenSlugs.has(p.slug)),
   ]
 
   if (search) {
-    return NextResponse.json(all.filter((p) => p.name.toLowerCase().includes(search) || p.slug.includes(search)))
+    return NextResponse.json(
+      all.filter((p) => p.name.toLowerCase().includes(search) || p.slug.includes(search)),
+    )
   }
   if (brand) {
     return NextResponse.json(all.filter((p) => p.brand.slug === brand))
@@ -38,88 +44,43 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await getSession()
-  if (!session.authenticated) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  }
+  const unauthorized = await requireAdmin()
+  if (unauthorized) return unauthorized
 
   try {
     const formData = await request.formData()
-    const name = formData.get('name') as string
-    const brandId = formData.get('brandId') as string
-    const brandName = formData.get('brandName') as string
-    const brandSlug = formData.get('brandSlug') as string
-    const brandSegment = formData.get('brandSegment') as string
-    const categoryId = formData.get('categoryId') as string
-    const categoryName = formData.get('categoryName') as string
-    const categorySlug = formData.get('categorySlug') as string
-    const categoryParentSlug = formData.get('categoryParentSlug') as string
-    const description = (formData.get('description') as string) || ''
-    const video = (formData.get('video') as string) || ''
-    const price = Number(formData.get('price'))
-    const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
-    const sizes: string[] = JSON.parse((formData.get('sizes') as string) || '[]')
-    const colors: { name: string; hex: string }[] = JSON.parse((formData.get('colors') as string) || '[]')
-    const tags = (formData.get('tags') as string || '').split(',').map((t) => t.trim()).filter(Boolean)
-    const isNew = formData.get('isNew') === 'true'
-    const isTrending = formData.get('isTrending') === 'true'
-    const offerStatus = (formData.get('offerStatus') as string) || 'none'
-    const offerType = (formData.get('offerType') as string) || 'none'
-    const offerDiscount = Number(formData.get('offerDiscount') || 0)
-    const featured = formData.get('featured') === 'true'
-    const active = formData.get('active') !== 'false'
-    const sizeGuide = (formData.get('sizeGuide') as string) || 'shirt'
+    const data = parseProductFormData(formData)
 
-    if (!name || !price) {
+    if (!data.name || !data.price) {
       return NextResponse.json({ error: 'Nome e preço são obrigatórios' }, { status: 400 })
     }
 
-    const slug = name.toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-
-    const imageFiles = formData.getAll('images') as File[]
-    const images: string[] = []
-
-    for (const file of imageFiles) {
-      if (file.size === 0) continue
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return NextResponse.json({
-          error: `Tipo de arquivo não permitido: ${file.name}. Use JPEG, PNG, WebP ou GIF.`,
-        }, { status: 400 })
-      }
-      if (file.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json({ error: `${file.name} deve ter no máximo 5MB.` }, { status: 400 })
-      }
-      const url = await saveImage(file, 'uploads')
-      if (url) images.push(url)
-    }
+    const imagesResult = await processImageUploads(formData.getAll('images') as File[])
+    if (!imagesResult.ok) return imagesResult.response
 
     const newProduct: StoredProduct = {
-      id: slug,
-      name,
-      slug,
-      brand: { id: brandId || brandSlug, name: brandName, slug: brandSlug, segment: brandSegment || 'premium' },
-      category: { id: categoryId || categorySlug, name: categoryName, slug: categorySlug, parentId: categoryParentSlug || null },
-      description,
-      price,
-      compareAtPrice,
-      images,
-      video,
-      colors,
-      sizes,
-      sizeGuide,
-      tags,
-      isNew,
-      isTrending,
-      offerStatus: offerStatus as StoredProduct['offerStatus'],
-      offerType: offerType as StoredProduct['offerType'],
-      offerDiscount,
-      featured,
+      id: data.slug,
+      name: data.name,
+      slug: data.slug,
+      brand: data.brand,
+      category: data.category,
+      description: data.description,
+      price: data.price,
+      compareAtPrice: data.compareAtPrice,
+      images: imagesResult.images,
+      video: data.video,
+      colors: data.colors,
+      sizes: data.sizes,
+      sizeGuide: data.sizeGuide,
+      tags: data.tags,
+      isNew: data.isNew,
+      isTrending: data.isTrending,
+      offerStatus: data.offerStatus,
+      offerType: data.offerType,
+      offerDiscount: data.offerDiscount,
+      featured: data.featured,
       stock: {},
-      active,
+      active: data.active,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -136,39 +97,16 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await getSession()
-  if (!session.authenticated) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  }
+  const unauthorized = await requireAdmin()
+  if (unauthorized) return unauthorized
 
   try {
     const formData = await request.formData()
-    const slug = formData.get('slug') as string
-    if (!slug) return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
-
-    const name = formData.get('name') as string
-    const brandName = formData.get('brandName') as string
-    const brandSlug = formData.get('brandSlug') as string
-    const categoryName = formData.get('categoryName') as string
-    const categorySlug = formData.get('categorySlug') as string
-    const description = formData.get('description') as string
-    const video = (formData.get('video') as string) || ''
-    const price = Number(formData.get('price'))
-    const compareAtPrice = formData.get('compareAtPrice') ? Number(formData.get('compareAtPrice')) : null
-    const sizes: string[] = JSON.parse((formData.get('sizes') as string) || '[]')
-    const colors: { name: string; hex: string }[] = JSON.parse((formData.get('colors') as string) || '[]')
-    const tags = (formData.get('tags') as string || '').split(',').map((t) => t.trim()).filter(Boolean)
-    const isNew = formData.get('isNew') === 'true'
-    const isTrending = formData.get('isTrending') === 'true'
-    const offerStatus = (formData.get('offerStatus') as string) || 'none'
-    const offerType = (formData.get('offerType') as string) || 'none'
-    const offerDiscount = Number(formData.get('offerDiscount') || 0)
-    const featured = formData.get('featured') === 'true'
-    const active = formData.get('active') !== 'false'
-    const sizeGuide = (formData.get('sizeGuide') as string) || 'shirt'
+    const data = parseProductFormData(formData, { deriveSlug: false })
+    if (!data.slug) return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
 
     const stored = await readStoredProducts()
-    const index = stored.findIndex((p) => p.slug === slug)
+    const index = stored.findIndex((p) => p.slug === data.slug)
     if (index === -1) {
       return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 })
     }
@@ -179,49 +117,38 @@ export async function PUT(request: Request) {
     const keepExisting = formData.get('keepExistingImages') === 'true'
     const images = keepExisting && existingImagesStr ? JSON.parse(existingImagesStr) : existing.images
 
-    const imageFiles = formData.getAll('images') as File[]
+    const imagesResult = await processImageUploads(formData.getAll('images') as File[])
+    if (!imagesResult.ok) return imagesResult.response
 
-    for (const file of imageFiles) {
-      if (file.size === 0) continue
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return NextResponse.json({
-          error: `Tipo de arquivo não permitido: ${file.name}. Use JPEG, PNG, WebP ou GIF.`,
-        }, { status: 400 })
-      }
-      if (file.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json({ error: `${file.name} deve ter no máximo 5MB.` }, { status: 400 })
-      }
-      const url = await saveImage(file, 'uploads')
-      if (url) images.push(url)
-    }
-
-    const brand = brandName && brandSlug
-      ? { id: brandSlug, name: brandName, slug: brandSlug, segment: 'premium' as const }
-      : existing.brand
-    const category = categoryName && categorySlug
-      ? { id: categorySlug, name: categoryName, slug: categorySlug, parentId: existing.category.parentId }
-      : existing.category
+    const brand =
+      data.brand.name && data.brand.slug
+        ? { id: data.brand.slug, name: data.brand.name, slug: data.brand.slug, segment: 'premium' as const }
+        : existing.brand
+    const category =
+      data.category.name && data.category.slug
+        ? { id: data.category.slug, name: data.category.name, slug: data.category.slug, parentId: existing.category.parentId }
+        : existing.category
 
     const updated: StoredProduct = {
       ...existing,
       brand,
       category,
-      name: name || existing.name,
-      description: description || existing.description,
-      price: price || existing.price,
-      compareAtPrice: compareAtPrice !== null ? compareAtPrice : existing.compareAtPrice,
-      video,
-      sizes: sizes.length > 0 ? sizes : existing.sizes,
-      colors: colors.length > 0 ? colors : existing.colors,
-      tags: tags.length > 0 ? tags : existing.tags,
-      isNew,
-      isTrending,
-      offerStatus: offerStatus as StoredProduct['offerStatus'],
-      offerType: offerType as StoredProduct['offerType'],
-      offerDiscount,
-      featured,
-      active,
-      sizeGuide,
+      name: data.name || existing.name,
+      description: data.description || existing.description,
+      price: data.price || existing.price,
+      compareAtPrice: data.compareAtPrice !== null ? data.compareAtPrice : existing.compareAtPrice,
+      video: data.video,
+      sizes: data.sizes.length > 0 ? data.sizes : existing.sizes,
+      colors: data.colors.length > 0 ? data.colors : existing.colors,
+      tags: data.tags.length > 0 ? data.tags : existing.tags,
+      isNew: data.isNew,
+      isTrending: data.isTrending,
+      offerStatus: data.offerStatus,
+      offerType: data.offerType,
+      offerDiscount: data.offerDiscount,
+      featured: data.featured,
+      active: data.active,
+      sizeGuide: data.sizeGuide,
       images,
       updatedAt: new Date().toISOString(),
     }
@@ -237,10 +164,8 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await getSession()
-  if (!session.authenticated) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  }
+  const unauthorized = await requireAdmin()
+  if (unauthorized) return unauthorized
 
   try {
     const { slug } = await request.json()
@@ -251,37 +176,9 @@ export async function DELETE(request: Request) {
     const staticProduct = staticProducts.find((p) => p.slug === slug)
 
     if (staticProduct) {
-      const now = new Date().toISOString()
-      const copy: StoredProduct = index !== -1
-        ? { ...stored[index] }
-        : {
-            id: staticProduct.id,
-            name: staticProduct.name,
-            slug: staticProduct.slug,
-            brand: { id: staticProduct.brand.slug, name: staticProduct.brand.name, slug: staticProduct.brand.slug, segment: staticProduct.brand.segment },
-            category: { id: staticProduct.category.slug, name: staticProduct.category.name, slug: staticProduct.category.slug, parentId: staticProduct.category.parentId },
-            description: staticProduct.description,
-            price: staticProduct.price,
-            compareAtPrice: staticProduct.compareAtPrice ?? null,
-            images: staticProduct.images,
-            video: staticProduct.video || '',
-            colors: staticProduct.colors,
-            sizes: staticProduct.sizes,
-            sizeGuide: staticProduct.sizeGuide,
-            tags: staticProduct.tags,
-            isNew: staticProduct.isNew ?? false,
-            isTrending: staticProduct.isTrending ?? false,
-            offerStatus: staticProduct.offerStatus || 'none',
-            offerType: staticProduct.offerType || 'none',
-            offerDiscount: staticProduct.offerDiscount || 0,
-            featured: staticProduct.featured || false,
-            stock: staticProduct.stock ?? {},
-            active: false,
-            createdAt: now,
-            updatedAt: now,
-          }
+      const copy = index !== -1 ? { ...stored[index] } : createInactiveCopy(staticProduct)
       copy.active = false
-      copy.updatedAt = now
+      copy.updatedAt = new Date().toISOString()
 
       if (index !== -1) stored[index] = copy
       else stored.push(copy)
