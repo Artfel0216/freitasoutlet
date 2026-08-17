@@ -11,6 +11,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { decrementStock } from '@/lib/stock'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { getLoyaltyDiscount } from '@/lib/loyalty-server'
 import { queryOne, queryRun } from '@/lib/database'
 
 async function validateCoupon(code: string, orderTotal: number): Promise<{ valid: boolean; discount: number; error?: string }> {
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
       }
 
-      const { data, paymentMethod, items, shipping: shippingOption, couponCode, loyaltyDiscountPercent, paymentMethodId } = body
+      const { data, paymentMethod, items, shipping: shippingOption, couponCode, paymentMethodId } = body
 
       const idempotencyKey = createHash('sha256')
         .update(JSON.stringify({
@@ -71,7 +72,6 @@ export async function POST(request: Request) {
           paymentMethod,
           shipping: shippingOption,
           couponCode,
-          loyaltyDiscountPercent,
         }))
         .digest('hex')
 
@@ -178,7 +178,8 @@ export async function POST(request: Request) {
         couponDiscount = couponResult.discount
       }
 
-      const loyaltyDiscount = typeof loyaltyDiscountPercent === 'number' && loyaltyDiscountPercent > 0
+      const loyaltyDiscountPercent = await getLoyaltyDiscount(data.email)
+      const loyaltyDiscount = loyaltyDiscountPercent > 0
         ? subtotal * loyaltyDiscountPercent / 100
         : 0
 
