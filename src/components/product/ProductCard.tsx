@@ -23,13 +23,19 @@ export function ProductCard({ product }: ProductCardProps) {
     <motion.div variants={staggerItem}>
       <Link href={`/produtos/${product.slug}`} className="group block">
         <div className="product-card-media relative card-3d aspect-square bg-muted overflow-hidden mb-3">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-          />
+          {product.images.length > 0 ? (
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Sem imagem</span>
+            </div>
+          )}
 
           <motion.div
             className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent"

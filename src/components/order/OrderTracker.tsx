@@ -160,7 +160,7 @@ export function OrderTracker() {
           <div className="bg-muted p-6">
             <h3 className="font-heading font-bold text-sm uppercase tracking-wider mb-3">Itens do Pedido</h3>
             <div className="space-y-3">
-              {order.items.map((item, i) => (
+              {(order.items || []).map((item, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div>
                     <p className="font-medium">{item.productName}</p>

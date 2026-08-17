@@ -14,14 +14,19 @@ export default function ContatoPage() {
     const data = Object.fromEntries(form)
     data.message = `[${data.subject}] ${data.message}`
     try {
-      await fetch('/api/contato', {
+      const res = await fetch('/api/contato', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      setSent(true)
+      if (res.ok) {
+        setSent(true)
+      } else {
+        const result = await res.json().catch(() => null)
+        alert(result?.error || 'Não foi possível enviar a mensagem')
+      }
     } catch {
-      
+      alert('Não foi possível enviar a mensagem')
     } finally {
       setLoading(false)
     }

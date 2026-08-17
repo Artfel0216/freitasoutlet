@@ -137,6 +137,17 @@ function parseJsonOrPlain<T>(value: string, fallback: (plain: string) => T): T {
   }
 }
 
+function parseJsonArray(value: string): unknown[] {
+  const trimmed = String(value ?? '').trim()
+  if (!trimmed) return []
+  try {
+    const parsed = JSON.parse(trimmed)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 function rowToStoredProduct(row: Record<string, unknown>): StoredProduct {
   return {
     id: row.id as string,
@@ -157,19 +168,19 @@ function rowToStoredProduct(row: Record<string, unknown>): StoredProduct {
     description: row.description as string,
     price: Number(row.price),
     compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : null,
-    images: JSON.parse(row.images as string),
+    images: parseJsonArray(row.images as string) as string[],
     video: (row.video as string) || '',
-    colors: JSON.parse(row.colors as string),
-    sizes: JSON.parse(row.sizes as string),
+    colors: parseJsonArray(row.colors as string) as StoredProduct['colors'],
+    sizes: parseJsonArray(row.sizes as string) as string[],
     sizeGuide: row.size_guide as string,
-    tags: JSON.parse(row.tags as string),
+    tags: parseJsonArray(row.tags as string) as string[],
     isNew: (row.is_new as number) === 1,
     isTrending: (row.is_trending as number) === 1,
     offerStatus: (row.offer_status as string || 'none') as OfferStatus,
     offerType: (row.offer_type as string || 'none') as OfferType,
     offerDiscount: Number(row.offer_discount || 0),
     featured: (row.featured as number) === 1,
-    stock: JSON.parse((row.stock as string) || '{}'),
+    stock: parseJsonOrPlain<Record<string, number>>((row.stock as string) || '{}', () => ({})) as Record<string, number>,
     active: (row.active as number) === 1,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,

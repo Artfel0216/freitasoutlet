@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 async function initBlogPostsTable() {
   try { await queryRun("CREATE TABLE IF NOT EXISTS blog_posts (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, excerpt TEXT NOT NULL DEFAULT '', content TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT 'Dicas', published INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)") } catch { /* */ }
 }
 
 export async function GET() {
-  await initBlogPostsTable()
-  const rows = await queryAll('SELECT * FROM blog_posts ORDER BY created_at DESC')
-  const posts = rows.map(r => ({
-    id: r.id, slug: r.slug, title: r.title, excerpt: r.excerpt,
-    content: r.content, category: r.category, published: Boolean(r.published),
-    createdAt: r.created_at, updatedAt: r.updated_at,
-  }))
-  return NextResponse.json({ posts })
+  try {
+    await initBlogPostsTable()
+    const rows = await queryAll('SELECT * FROM blog_posts ORDER BY created_at DESC')
+    const posts = rows.map(r => ({
+      id: r.id, slug: r.slug, title: r.title, excerpt: r.excerpt,
+      content: r.content, category: r.category, published: Boolean(r.published),
+      createdAt: r.created_at, updatedAt: r.updated_at,
+    }))
+    return NextResponse.json({ posts })
+  } catch (error) {
+    logger.error('Blog list error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao listar posts' }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -24,29 +30,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
+  let body: Record<string, unknown>
   try {
-    const body = await request.json()
-    const { slug, title, excerpt, content, category } = body
-
-    if (!slug || !title) {
-      return NextResponse.json({ error: 'Slug e título são obrigatórios' }, { status: 400 })
-    }
-
-    const id = crypto.randomUUID()
-    const now = new Date().toISOString()
-
-    try {
-      await queryRun('INSERT INTO blog_posts (id, slug, title, excerpt, content, category, published, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, 1, $7, $8)', [
-        id, slug, title, excerpt || '', content || '', category || 'Dicas', now, now
-      ])
-    } catch {
-      return NextResponse.json({ error: 'Slug já existe' }, { status: 409 })
-    }
-
-    return NextResponse.json({ id, slug, title, excerpt, content, category, published: true, createdAt: now, updatedAt: now }, { status: 201 })
+    body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
   }
+  const { slug, title, excerpt, content, category } = body
+
+  if (!slug || !title) {
+    return NextResponse.json({ error: 'Slug e título são obrigatórios' }, { status: 400 })
+  }
+
+  const id = crypto.randomUUID()
+  const now = new Date().toISOString()
+
+  try {
+    await queryRun('INSERT INTO blog_posts (id, slug, title, excerpt, content, category, published, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, 1, $7, $8)', [
+      id, slug, title, excerpt || '', content || '', category || 'Dicas', now, now
+    ])
+  } catch (error) {
+    if (String(error).includes('UNIQUE')) {
+      return NextResponse.json({ error: 'Slug já existe' }, { status: 409 })
+    }
+    logger.error('Blog create error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao criar post' }, { status: 500 })
+  }
+
+  return NextResponse.json({ id, slug, title, excerpt, content, category, published: true, createdAt: now, updatedAt: now }, { status: 201 })
 }
 
 export async function PUT(request: NextRequest) {
@@ -83,7 +94,15 @@ export async function PUT(request: NextRequest) {
   paramIndex++
   values.push(id)
 
-  await queryRun(`UPDATE blog_posts SET ${fields.join(', ')} WHERE id = $${paramIndex}`, values)
+  try {
+    await queryRun(`UPDATE blog_posts SET ${fields.join(', ')} WHERE id = $${paramIndex}`, values)
+  } catch (error) {
+    if (String(error).includes('UNIQUE')) {
+      return NextResponse.json({ error: 'Slug já existe' }, { status: 409 })
+    }
+    logger.error('Blog update error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao atualizar post' }, { status: 500 })
+  }
 
   return NextResponse.json({ success: true })
 }
@@ -97,12 +116,17 @@ export async function DELETE(request: NextRequest) {
   let body: { slug?: string; id?: string }
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 }) }
   const { slug, id } = body
-  if (id) {
-    await queryRun('DELETE FROM blog_posts WHERE id = $1', [id])
-  } else if (slug) {
-    await queryRun('DELETE FROM blog_posts WHERE slug = $1', [slug])
-  } else {
-    return NextResponse.json({ error: 'ID ou slug é obrigatório' }, { status: 400 })
+  try {
+    if (id) {
+      await queryRun('DELETE FROM blog_posts WHERE id = $1', [id])
+    } else if (slug) {
+      await queryRun('DELETE FROM blog_posts WHERE slug = $1', [slug])
+    } else {
+      return NextResponse.json({ error: 'ID ou slug é obrigatório' }, { status: 400 })
+    }
+  } catch (error) {
+    logger.error('Blog delete error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao deletar post' }, { status: 500 })
   }
   return NextResponse.json({ success: true })
 }

@@ -28,8 +28,27 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: 'Freitas Outlet | O Luxo Mais Acessível',
   description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais. O luxo mais acessível em um só lugar.',
+  keywords: ['freitas outlet', 'tênis importados', 'tênis originais', 'chuteiras', 'moda premium', 'loja de tênis'],
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'Freitas Outlet',
+    title: 'Freitas Outlet | O Luxo Mais Acessível',
+    description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais.',
+    url: '/',
+    images: [{ url: '/icon-512.png', width: 512, height: 512, alt: 'Freitas Outlet' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Freitas Outlet | O Luxo Mais Acessível',
+    description: 'Sua loja multimarcas premium. Nike, Adidas, Gucci, Alexander McQueen, Hugo Boss e muito mais.',
+    images: ['/icon-512.png'],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -23,7 +23,7 @@ export function proxy(request: NextRequest) {
       const origin = request.headers.get('origin')
       const allowedOrigins = [
         process.env.NEXT_PUBLIC_SITE_URL,
-        'http://localhost:3000',
+        ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000'] : []),
       ].filter(Boolean)
 
       if (!origin) {
@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
   if (slugMatch && request.method === 'GET') {
     const [, route, slug] = slugMatch
     if (!slugExists(route as 'produtos' | 'blog' | 'modelos', slug)) {
-      return NextResponse.rewrite(new URL('/_slug-nao-encontrado/', request.url))
+      return NextResponse.rewrite(new URL('/slug-nao-encontrado/', request.url))
     }
   }
 

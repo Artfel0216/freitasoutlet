@@ -25,7 +25,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    } catch {}
   }, [items])
 
   const isWishlisted = useCallback((id: string) => items.includes(id), [items])

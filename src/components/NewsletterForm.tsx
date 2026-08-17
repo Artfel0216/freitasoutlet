@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
 
 export function NewsletterForm() {
   const [email, setEmail] = useState('')
@@ -11,14 +12,19 @@ export function NewsletterForm() {
     e.preventDefault()
     setLoading(true)
     try {
-      await fetch('/api/newsletter', {
+      const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
-      setSent(true)
+      if (res.ok) {
+        setSent(true)
+      } else {
+        const data = await res.json().catch(() => null)
+        toast.error(data?.error || 'Não foi possível fazer o cadastro')
+      }
     } catch {
-      
+      toast.error('Não foi possível fazer o cadastro')
     } finally {
       setLoading(false)
     }

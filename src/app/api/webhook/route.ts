@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { updateOrderStatus, getOrderById, updatePaymentInfo, getOrderByNumber } from '@/lib/db'
+import { updateOrderStatus, getOrderById, updatePaymentInfo, getOrderByNumber, getOrderByGatewayTransactionId } from '@/lib/db'
 import { sendOrderConfirmation } from '@/lib/email'
 import { logger } from '@/lib/logger'
 import { rateLimit } from '@/lib/rate-limit'
@@ -53,31 +53,38 @@ export async function POST(request: Request) {
       }
 
       if (!order) {
-        logger.warn('Webhook: order not found', { orderId })
-        return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+        logger.warn('Webhook payment_intent.succeeded: order not found', { orderId })
+        return NextResponse.json({ received: true })
       }
 
-      if (order.status === 'pending') {
+      const alreadyApproved = order.status === 'approved' || order.payment?.gatewayStatus === 'approved'
+      if (!alreadyApproved) {
+        await updateOrderStatus(order.id, 'approved')
+
+        await updatePaymentInfo(order.id, {
+          gatewayTransactionId: (data.object?.id as string) || '',
+          gatewayStatus: 'approved',
+        })
+
         await decrementStock(order.items.map((i) => ({ productId: i.productId, size: i.size, quantity: i.quantity })))
         logger.info('Stock decremented for order', { orderId: order.id, orderNumber: order.orderNumber })
+
+        sendOrderConfirmation({
+          to: order.customer.email,
+          name: order.customer.name,
+          orderNumber: order.orderNumber,
+          total: order.total,
+          paymentMethod: 'Cartão de Crédito/Débito',
+        }).catch((err) => logger.error('Failed to send webhook confirmation', { error: String(err) }))
+
+        logger.info('Payment approved via webhook', { orderId: order.id, orderNumber: order.orderNumber })
+      } else {
+        await updatePaymentInfo(order.id, {
+          gatewayTransactionId: (data.object?.id as string) || '',
+          gatewayStatus: 'approved',
+        })
+        logger.info('Payment already approved, skipping stock decrement', { orderId: order.id })
       }
-
-      await updatePaymentInfo(order.id, {
-        gatewayTransactionId: (data.object?.id as string) || '',
-        gatewayStatus: 'approved',
-      })
-
-      await updateOrderStatus(order.id, 'approved')
-
-      sendOrderConfirmation({
-        to: order.customer.email,
-        name: order.customer.name,
-        orderNumber: order.orderNumber,
-        total: order.total,
-        paymentMethod: 'Cartão de Crédito/Débito',
-      }).catch((err) => logger.error('Failed to send webhook confirmation', { error: String(err) }))
-
-      logger.info('Payment approved via webhook', { orderId: order.id, orderNumber: order.orderNumber })
     }
 
     if (type === 'payment_intent.payment_failed') {
@@ -103,19 +110,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true })
       }
 
-      const order = await getOrderById(paymentIntentId)
-      const orderByNumber = order ? undefined : await getOrderByNumber(paymentIntentId)
+      const order = await getOrderByGatewayTransactionId(paymentIntentId)
 
-      const target = order || orderByNumber
-      if (!target) {
+      if (!order) {
         logger.warn('Webhook charge.refunded: order not found', { paymentIntentId })
         return NextResponse.json({ received: true })
       }
 
-      await updateOrderStatus(target.id, 'refunded')
-      await updatePaymentInfo(target.id, { gatewayStatus: 'refunded' })
+      await updateOrderStatus(order.id, 'refunded')
+      await updatePaymentInfo(order.id, { gatewayStatus: 'refunded' })
 
-      logger.info('Order refunded via webhook', { orderId: target.id, orderNumber: target.orderNumber })
+      logger.info('Order refunded via webhook', { orderId: order.id, orderNumber: order.orderNumber })
     }
 
     return NextResponse.json({ received: true })

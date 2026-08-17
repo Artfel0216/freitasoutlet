@@ -24,7 +24,9 @@ export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    } catch {}
   }, [items])
 
   const add = useCallback((product: Product) => {

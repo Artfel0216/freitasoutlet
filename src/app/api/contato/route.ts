@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
     }
 
-    const { name, email, phone, message } = await request.json()
+    const body = await request.json()
+    const name = typeof body.name === 'string' ? body.name : ''
+    const email = typeof body.email === 'string' ? body.email : ''
+    const phone = typeof body.phone === 'string' ? body.phone : ''
+    const message = typeof body.message === 'string' ? body.message : ''
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Nome, e-mail e mensagem são obrigatórios' }, { status: 400 })

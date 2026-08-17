@@ -8,7 +8,7 @@ import { getFlashSaleForProduct } from '@/lib/flash-sales'
 
 export interface ProductPurchaseState {
   selectedSize: string
-  selectedColor: Product['colors'][number]
+  selectedColor: Product['colors'][number] | undefined
   quantity: number
   addedToCart: boolean
   hasDiscount: boolean
@@ -25,8 +25,8 @@ export interface ProductPurchaseState {
 }
 
 export function useProductPurchase(product: Product): ProductPurchaseState {
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0])
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0] ?? '')
+  const [selectedColor, setSelectedColor] = useState<Product['colors'][number] | undefined>(product.colors[0])
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
   const { addItem } = useCart()
@@ -35,6 +35,12 @@ export function useProductPurchase(product: Product): ProductPurchaseState {
   useEffect(() => {
     addToRecentlyViewed(product)
   }, [addToRecentlyViewed, product])
+
+  useEffect(() => {
+    if (!addedToCart) return
+    const timer = setTimeout(() => setAddedToCart(false), 2000)
+    return () => clearTimeout(timer)
+  }, [addedToCart])
 
   const hasDiscount = Boolean(product.compareAtPrice && product.compareAtPrice > product.price)
   const discountPercent = hasDiscount
@@ -50,9 +56,9 @@ export function useProductPurchase(product: Product): ProductPurchaseState {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
+    if (!selectedSize || !selectedColor) return
     addItem(product, selectedSize, selectedColor, quantity)
     setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
   }
 
   return {

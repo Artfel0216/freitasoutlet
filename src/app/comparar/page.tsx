@@ -45,7 +45,11 @@ export default function ComparePage() {
               {items.map((product) => (
                 <th key={product.id} className="p-4 bg-muted text-center">
                   <div className="relative aspect-square bg-white mx-auto mb-3 w-24 h-24 overflow-hidden">
-                    <Image src={product.images[0]} alt={product.name} fill className="object-cover" sizes="96px" />
+                    {product.images.length > 0 ? (
+                      <Image src={product.images[0]} alt={product.name} fill className="object-cover" sizes="96px" />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground uppercase tracking-wider px-2 text-center">Sem imagem</span>
+                    )}
                   </div>
                   <Link href={`/produtos/${product.slug}`} className="text-sm font-semibold hover:underline block mb-1">
                     {product.name}

@@ -54,8 +54,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro interno'
-    logger.error('Registration error', { error: message })
-    return NextResponse.json({ error: message }, { status: 500 })
+    logger.error('Registration error', { error: String(err) })
+    return NextResponse.json({ error: 'Não foi possível concluir o cadastro. Tente novamente.' }, { status: 500 })
   }
 }

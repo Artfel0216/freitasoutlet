@@ -119,7 +119,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                   {fraudStatus ? (
                     <span className={`text-xs font-medium ${fraudColor}`}>
                       {fraudStatus === 'approved' ? 'Aprovada' : fraudStatus === 'rejected' ? 'Rejeitada' : 'Análise'}
-                      {' '}({order.fraudAnalysis!.score})
+                      {' '}({order.fraudAnalysis?.score ?? '—'})
                     </span>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>

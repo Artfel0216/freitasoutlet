@@ -31,6 +31,9 @@ export function NotifyWhenAvailable({ productId, selectedSize }: NotifyWhenAvail
       if (res.ok) {
         setSubmitted(true)
         toast.success('Você será notificado quando voltar!')
+      } else {
+        const data = await res.json().catch(() => null)
+        toast.error(data?.error || 'Erro ao registrar notificação')
       }
     } catch {
       toast.error('Erro ao registrar notificação')

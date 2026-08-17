@@ -50,7 +50,9 @@ export function BlogComments({ postSlug }: BlogCommentsProps) {
 
     const updated = [newComment, ...comments]
     setComments(updated)
-    localStorage.setItem(`blog_comments_${postSlug}`, JSON.stringify(updated))
+    try {
+      localStorage.setItem(`blog_comments_${postSlug}`, JSON.stringify(updated))
+    } catch {}
     setName('')
     setContent('')
     setShowForm(false)

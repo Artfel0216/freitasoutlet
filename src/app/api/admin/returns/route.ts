@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryAll, queryRun } from '@/lib/database'
 import { getSession } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 async function initReturnsTable() {
   const { sql } = await import('@/lib/database')
@@ -46,23 +47,31 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
+  let body: { id?: string; status?: string }
   try {
-    const { id, status } = await request.json()
-
-    if (!id || !status) {
-      return NextResponse.json({ error: 'ID e status são obrigatórios' }, { status: 400 })
-    }
-
-    if (!['approved', 'rejected'].includes(status)) {
-      return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
-    }
-
-    await queryRun('UPDATE return_requests SET status = $1, updated_at = $2 WHERE id = $3', [
-      status, new Date().toISOString(), id
-    ])
-
-    return NextResponse.json({ success: true })
+    body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
   }
+
+  const { id, status } = body
+
+  if (typeof id !== 'string' || !id || typeof status !== 'string' || !status) {
+    return NextResponse.json({ error: 'ID e status são obrigatórios' }, { status: 400 })
+  }
+
+  if (!['approved', 'rejected'].includes(status)) {
+    return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
+  }
+
+  try {
+    await queryRun('UPDATE return_requests SET status = $1, updated_at = $2 WHERE id = $3', [
+      status, new Date().toISOString(), id
+    ])
+  } catch (error) {
+    logger.error('Return update error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao atualizar devolução' }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
 }

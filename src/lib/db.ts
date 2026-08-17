@@ -125,6 +125,11 @@ export async function getOrderByNumber(orderNumber: string): Promise<Order | und
   return row ? rowToOrder(row) : undefined
 }
 
+export async function getOrderByGatewayTransactionId(txId: string): Promise<Order | undefined> {
+  const rows = await queryAll('SELECT * FROM orders ORDER BY created_at DESC')
+  return rows.map(rowToOrder).find((o) => o.payment?.gatewayTransactionId === txId)
+}
+
 export async function getOrdersByEmail(email: string): Promise<Order[]> {
   const rows = await queryAll('SELECT * FROM orders WHERE customer_email = $1 ORDER BY created_at DESC', [email.toLowerCase()])
   return rows.map(rowToOrder)

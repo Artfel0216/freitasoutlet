@@ -116,7 +116,9 @@ export function useCheckout({
 
   function finishOrder(orderNumber?: string) {
     clearCart()
-    localStorage.removeItem('fo_coupon')
+    try {
+      localStorage.removeItem('fo_coupon')
+    } catch {}
     const orderSubtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
     if (orderNumber) {
       addPoints(orderSubtotal, `Pedido #${orderNumber}`)
@@ -127,21 +129,25 @@ export function useCheckout({
     if (!stripe || !elements) return
     setProcessing(true)
     form.setErrors({})
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/checkout`,
-      },
-      redirect: 'if_required',
-    })
-    if (error) {
-      form.setErrors({ card: error.message || 'Erro ao processar pagamento' })
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout`,
+        },
+        redirect: 'if_required',
+      })
+      if (error) {
+        form.setErrors({ card: error.message || 'Erro ao processar pagamento' })
+        return
+      }
+      setStep('success')
+      finishOrder(orderResult?.orderNumber)
+    } catch {
+      form.setErrors({ card: 'Erro ao processar o pagamento. Tente novamente.' })
+    } finally {
       setProcessing(false)
-      return
     }
-    setStep('success')
-    finishOrder(orderResult?.orderNumber)
-    setProcessing(false)
   }
 
   function confirmPixPayment() {

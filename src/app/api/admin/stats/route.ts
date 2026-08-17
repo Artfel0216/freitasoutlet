@@ -11,6 +11,9 @@ export async function GET() {
   const orders = await readOrders()
   const now = new Date()
 
+  const PAID_STATUSES = new Set(['approved', 'shipped', 'delivered'])
+  const ACTIVE_STATUSES = new Set(['pending', 'approved', 'shipped', 'delivered'])
+
   const weekAgo = new Date(now)
   weekAgo.setDate(weekAgo.getDate() - 7)
   const monthAgo = new Date(now)
@@ -18,13 +21,13 @@ export async function GET() {
   const yearAgo = new Date(now)
   yearAgo.setFullYear(yearAgo.getFullYear() - 1)
 
-  const weeklyOrders = orders.filter((o) => new Date(o.createdAt) >= weekAgo && o.status !== 'rejected')
-  const monthlyOrders = orders.filter((o) => new Date(o.createdAt) >= monthAgo && o.status !== 'rejected')
-  const yearlyOrders = orders.filter((o) => new Date(o.createdAt) >= yearAgo && o.status !== 'rejected')
+  const weeklyOrders = orders.filter((o) => new Date(o.createdAt) >= weekAgo && ACTIVE_STATUSES.has(o.status))
+  const monthlyOrders = orders.filter((o) => new Date(o.createdAt) >= monthAgo && ACTIVE_STATUSES.has(o.status))
+  const yearlyOrders = orders.filter((o) => new Date(o.createdAt) >= yearAgo && ACTIVE_STATUSES.has(o.status))
 
-  const weeklyRevenue = weeklyOrders.reduce((s, o) => s + o.total, 0)
-  const monthlyRevenue = monthlyOrders.reduce((s, o) => s + o.total, 0)
-  const yearlyRevenue = yearlyOrders.reduce((s, o) => s + o.total, 0)
+  const weeklyRevenue = orders.filter((o) => new Date(o.createdAt) >= weekAgo && PAID_STATUSES.has(o.status)).reduce((s, o) => s + o.total, 0)
+  const monthlyRevenue = orders.filter((o) => new Date(o.createdAt) >= monthAgo && PAID_STATUSES.has(o.status)).reduce((s, o) => s + o.total, 0)
+  const yearlyRevenue = orders.filter((o) => new Date(o.createdAt) >= yearAgo && PAID_STATUSES.has(o.status)).reduce((s, o) => s + o.total, 0)
 
   const pendingCount = orders.filter((o) => o.status === 'pending').length
   const fraudRejections = orders.filter((o) => o.fraudAnalysis?.status === 'rejected').length

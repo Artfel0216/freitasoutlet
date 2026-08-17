@@ -7,21 +7,26 @@ import { saveImage, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '@/lib/upload'
 import { getClientIp } from '@/lib/client-ip'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const productId = searchParams.get('productId')
+  try {
+    const { searchParams } = new URL(request.url)
+    const productId = searchParams.get('productId')
 
-  if (!productId) {
-    return NextResponse.json({ error: 'productId is required' }, { status: 400 })
+    if (!productId) {
+      return NextResponse.json({ error: 'productId is required' }, { status: 400 })
+    }
+
+    const [reviews, stats] = await Promise.all([
+      getReviewsByProduct(productId),
+      getAverageRating(productId),
+    ])
+
+    const safe = reviews.map(({ customerEmail, ...rest }) => rest)
+
+    return NextResponse.json({ reviews: safe, stats })
+  } catch (error) {
+    logger.error('Reviews fetch error', { error: String(error) })
+    return NextResponse.json({ error: 'Erro ao buscar avaliações' }, { status: 500 })
   }
-
-  const [reviews, stats] = await Promise.all([
-    getReviewsByProduct(productId),
-    getAverageRating(productId),
-  ])
-
-  const safe = reviews.map(({ customerEmail, ...rest }) => rest)
-
-  return NextResponse.json({ reviews: safe, stats })
 }
 
 export async function POST(request: NextRequest) {

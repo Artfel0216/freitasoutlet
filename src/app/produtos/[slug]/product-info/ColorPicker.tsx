@@ -6,6 +6,7 @@ import type { ProductInfoProps } from './shared'
 export function ColorPicker({ product, purchase }: ProductInfoProps) {
   const { selectedColor, setSelectedColor } = purchase
   if (product.colors.length <= 1) return null
+  if (!selectedColor) return null
 
   return (
     <motion.div

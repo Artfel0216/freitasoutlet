@@ -28,9 +28,9 @@ export default function CartPage() {
     const newCoupon = discount > 0 ? { code, discount } : null
     setCoupon(newCoupon)
     if (newCoupon) {
-      localStorage.setItem('fo_coupon', JSON.stringify(newCoupon))
+      try { localStorage.setItem('fo_coupon', JSON.stringify(newCoupon)) } catch {}
     } else {
-      localStorage.removeItem('fo_coupon')
+      try { localStorage.removeItem('fo_coupon') } catch {}
     }
   }
 

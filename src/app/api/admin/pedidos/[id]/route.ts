@@ -17,12 +17,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Pedido não encontrado' }, { status: 404 })
     }
 
-    const { status, trackingCode, shippedAt, deliveredAt, unboxingVideoUrl } = await request.json()
+    let body: Record<string, unknown>
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    }
+
+    const status = body.status as string | undefined
+    const trackingCode = body.trackingCode as string | undefined
+    const shippedAt = body.shippedAt as string | undefined
+    const deliveredAt = body.deliveredAt as string | undefined
+    const unboxingVideoUrl = body.unboxingVideoUrl as string | undefined
 
     const validStatuses: OrderStatus[] = ['pending', 'approved', 'rejected', 'refunded', 'shipped', 'delivered']
-    if (status && !validStatuses.includes(status)) {
+    if (status && typeof status === 'string' && !validStatuses.includes(status as OrderStatus)) {
       return NextResponse.json({ error: 'Status inválido' }, { status: 400 })
     }
+
+    const newStatus: OrderStatus =
+      typeof status === 'string' && validStatuses.includes(status as OrderStatus) ? status as OrderStatus : order.status
 
     const extra: Record<string, unknown> = {}
     if (trackingCode) extra.trackingCode = trackingCode
@@ -30,9 +44,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (deliveredAt) extra.deliveredAt = deliveredAt
     if (unboxingVideoUrl !== undefined) extra.unboxingVideoUrl = unboxingVideoUrl
 
-    const updated = await updateOrderStatus(id, status || order.status, extra as Partial<import('@/lib/db').Order>)
+    const updated = await updateOrderStatus(id, newStatus, extra as Partial<import('@/lib/db').Order>)
 
-    if (status && status !== order.status) {
+    if (newStatus !== order.status) {
       const statusLabel: Record<string, string> = {
         pending: 'Pendente',
         approved: 'Aprovado',
@@ -45,11 +59,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         to: order.customer.email,
         name: order.customer.name,
         orderNumber: order.orderNumber,
-        status: statusLabel[status] || status,
+        status: statusLabel[newStatus] || newStatus,
       }).catch((err) => logger.error('Failed to send shipping update', { error: String(err) }))
     }
 
-    logger.info('Order status updated by admin', { orderId: id, status, admin: true })
+    logger.info('Order status updated by admin', { orderId: id, status: newStatus, admin: true })
 
     return NextResponse.json({
       success: true,
