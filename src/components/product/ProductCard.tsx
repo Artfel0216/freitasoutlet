@@ -106,7 +106,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center gap-1 pt-1">
               {product.colors.slice(0, 4).map((color, i) => (
                 <motion.span
-                  key={color.hex}
+                  key={`${color.name}-${i}`}
                   className="relative block w-4 h-4 rounded-full border-2 border-background"
                   style={{ backgroundColor: color.hex }}
                   title={color.name}

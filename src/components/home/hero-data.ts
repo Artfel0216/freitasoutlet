@@ -1,11 +1,11 @@
 import type { Variants } from 'framer-motion'
 
 export const heroProduct = {
-  name: 'Nike Air Max Infinity',
-  slug: 'tenis-nike-air-max-infinity',
-  price: 'R$ 799,90',
-  compareAtPrice: 'R$ 999,90',
-  image: '/images/products/catalogo/tenis/nike/air-max-infinity/cinza-lateral.jpg',
+  name: 'Adidas Adizero Evo SL',
+  slug: 'adidas-adizero-evo-sl',
+  price: 'R$ 479,99',
+  compareAtPrice: 'R$ 579,90',
+  image: '/images/products/catalogo/tenis/adidas/AdizeroEvoSLPretoEVerde.jpeg',
 }
 
 export const brands = [

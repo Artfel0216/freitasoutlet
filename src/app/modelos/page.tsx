@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { products } from '@/data/products'
+import { getPublicProducts } from '@/lib/public-products'
 import { ProductCard } from '@/components/product/ProductCard'
 import { FadeUp, StaggerGrid } from '@/components/animations'
+import type { Product } from '@/types'
 
 export const metadata: Metadata = {
   title: 'Modelos | Freitas Outlet',
@@ -42,7 +43,7 @@ const modelos = [
   },
 ]
 
-function getProductsByModelo(slug: string) {
+function getProductsByModelo(products: Product[], slug: string) {
   switch (slug) {
     case 'oversized':
       return products.filter(p => p.tags.some(t => t.includes('oversized')) || p.sizeGuide === 'oversized')
@@ -59,7 +60,9 @@ function getProductsByModelo(slug: string) {
   }
 }
 
-export default function ModelosPage() {
+export default async function ModelosPage() {
+  const products = await getPublicProducts()
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
       <FadeUp>
@@ -75,7 +78,7 @@ export default function ModelosPage() {
 
       <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {modelos.map((modelo) => {
-          const modeloProducts = getProductsByModelo(modelo.slug)
+          const modeloProducts = getProductsByModelo(products, modelo.slug)
           if (modeloProducts.length === 0) return null
           return (
             <Link

@@ -6,6 +6,7 @@ import { OfferBadge } from '@/components/product/OfferBadge'
 import { FlashSaleTimer } from '@/components/product/FlashSaleTimer'
 import type { ProductInfoProps } from './product-info/shared'
 import { PriceBlock } from './product-info/PriceBlock'
+import { WholesalePricing } from './product-info/WholesalePricing'
 import { ColorPicker } from './product-info/ColorPicker'
 import { SizePicker } from './product-info/SizePicker'
 import { QuantityStepper } from './product-info/QuantityStepper'
@@ -44,6 +45,8 @@ export function ProductInfo({ product, purchase }: ProductInfoProps) {
       </motion.div>
 
       <PriceBlock product={product} purchase={purchase} />
+
+      <WholesalePricing product={product} purchase={purchase} />
 
       {flashSale && (
         <motion.div

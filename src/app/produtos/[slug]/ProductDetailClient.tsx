@@ -26,7 +26,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-20">
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
-        <ProductGallery product={product} />
+        <ProductGallery product={product} selectedColor={purchase.selectedColor} />
         <ProductInfo product={product} purchase={purchase} />
       </div>
 

@@ -23,6 +23,8 @@ const footerLinks = {
     { label: 'Blog', href: '/blog' },
     { label: 'Rastrear Pedido', href: '/rastrear-pedido' },
     { label: 'Trocas e Devoluções', href: '/trocas-e-devolucoes' },
+    { label: 'Catálogo de Imagens', href: '/catalogo-imagens' },
+    { label: 'Catálogo de Chuteiras', href: '/catalogo-imagens?categoria=Chuteiras' },
     { label: 'Política de Privacidade', href: '/politica-de-privacidade' },
     { label: 'Termos de Uso', href: '/termos-de-uso' },
   ],

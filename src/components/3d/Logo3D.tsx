@@ -2,8 +2,8 @@
 
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
-import { Group, MeshStandardMaterial } from 'three'
+import { Html } from '@react-three/drei'
+import { Group } from 'three'
 import { useReducedMotion } from 'framer-motion'
 
 interface Logo3DProps {
@@ -16,14 +16,6 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
   const groupRef = useRef<Group>(null)
   const elapsedRef = useRef(0)
   const reduceMotion = useReducedMotion()
-
-  const goldMat = useMemo(() => {
-    return new MeshStandardMaterial({ color: '#0a0a0a', metalness: 0.85, roughness: 0.15 })
-  }, [])
-
-  const chromeMat = useMemo(() => {
-    return new MeshStandardMaterial({ color: '#c0c0c0', metalness: 0.8, roughness: 0.2 })
-  }, [])
 
   const letters = 'FREITAS OUTLET'.split('')
 
@@ -40,22 +32,33 @@ export function Logo3D({ position = [0, 0, 0], scale = 0.6, interactive = true }
         if (char === ' ') return null
         const x = (i - 7) * 0.55
         const y = i < 7 ? 0.2 : -0.3
-        const mat = i < 7 ? goldMat : chromeMat
         const color = i < 7 ? '#0a0a0a' : '#c0c0c0'
 
         return (
-          <Text
+          <Html
             key={`${i}-${char}`}
-            font="/fonts/Inter-Bold.ttf"
             position={[x, y, 0]}
-            color={color}
-            material={mat}
-            anchorX="center"
-            anchorY="middle"
-            fontSize={0.5}
+            center
+            transform
+            style={{ pointerEvents: 'none' }}
           >
-            {char}
-          </Text>
+            <span
+              style={{
+                display: 'inline-block',
+                fontSize: '46px',
+                lineHeight: 1,
+                fontWeight: 900,
+                letterSpacing: '0.02em',
+                color,
+                fontFamily: 'var(--font-heading, inherit)',
+                textShadow: '0 0 18px rgba(192, 192, 192, 0.25)',
+                userSelect: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {char}
+            </span>
+          </Html>
         )
       })}
 

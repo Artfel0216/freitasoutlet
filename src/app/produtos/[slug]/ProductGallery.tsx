@@ -11,7 +11,8 @@ const UnboxingVideoPlayer = dynamic(
   { ssr: false, loading: () => null },
 )
 
-export function ProductGallery({ product }: { product: Product }) {
+export function ProductGallery({ product, selectedColor }: { product: Product; selectedColor: Product['colors'][number] | undefined }) {
+  const mainImage = selectedColor?.image ?? product.images[0]
   return (
     <motion.div
       className="space-y-4"
@@ -25,9 +26,9 @@ export function ProductGallery({ product }: { product: Product }) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
-        {product.images.length > 0 ? (
+        {mainImage ? (
           <Image
-            src={product.images[0]}
+            src={mainImage}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
@@ -50,7 +51,9 @@ export function ProductGallery({ product }: { product: Product }) {
         {product.images.map((img, i) => (
           <motion.div
             key={i}
-            className="aspect-square relative bg-muted overflow-hidden"
+            className={`relative aspect-square bg-muted overflow-hidden rounded-lg ${
+              selectedColor?.image === img ? 'ring-2 ring-foreground' : ''
+            }`}
             variants={staggerItem}
           >
             <Image

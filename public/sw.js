@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'freitasoutlet-v2'
+﻿const CACHE_NAME = 'freitasoutlet-v6'
 const PRECACHE_ASSETS = [
   '/icon.svg',
   '/icon-192.png',
@@ -29,10 +29,13 @@ function isNavigationRequest(request) {
 function isStaticAsset(request) {
   const url = new URL(request.url)
   return (
-    url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/images/') ||
     url.pathname.startsWith('/fonts/')
   )
+}
+
+function isJsBundle(request) {
+  return new URL(request.url).pathname.startsWith('/_next/static/')
 }
 
 function isApiRequest(request) {
@@ -41,7 +44,9 @@ function isApiRequest(request) {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
-  if (event.request.url.includes('stripe.com')) return
+  const url = new URL(event.request.url)
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return
+  if (url.hostname === 'stripe.com' || url.hostname.endsWith('.stripe.com')) return
 
   if (isNavigationRequest(event.request)) {
     event.respondWith(
@@ -56,6 +61,21 @@ self.addEventListener('fetch', (event) => {
             (cached) => cached || caches.match('/offline')
           )
         )
+    )
+    return
+  }
+
+  if (isJsBundle(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request))
     )
     return
   }
@@ -87,7 +107,7 @@ self.addEventListener('fetch', (event) => {
       (cached) =>
         cached ||
         fetch(event.request).then((response) => {
-          if (response.status === 200) {
+          if (response.status === 200 && !new URL(event.request.url).pathname.startsWith('/_next/image')) {
             const clone = response.clone()
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
           }

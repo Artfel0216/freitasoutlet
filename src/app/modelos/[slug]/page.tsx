@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { products } from '@/data/products'
+import { getPublicProducts } from '@/lib/public-products'
 import { ProductCard } from '@/components/product/ProductCard'
 import { FadeUp, StaggerGrid } from '@/components/animations'
 import Link from 'next/link'
+import type { Product } from '@/types'
 
 const modelos = {
   oversized: {
@@ -33,7 +34,7 @@ const modelos = {
   },
 }
 
-function getProductsBySlug(slug: string) {
+function getProductsBySlug(products: Product[], slug: string) {
   switch (slug) {
     case 'oversized':
       return products.filter(p => p.tags.some(t => t.includes('oversized')) || p.sizeGuide === 'oversized')
@@ -65,7 +66,8 @@ export default async function ModeloDetailPage({ params }: { params: Promise<{ s
   const modelo = modelos[slug as keyof typeof modelos]
   if (!modelo) notFound()
 
-  const modeloProducts = getProductsBySlug(slug)
+  const allProducts = await getPublicProducts()
+  const modeloProducts = getProductsBySlug(allProducts, slug)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">

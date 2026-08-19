@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { products } from '@/data/products'
+import { getPublicProducts } from '@/lib/public-products'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -29,6 +29,7 @@ function SearchForm({ query }: { query: string }) {
 async function SearchContent({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams
   const query = (q || '').trim().toLowerCase()
+  const products = await getPublicProducts()
 
   const results = query
     ? products.filter((p) =>

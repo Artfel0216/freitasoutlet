@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBrandBySlug } from '@/data/brands'
-import { getProductsByBrand } from '@/data/products'
+import { getProductsByBrand } from '@/data/products/queries'
+import { getPublicProducts } from '@/lib/public-products'
 import { ProductGrid } from '@/components/product/ProductGrid'
 
 export default async function BrandPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -10,7 +11,8 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
 
   if (!brand) notFound()
 
-  const products = getProductsByBrand(slug)
+  const allProducts = await getPublicProducts()
+  const products = getProductsByBrand(allProducts, slug)
 
   const segmentLabels: Record<string, string> = {
     sportswear: 'Sportswear & Performance',

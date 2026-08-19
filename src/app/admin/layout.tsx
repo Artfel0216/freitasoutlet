@@ -1,11 +1,15 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getSession } from '@/lib/auth'
 import { AdminSidebar } from './AdminSidebar'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') || ''
+
   const session = await getSession()
-  if (!session.authenticated) redirect('/admin/login')
+  if (!session.authenticated && pathname !== '/admin/login') redirect('/admin/login')
 
   return (
     <div className="min-h-dvh flex">

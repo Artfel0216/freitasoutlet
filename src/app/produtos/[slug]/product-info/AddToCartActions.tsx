@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { WishlistButton } from '@/components/product/WishlistButton'
@@ -8,7 +9,14 @@ import { NotifyWhenAvailable } from '@/components/product/NotifyWhenAvailable'
 import type { ProductInfoProps } from './shared'
 
 export function AddToCartActions({ product, purchase }: ProductInfoProps) {
-  const { addedToCart, isOutOfStock, handleAddToCart, isLowStock, stock, selectedSize } = purchase
+  const router = useRouter()
+  const { addedToCart, isOutOfStock, handleAddToCart, isLowStock, stock, selectedSize, selectedColor } = purchase
+
+  const handleBuyNow = () => {
+    if (isOutOfStock || !selectedSize || !selectedColor) return
+    handleAddToCart()
+    router.push('/checkout')
+  }
 
   return (
     <>
@@ -43,6 +51,17 @@ export function AddToCartActions({ product, purchase }: ProductInfoProps) {
         <WishlistButton productId={product.id} className="border border-border rounded-lg hover:border-black transition-colors" />
         <CompareButton product={product} />
       </motion.div>
+
+      <Button
+        variant="outline"
+        size="lg"
+        fullWidth
+        onClick={handleBuyNow}
+        disabled={isOutOfStock}
+        className="border-black !text-black hover:bg-black hover:!text-white transition-colors"
+      >
+        COMPRAR AGORA
+      </Button>
 
       {isOutOfStock && (
         <NotifyWhenAvailable productId={product.id} selectedSize={selectedSize} />

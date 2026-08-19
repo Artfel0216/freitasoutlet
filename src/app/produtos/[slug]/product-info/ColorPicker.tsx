@@ -18,9 +18,9 @@ export function ColorPicker({ product, purchase }: ProductInfoProps) {
         Cor: <span className="text-muted-foreground font-normal normal-case">{selectedColor.name}</span>
       </p>
       <div className="flex gap-2">
-        {product.colors.map((color) => (
+        {product.colors.map((color, i) => (
           <motion.button
-            key={color.hex}
+            key={`${color.name}-${i}`}
             onClick={() => setSelectedColor(color)}
             className={`w-8 h-8 rounded-full border-2 transition-all ${
               selectedColor.hex === color.hex ? 'border-black scale-110' : 'border-border hover:border-black'

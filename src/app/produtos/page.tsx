@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
-import { getFilteredProducts } from '@/data/products'
+import { getFilteredProducts } from '@/data/products/queries'
+import { getPublicProducts } from '@/lib/public-products'
 import { CatalogClient } from './CatalogClient'
 import { ProductGridSkeleton } from '@/components/Skeleton'
 
@@ -16,7 +17,8 @@ async function CatalogContent({ searchParams }: { searchParams: Promise<{ [key: 
     sort: typeof params.sort === 'string' ? params.sort : 'relevance',
   }
 
-  const filteredProducts = getFilteredProducts(filters)
+  const allProducts = await getPublicProducts()
+  const filteredProducts = getFilteredProducts(allProducts, filters)
 
   return <CatalogClient products={filteredProducts} totalCount={filteredProducts.length} />
 }

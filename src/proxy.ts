@@ -10,6 +10,7 @@ const PUBLIC_API_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/fo
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
   const response = NextResponse.next({ request: { headers: requestHeaders } })
 
   const isAdminRoute = pathname.startsWith('/admin')
@@ -54,6 +55,7 @@ export function proxy(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.stripe.com https://www.google.com https://www.gstatic.com",
+    "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https://*.stripe.com",
     "font-src 'self' https://fonts.gstatic.com",

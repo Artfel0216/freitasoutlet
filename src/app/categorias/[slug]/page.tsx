@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getCategoryBySlug, getAllChildSlugs } from '@/data/categories'
-import { getFilteredProducts } from '@/data/products'
+import { getFilteredProducts } from '@/data/products/queries'
+import { getPublicProducts } from '@/lib/public-products'
 import { ProductGrid } from '@/components/product/ProductGrid'
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -11,7 +12,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!category) notFound()
 
   const childSlugs = getAllChildSlugs(slug)
-  const products = getFilteredProducts({ categories: childSlugs })
+  const allProducts = await getPublicProducts()
+  const products = getFilteredProducts(allProducts, { categories: childSlugs })
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">

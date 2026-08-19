@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { catalogImages, getCatalogGroups } from '@/data/catalog-images'
 import { stagger, staggerItem, fadeUp } from '@/components/animations'
@@ -10,10 +12,11 @@ const groups = getCatalogGroups()
 const allBrands = [...new Set(catalogImages.map((i) => i.brand))].sort()
 const allCategories = [...new Set(catalogImages.map((i) => i.category))]
 
-export default function CatalogoImagensPage() {
-  const [search, setSearch] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [filterBrand, setFilterBrand] = useState('')
+function CatalogoImagensContent() {
+  const searchParams = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
+  const [filterCategory, setFilterCategory] = useState(searchParams.get('categoria') ?? '')
+  const [filterBrand, setFilterBrand] = useState(searchParams.get('marca') ?? '')
 
   const filtered = groups.filter((g) => {
     if (filterCategory && g.category !== filterCategory) return false
@@ -71,6 +74,14 @@ export default function CatalogoImagensPage() {
               <option key={brand} value={brand}>{brand}</option>
             ))}
           </select>
+          {(filterCategory || filterBrand || search) && (
+            <Link
+              href="/catalogo-imagens"
+              className="inline-flex items-center justify-center px-4 py-2.5 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Limpar filtros
+            </Link>
+          )}
         </motion.div>
 
         {filtered.length === 0 ? (
@@ -129,5 +140,13 @@ export default function CatalogoImagensPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function CatalogoImagensPage() {
+  return (
+    <Suspense fallback={null}>
+      <CatalogoImagensContent />
+    </Suspense>
   )
 }

@@ -24,11 +24,11 @@ export interface ProductFormData {
 
 export function slugify(name: string): string {
   return name
+    .trim()
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim()
 }
 
 function readString(formData: FormData, key: string, fallback = ''): string {
