@@ -5,7 +5,13 @@ import { ProductDetailClient } from './ProductDetailClient'
 import { ProductGrid } from '@/components/product/ProductGrid'
 import { queryOne } from '@/lib/database'
 
-async function getDbProductBySlug(slug: string) {
+const PRODUCT_TTL = 5_000
+
+type DbProduct = NonNullable<Awaited<ReturnType<typeof loadDbProductBySlug>>>
+
+let dbCache: { slug: string; data: DbProduct; at: number } | null = null
+
+async function loadDbProductBySlug(slug: string) {
   try {
     const row = await queryOne('SELECT * FROM products WHERE slug = $1 AND active = 1', [slug])
     if (!row) return null
@@ -43,6 +49,15 @@ async function getDbProductBySlug(slug: string) {
   } catch {
     return null
   }
+}
+
+async function getDbProductBySlug(slug: string): Promise<DbProduct | null> {
+  if (dbCache && dbCache.slug === slug && Date.now() - dbCache.at < PRODUCT_TTL) {
+    return dbCache.data
+  }
+  const data = await loadDbProductBySlug(slug)
+  if (data) dbCache = { slug, data, at: Date.now() }
+  return data
 }
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {

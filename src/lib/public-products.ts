@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import type { Product } from '@/types'
 import { products as staticProducts } from '@/data/products'
 import { readStoredProducts, type StoredProduct } from '@/lib/admin-products'
@@ -30,7 +31,7 @@ export function storedToProduct(p: StoredProduct): Product {
   }
 }
 
-export async function getPublicProducts(): Promise<Product[]> {
+export const getPublicProducts = cache(async (): Promise<Product[]> => {
   const stored = await readStoredProducts()
   const hiddenSlugs = new Set(stored.filter((s) => s.active === false).map((s) => s.slug))
 
@@ -38,4 +39,4 @@ export async function getPublicProducts(): Promise<Product[]> {
     ...stored.filter((s) => s.active !== false).map(storedToProduct),
     ...staticProducts.filter((p) => !hiddenSlugs.has(p.slug)),
   ]
-}
+})

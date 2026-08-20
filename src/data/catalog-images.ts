@@ -36,6 +36,22 @@ export const catalogImages: CatalogImage[] = [
   { src: '/images/products/catalogo/tenis/adidas/AdizeroEvoSLVerdeEPreto.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Evo SL', label: 'Verde e Preto' },
   { src: '/images/products/catalogo/tenis/adidas/AdizeroEvoSLVermelho.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Evo SL', label: 'Vermelho' },
 
+  // ── Adidas Adizero EVO SL EXO (3 cores) ─────────────
+  { src: '/images/products/catalogo/tenis/adidas/adizeroevoslexoBranco.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero EVO SL EXO', label: 'Branco' },
+  { src: '/images/products/catalogo/tenis/adidas/adizeroevoslexoPreto.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero EVO SL EXO', label: 'Preto' },
+  { src: '/images/products/catalogo/tenis/adidas/adizeroevoslexoVerde.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero EVO SL EXO', label: 'Verde' },
+
+  // ── Adidas Adizero Adios Pro 3 (9 cores) ────────────
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3AllAzul.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'All Azul' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3Azul.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Azul' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3AzuleVerde.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Azul e Verde' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3Branco.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Branco' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3BrancoE.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Branco e Dourado' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3Preto.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Preto' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3PretoeBranco.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Preto e Branco' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3Rosa.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Rosa' },
+  { src: '/images/products/catalogo/tenis/adidas/AdizeroAdiosPro3Verde.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Adizero Adios Pro 3', label: 'Verde' },
+
   // ── Adidas Ultra Boost 5 (4 cores) ──────────────────
   { src: '/images/products/catalogo/tenis/adidas/AdidasUltraBoost5Branco.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Ultra Boost 5', label: 'Branco' },
   { src: '/images/products/catalogo/tenis/adidas/AdidasUltraBoost5Preto.jpeg', category: 'Tênis', brand: 'Adidas', model: 'Ultra Boost 5', label: 'Preto' },

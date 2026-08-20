@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { WishlistButton } from '@/components/product/WishlistButton'
-import { CompareButton } from '@/components/product/CompareButton'
 import { NotifyWhenAvailable } from '@/components/product/NotifyWhenAvailable'
 import type { ProductInfoProps } from './shared'
 
@@ -49,7 +48,6 @@ export function AddToCartActions({ product, purchase }: ProductInfoProps) {
           </AnimatePresence>
         </div>
         <WishlistButton productId={product.id} className="border border-border rounded-lg hover:border-black transition-colors" />
-        <CompareButton product={product} />
       </motion.div>
 
       <Button

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
+import { Logo } from '@/components/layout/Logo'
 
 const footerLinks = {
   Categorias: [
@@ -32,7 +33,7 @@ const footerLinks = {
 
 const socialLinks = [
   { label: 'Instagram', href: 'https://instagram.com/freitasoutlet', icon: 'instagram' },
-  { label: 'WhatsApp', href: 'https://wa.me/5511999999999', icon: 'whatsapp' },
+  { label: 'WhatsApp', href: 'https://wa.me/558198960289', icon: 'whatsapp' },
   { label: 'YouTube', href: 'https://youtube.com/@freitasoutlet', icon: 'youtube' },
 ]
 
@@ -72,10 +73,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="font-heading font-black text-xl uppercase tracking-wider text-gold mb-4 relative inline-block">
-              Freitas Outlet
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <Logo />
+            <p className="text-sm text-muted-foreground mt-4 mb-4">
               Sua loja multimarcas premium. O luxo mais acessível em um só lugar.
             </p>
             <NewsletterForm />

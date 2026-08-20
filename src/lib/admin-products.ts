@@ -1,12 +1,16 @@
 import 'server-only'
 import { queryOne, queryAll, queryRun } from './database'
 
+let productsMigrated = false
+
 async function migrateProductsTable() {
+  if (productsMigrated) return
   try { await queryRun("ALTER TABLE products ADD COLUMN offer_status TEXT NOT NULL DEFAULT 'none'") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN offer_type TEXT NOT NULL DEFAULT 'none'") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN offer_discount REAL NOT NULL DEFAULT 0") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN featured INTEGER NOT NULL DEFAULT 0") } catch { /* */ }
   try { await queryRun("ALTER TABLE products ADD COLUMN video TEXT NOT NULL DEFAULT ''") } catch { /* */ }
+  productsMigrated = true
 }
 
 export type OfferStatus = 'none' | 'sale' | 'promotion' | 'clearance'
@@ -39,10 +43,28 @@ export type StoredProduct = {
   updatedAt: string
 }
 
+const PRODUCT_CACHE_TTL = 5_000
+let productsCache: { data: StoredProduct[]; at: number } | null = null
+const slugCache = new Map<string, { data: StoredProduct; at: number }>()
+
+function invalidateProductsCache() {
+  productsCache = null
+  slugCache.clear()
+}
+
+export function invalidateProductCache() {
+  invalidateProductsCache()
+}
+
 export async function readStoredProducts(): Promise<StoredProduct[]> {
   await migrateProductsTable()
+  if (productsCache && Date.now() - productsCache.at < PRODUCT_CACHE_TTL) {
+    return productsCache.data
+  }
   const rows = await queryAll('SELECT * FROM products ORDER BY created_at DESC')
-  return rows.map(rowToStoredProduct)
+  const data = rows.map(rowToStoredProduct)
+  productsCache = { data, at: Date.now() }
+  return data
 }
 
 async function upsertProductQuery(p: StoredProduct): Promise<void> {
@@ -76,6 +98,7 @@ export async function writeStoredProducts(products: StoredProduct[]): Promise<vo
     for (const p of products) {
       await upsertProductQuery(p)
     }
+    invalidateProductsCache()
     return
   }
 
@@ -85,21 +108,30 @@ export async function writeStoredProducts(products: StoredProduct[]): Promise<vo
       await upsertProductQuery(p)
     }
     await queryRun('COMMIT')
+    invalidateProductsCache()
   } catch (e) {
     try { await queryRun('ROLLBACK') } catch { /* no active transaction */ }
+    invalidateProductsCache()
     throw e
   }
 }
 
 export async function getStoredProductBySlug(slug: string): Promise<StoredProduct | undefined> {
   await migrateProductsTable()
+  const cached = slugCache.get(slug)
+  if (cached && Date.now() - cached.at < PRODUCT_CACHE_TTL) {
+    return cached.data
+  }
   const row = await queryOne('SELECT * FROM products WHERE slug = $1', [slug])
-  return row ? rowToStoredProduct(row) : undefined
+  const data = row ? rowToStoredProduct(row) : undefined
+  if (data) slugCache.set(slug, { data, at: Date.now() })
+  return data
 }
 
 export async function deleteStoredProduct(slug: string): Promise<boolean> {
   await migrateProductsTable()
   const result = await queryRun('DELETE FROM products WHERE slug = $1', [slug])
+  invalidateProductsCache()
   return result.rowCount > 0
 }
 

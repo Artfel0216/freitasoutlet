@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { Logo } from './Logo'
 
 const Logo3DCanvas = dynamic(() => import('./Logo3DCanvas').then((m) => m.Logo3DCanvas), {
   ssr: false,
@@ -10,11 +11,8 @@ const Logo3DCanvas = dynamic(() => import('./Logo3DCanvas').then((m) => m.Logo3D
 
 function StaticLogo() {
   return (
-    <div className="h-10 w-48 flex items-center">
-      <span className="font-heading font-black text-lg uppercase tracking-[0.2em] whitespace-nowrap">
-        <span className="text-gold">Freitas</span>{' '}
-        <span className="text-foreground">Outlet</span>
-      </span>
+    <div className="h-10 flex items-center">
+      <Logo />
     </div>
   )
 }

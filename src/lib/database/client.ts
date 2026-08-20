@@ -16,9 +16,22 @@ function createSqliteSql(): SqlFn {
       const dataDir = path.join(process.cwd(), 'data')
       if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
       _db = new Database(path.join(dataDir, 'freitasoutlet.db'))
+      _db.pragma('journal_mode = WAL')
+      _db.pragma('synchronous = NORMAL')
       setupSqliteSchema(_db)
     }
     return _db
+  }
+
+  const stmtCache = new Map<string, Database.Statement>()
+
+  function prepare(db: Database.Database, query: string): Database.Statement {
+    let stmt = stmtCache.get(query)
+    if (!stmt) {
+      stmt = db.prepare(query)
+      stmtCache.set(query, stmt)
+    }
+    return stmt
   }
 
   function convertPostgresParams(query: string): string {
@@ -40,7 +53,7 @@ function createSqliteSql(): SqlFn {
         params.push(values[i - 1])
         query += '?' + (strings[i] ?? '')
       }
-      const stmt = db.prepare(query)
+      const stmt = prepare(db, query)
       if (isReadQuery(query)) {
         return Promise.resolve(stmt.all(...params))
       }
@@ -62,7 +75,7 @@ function createSqliteSql(): SqlFn {
       }
     }
 
-    const stmt = db.prepare(convertPostgresParams(query))
+    const stmt = prepare(db, convertPostgresParams(query))
 
     if (fullResults) {
       const info = stmt.run(...params)

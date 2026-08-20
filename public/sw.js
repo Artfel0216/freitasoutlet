@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'freitasoutlet-v6'
+﻿const CACHE_NAME = 'freitasoutlet-v7'
 const PRECACHE_ASSETS = [
   '/icon.svg',
   '/icon-192.png',

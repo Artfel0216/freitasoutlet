@@ -7,7 +7,6 @@ import { FloatingElements } from '@/components/layout/FloatingElements'
 import { CartProvider } from '@/context/CartContext'
 import { WishlistProvider } from '@/lib/wishlist-context'
 import { RecentlyViewedProvider } from '@/lib/recently-viewed'
-import { CompareProvider } from '@/context/CompareContext'
 import { LoyaltyProvider } from '@/context/LoyaltyContext'
 import { Suspense } from 'react'
 import { Analytics } from '@/components/Analytics'
@@ -69,22 +68,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CartProvider>
           <WishlistProvider>
             <RecentlyViewedProvider>
-              <CompareProvider>
-                <LoyaltyProvider>
-                  <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:text-sm">
-                    Pular para o conteúdo
-                  </a>
-                  <ToastProvider />
-                  <ThreeConsoleShim />
-                  <Header />
-                  <main id="main-content">{children}</main>
-                  <Footer />
-                  <FloatingElements />
-                  <Suspense fallback={null}>
-                    <Analytics />
-                  </Suspense>
-                </LoyaltyProvider>
-              </CompareProvider>
+              <LoyaltyProvider>
+                <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:text-sm">
+                  Pular para o conteúdo
+                </a>
+                <ToastProvider />
+                <ThreeConsoleShim />
+                <Header />
+                <main id="main-content">{children}</main>
+                <Footer />
+                <FloatingElements />
+                <Suspense fallback={null}>
+                  <Analytics />
+                </Suspense>
+              </LoyaltyProvider>
             </RecentlyViewedProvider>
           </WishlistProvider>
         </CartProvider>

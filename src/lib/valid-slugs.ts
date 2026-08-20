@@ -8,22 +8,27 @@ const MODELO_SLUGS = new Set(['oversized', 'regular', 'classic', 'performance', 
 const DB_TTL = 60_000
 
 let cached: { produtos: Set<string>; blog: Set<string>; at: number } | null = null
+let dbHandle: Database.Database | null = null
 
-function readDbSlugs(): { produtos: string[]; blog: string[] } {
-  if (process.env.DATABASE_URL) return { produtos: [], blog: [] }
+function getDb(): Database.Database | null {
+  if (process.env.DATABASE_URL) return null
+  if (dbHandle) return dbHandle
   try {
     const file = path.join(process.cwd(), 'data', 'freitasoutlet.db')
-    if (!fs.existsSync(file)) return { produtos: [], blog: [] }
-    const db = new Database(file, { readonly: true })
-    let produtos: string[] = []
-    let blog: string[] = []
-    try {
-      produtos = (db.prepare('SELECT slug FROM products WHERE active = 1').all() as { slug: string }[]).map((r) => r.slug)
-      blog = (db.prepare('SELECT slug FROM blog_posts WHERE published = 1').all() as { slug: string }[]).map((r) => r.slug)
-    } catch {
-      // tables may not exist yet
-    }
-    db.close()
+    if (!fs.existsSync(file)) return null
+    dbHandle = new Database(file, { readonly: true })
+    return dbHandle
+  } catch {
+    return null
+  }
+}
+
+function readDbSlugs(): { produtos: string[]; blog: string[] } {
+  const db = getDb()
+  if (!db) return { produtos: [], blog: [] }
+  try {
+    const produtos = (db.prepare('SELECT slug FROM products WHERE active = 1').all() as { slug: string }[]).map((r) => r.slug)
+    const blog = (db.prepare('SELECT slug FROM blog_posts WHERE published = 1').all() as { slug: string }[]).map((r) => r.slug)
     return { produtos, blog }
   } catch {
     return { produtos: [], blog: [] }

@@ -1,6 +1,7 @@
 import 'server-only'
 import { queryOne, queryRun } from './database'
 import { getProductById } from '@/data/products'
+import { invalidateProductCache } from './admin-products'
 
 export async function decrementStock(items: { productId: string; size: string; quantity: number }[]) {
   for (const item of items) {
@@ -12,6 +13,7 @@ export async function decrementStock(items: { productId: string; size: string; q
       await queryRun('UPDATE products SET stock = $1, updated_at = $2 WHERE id = $3', [
         JSON.stringify(stock), new Date().toISOString(), item.productId
       ])
+      invalidateProductCache()
       continue
     }
 
@@ -39,6 +41,7 @@ export async function decrementStock(items: { productId: string; size: string; q
       await queryRun('UPDATE products SET stock = $1, updated_at = $2 WHERE id = $3', [
         JSON.stringify(stock), new Date().toISOString(), item.productId
       ])
+      invalidateProductCache()
     }
   }
 }
@@ -55,4 +58,5 @@ export async function setProductStock(productId: string, stock: Record<string, n
   await queryRun('UPDATE products SET stock = $1, updated_at = $2 WHERE id = $3', [
     JSON.stringify(stock), new Date().toISOString(), productId
   ])
+  invalidateProductCache()
 }

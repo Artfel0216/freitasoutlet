@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import type { Product } from '@/types'
 import { staggerItem } from '@/components/animations'
 import { WishlistButton } from '@/components/product/WishlistButton'
-import { CompareButton } from '@/components/product/CompareButton'
 import { OfferBadge } from '@/components/product/OfferBadge'
 
 interface ProductCardProps {
@@ -117,9 +116,6 @@ export function ProductCard({ product }: ProductCardProps) {
               ))}
             </div>
           )}
-          <div className="pt-1">
-            <CompareButton product={product} />
-          </div>
         </div>
       </Link>
     </motion.div>
