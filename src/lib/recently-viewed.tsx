@@ -14,14 +14,15 @@ const STORAGE_KEY = 'fo_recently_viewed'
 const MAX_ITEMS = 8
 
 export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<Product[]>([])
-
-  useEffect(() => {
+  const [items, setItems] = useState<Product[]>(() => {
+    if (typeof window === 'undefined') return []
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setItems(JSON.parse(stored))
-    } catch {}
-  }, [])
+      return stored ? (JSON.parse(stored) as Product[]) : []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
     try {

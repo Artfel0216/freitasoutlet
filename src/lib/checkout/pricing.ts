@@ -43,7 +43,7 @@ export async function computeTotals(options: ComputeTotalsOptions): Promise<Comp
 
   let shippingCost = 0
   if (options.shippingOption && options.state) {
-    const selected = calculateShipping(options.state, options.items.length).find(
+    const selected = calculateShipping(options.state, options.items.length, subtotal).find(
       (s) => s.service === options.shippingOption,
     )
     if (selected) {

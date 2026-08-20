@@ -3,6 +3,7 @@ import { verifyPassword, setSession } from '@/lib/auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
-    const { password } = await request.json()
+    const body = await readJsonBody<{ password?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { password } = body
 
     if (!password || typeof password !== 'string') {
       return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 })

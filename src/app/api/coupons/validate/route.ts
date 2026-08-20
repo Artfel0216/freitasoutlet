@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { queryOne } from '@/lib/database'
 import { rateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
     }
 
-    const { code, orderTotal } = await request.json()
+    const body = await readJsonBody<{ code?: string; orderTotal?: number }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { code, orderTotal } = body
 
     if (!code || typeof code !== 'string') {
       return NextResponse.json({ error: 'Código do cupom é obrigatório' }, { status: 400 })

@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { checkoutSchema } from '@/lib/validations'
 import { logger } from '@/lib/logger'
 import { processCheckout } from '@/lib/checkout/checkout-service'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await readJsonBody(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
     const { action } = body
 
     if (action === 'validate') {

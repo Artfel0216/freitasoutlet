@@ -43,7 +43,7 @@ function createSqliteSql(): SqlFn {
     return trimmed.startsWith('SELECT') || trimmed.startsWith('WITH') || trimmed.startsWith('PRAGMA')
   }
 
-  const fn = ((strings: any, ...values: any[]): Promise<any> => {
+  const fn = ((strings: string | string[], ...values: unknown[]): Promise<unknown> => {
     const db = getDb()
 
     if (Array.isArray(strings)) {
@@ -79,7 +79,7 @@ function createSqliteSql(): SqlFn {
 
     if (fullResults) {
       const info = stmt.run(...params)
-      return Promise.resolve({ rows: [], rowCount: info.changes } as any)
+      return Promise.resolve({ rows: [], rowCount: info.changes })
     }
 
     if (isReadQuery(query)) {
@@ -87,13 +87,13 @@ function createSqliteSql(): SqlFn {
     }
     stmt.run(...params)
     return Promise.resolve([])
-  }) as SqlFn
+  }) as unknown as SqlFn
 
   return fn
 }
 
 export const sql = (DATABASE_URL ? neon(DATABASE_URL) : createSqliteSql()) as SqlFn & {
-  (q: string, p?: unknown[]): Promise<any[]>
+  (q: string, p?: unknown[]): Promise<unknown[]>
   (q: string, p: unknown[], opts: { fullResults: true }): Promise<{ rowCount: number }>
 }
 
@@ -101,7 +101,7 @@ export async function queryOne<T extends Record<string, unknown> = Record<string
   query: string,
   params?: unknown[]
 ): Promise<T | undefined> {
-  const rows = await (sql as any)(query, params ?? [])
+  const rows = await (sql as unknown as (q: string, p?: unknown[]) => Promise<unknown[]>)(query, params ?? [])
   return rows[0] as T | undefined
 }
 
@@ -109,13 +109,18 @@ export async function queryAll<T extends Record<string, unknown> = Record<string
   query: string,
   params?: unknown[]
 ): Promise<T[]> {
-  return await (sql as any)(query, params ?? []) as T[]
+  const rows = await (sql as unknown as (q: string, p?: unknown[]) => Promise<unknown[]>)(query, params ?? [])
+  return rows as T[]
 }
 
 export async function queryRun(
   query: string,
   params?: unknown[]
 ): Promise<{ rowCount: number }> {
-  const result = await (sql as any)(query, params ?? [], { fullResults: true })
+  const result = await (sql as unknown as (q: string, p: unknown[], opts: { fullResults: true }) => Promise<{ rowCount: number }>)(
+    query,
+    params ?? [],
+    { fullResults: true },
+  )
   return { rowCount: result.rowCount ?? 0 }
 }

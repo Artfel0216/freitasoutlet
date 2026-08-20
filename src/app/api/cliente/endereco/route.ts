@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const session = await getCustomerSession()
   if (!session) {
-    return NextResponse.json({ addresses: [] })
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
   const customer = await findCustomerById(session.id)

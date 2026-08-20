@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server'
 import { findCustomerByEmail, updateCustomer } from '@/lib/customer-db'
 import { consumeToken } from '@/lib/tokens'
 import { logger } from '@/lib/logger'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: Request) {
   try {
-    const { token } = await request.json()
+    const body = await readJsonBody<{ token?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { token } = body
 
     if (!token) {
       return NextResponse.json({ error: 'Token é obrigatório' }, { status: 400 })

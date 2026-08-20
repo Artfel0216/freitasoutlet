@@ -5,6 +5,7 @@ import { sendWelcomeEmail, sendEmailVerification } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -15,13 +16,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
-    const { name, email, phone, password } = await request.json()
+    const body = await readJsonBody<{ name?: string; email?: string; phone?: string; password?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { name, email, phone, password } = body
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Nome, e-mail e senha são obrigatórios' }, { status: 400 })
     }
     if (password.length < 6) {
       return NextResponse.json({ error: 'A senha deve ter no mínimo 6 caracteres' }, { status: 400 })
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim()
+    const accountRl = await rateLimit(`register-account:${normalizedEmail}`, 3, 300_000)
+    if (!accountRl.allowed) {
+      return NextResponse.json({ error: 'Muitas tentativas para esta conta. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
     const existing = await findCustomerByEmail(email)

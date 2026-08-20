@@ -4,6 +4,7 @@ import { consumeToken } from '@/lib/tokens'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +14,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
-    const { token, password } = await request.json()
+    const body = await readJsonBody<{ token?: string; password?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { token, password } = body
 
     if (!token || !password) {
       return NextResponse.json({ error: 'Token e nova senha são obrigatórios' }, { status: 400 })

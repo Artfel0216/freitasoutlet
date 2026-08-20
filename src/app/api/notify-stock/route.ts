@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { queryOne, queryRun } from '@/lib/database'
 import { rateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 async function initTable() {
   await queryRun("CREATE TABLE IF NOT EXISTS stock_notifications (id TEXT PRIMARY KEY, product_id TEXT NOT NULL, email TEXT NOT NULL, size TEXT, notified INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)")
@@ -16,7 +17,12 @@ export async function POST(request: NextRequest) {
     }
 
     await initTable()
-    const { productId, email, size } = await request.json()
+    const body = await readJsonBody<{ productId?: string; email?: string; size?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { productId, email, size } = body
 
     if (!productId || !email) {
       return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 })

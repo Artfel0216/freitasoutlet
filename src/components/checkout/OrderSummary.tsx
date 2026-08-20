@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import type { CartItem } from '@/types'
 import type { ShippingOption } from '@/components/checkout/checkout-utils'
 import { formatBRL } from '@/components/checkout/checkout-utils'
+import { getEffectivePrice } from '@/lib/pricing'
 
 interface OrderSummaryProps {
   items: CartItem[]
@@ -52,7 +53,7 @@ export function OrderSummary({ items, totalPrice, selectedShipping, shippingOpti
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">{item.product.name}</p>
                 <p className="text-[11px] text-muted-foreground">{item.selectedSize} / Qtd: {item.quantity}</p>
-                <p className="text-xs font-bold mt-0.5">{formatBRL(item.product.price * item.quantity)}</p>
+                <p className="text-xs font-bold mt-0.5">{formatBRL(getEffectivePrice(item.product, item.quantity) * item.quantity)}</p>
               </div>
             </motion.div>
           ))}

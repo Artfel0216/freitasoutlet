@@ -1,10 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { motion } from 'framer-motion'
 import { flashSales, type FlashSale } from '@/lib/flash-sales'
 import { products } from '@/data/products'
 import { Button } from '@/components/ui/Button'
+
+function subscribe() {
+  return () => {}
+}
+
+function getClientNow() {
+  return Date.now()
+}
+
+function getServerNow() {
+  return Date.now()
+}
+
+function ExpiresIn({ endsAt }: { endsAt: string }) {
+  const now = useSyncExternalStore(subscribe, getClientNow, getServerNow)
+  const expiresIn = Math.max(0, Math.round((new Date(endsAt).getTime() - now) / (1000 * 60 * 60)))
+
+  if (expiresIn === 0) return <span className="text-xs text-red-600">Expirada</span>
+  return <span className="text-xs">{expiresIn}h restantes</span>
+}
 
 export default function AdminFlashSalesPage() {
   const [sales, setSales] = useState<FlashSale[]>(flashSales)
@@ -50,13 +70,11 @@ export default function AdminFlashSalesPage() {
           <tbody>
             {sales.map((sale, i) => {
               const product = products.find((p) => p.slug === sale.productSlug)
-              const expiresIn = Math.max(0, Math.round((new Date(sale.endsAt).getTime() - Date.now()) / (1000 * 60 * 60)))
-              const isExpired = expiresIn === 0
 
               return (
                 <motion.tr
                   key={sale.productSlug}
-                  className={`border-b border-border/50 hover:bg-muted/30 ${isExpired ? 'opacity-50' : ''}`}
+                  className="border-b border-border/50 hover:bg-muted/30"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03, duration: 0.25 }}
@@ -69,11 +87,7 @@ export default function AdminFlashSalesPage() {
                     <span className="text-red-600 font-bold">-{sale.discountPercent}%</span>
                   </td>
                   <td className="px-4 py-3">
-                    {isExpired ? (
-                      <span className="text-xs text-red-600">Expirada</span>
-                    ) : (
-                      <span className="text-xs">{expiresIn}h restantes</span>
-                    )}
+                    <ExpiresIn endsAt={sale.endsAt} />
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button

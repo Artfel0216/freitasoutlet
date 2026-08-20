@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface FlashSaleTimerProps {
@@ -20,13 +20,23 @@ function getTimeLeft(endsAt: string) {
   }
 }
 
+function subscribe() {
+  return () => {}
+}
+
+function getClientSnapshot() {
+  return true
+}
+
+function getServerSnapshot() {
+  return false
+}
+
 export function FlashSaleTimer({ endsAt, label = 'OFERTA RELÂMPAGO', variant = 'badge' }: FlashSaleTimerProps) {
-  const [timeLeft, setTimeLeft] = useState<ReturnType<typeof getTimeLeft>>(null)
-  const [mounted, setMounted] = useState(false)
+  const [timeLeft, setTimeLeft] = useState<ReturnType<typeof getTimeLeft>>(() => getTimeLeft(endsAt))
+  const mounted = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot)
 
   useEffect(() => {
-    setMounted(true)
-    setTimeLeft(getTimeLeft(endsAt))
     const interval = setInterval(() => {
       const tl = getTimeLeft(endsAt)
       setTimeLeft(tl)

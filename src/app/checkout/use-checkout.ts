@@ -9,6 +9,7 @@ import type { PaymentMethod, Step } from '@/components/checkout/checkout-utils'
 import { buildCheckoutPayload, getStoredCoupon } from './checkout-payload'
 import type { OrderResult } from './checkout-types'
 import { useCheckoutForm, type CheckoutFormController } from './use-checkout-form'
+import { getEffectivePrice } from '@/lib/pricing'
 
 export interface CheckoutController extends CheckoutFormController {
   step: Step
@@ -119,7 +120,7 @@ export function useCheckout({
     try {
       localStorage.removeItem('fo_coupon')
     } catch {}
-    const orderSubtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    const orderSubtotal = items.reduce((sum, item) => sum + getEffectivePrice(item.product, item.quantity) * item.quantity, 0)
     if (orderNumber) {
       addPoints(orderSubtotal, `Pedido #${orderNumber}`)
     }

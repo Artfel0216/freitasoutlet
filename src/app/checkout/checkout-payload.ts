@@ -1,6 +1,7 @@
 import type { CartItem } from '@/types'
 import type { PaymentMethod } from '@/components/checkout/checkout-utils'
 import type { CheckoutFormData } from './checkout-types'
+import { getEffectivePrice } from '@/lib/pricing'
 
 export interface BuildCheckoutPayloadOptions {
   formData: CheckoutFormData
@@ -20,7 +21,7 @@ export function buildCheckoutPayload(options: BuildCheckoutPayloadOptions) {
     size: item.selectedSize,
     color: item.selectedColor.name,
     quantity: item.quantity,
-    unitPrice: item.product.price,
+    unitPrice: getEffectivePrice(item.product, item.quantity),
   }))
 
   return {

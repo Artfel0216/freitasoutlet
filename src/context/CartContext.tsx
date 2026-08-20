@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import type { CartItem, Product, ProductColor } from '@/types'
+import { getEffectivePrice } from '@/lib/pricing'
 
 const STORAGE_KEY = 'freitasoutlet_cart'
 
@@ -19,14 +20,15 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
-
-  useEffect(() => {
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setItems(JSON.parse(stored))
-    } catch {}
-  }, [])
+      return stored ? (JSON.parse(stored) as CartItem[]) : []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
     try {
@@ -73,7 +75,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => setItems([]), [])
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  const totalPrice = items.reduce((sum, item) => sum + getEffectivePrice(item.product, item.quantity) * item.quantity, 0)
 
   return (
     <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice }}>

@@ -7,13 +7,13 @@ export interface FlashSale {
 
 export const flashSales: FlashSale[] = [
   {
-    productSlug: 'tenis-nike-air-max-infinity',
+    productSlug: 'adidas-ultra-boost-5',
     discountPercent: 30,
     endsAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     label: 'OFERTA RELÂMPAGO',
   },
   {
-    productSlug: 'tenis-nike-force-1',
+    productSlug: 'adidas-adizero-evo-sl',
     discountPercent: 25,
     endsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     label: 'OFERTA RELÂMPAGO',

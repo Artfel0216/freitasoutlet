@@ -5,6 +5,8 @@ import type { Product } from '@/types'
 import { useCart } from '@/context/CartContext'
 import { useRecentlyViewed } from '@/lib/recently-viewed'
 import { getFlashSaleForProduct } from '@/lib/flash-sales'
+import { getEffectivePrice } from '@/lib/pricing'
+import { isWholesaleQuantity } from '@/lib/wholesale'
 
 export interface ProductPurchaseState {
   selectedSize: string
@@ -15,6 +17,8 @@ export interface ProductPurchaseState {
   discountPercent: number
   flashSale: ReturnType<typeof getFlashSaleForProduct>
   flashSalePrice: number | null
+  unitPrice: number
+  isWholesale: boolean
   stock: number
   isOutOfStock: boolean
   isLowStock: boolean
@@ -50,6 +54,9 @@ export function useProductPurchase(product: Product): ProductPurchaseState {
   const flashSale = getFlashSaleForProduct(product.slug)
   const flashSalePrice = flashSale ? product.price * (1 - flashSale.discountPercent / 100) : null
 
+  const unitPrice = getEffectivePrice(product, quantity)
+  const isWholesale = isWholesaleQuantity(quantity)
+
   const stock = product.stock?.[selectedSize] ?? 0
   const isOutOfStock = stock === 0
   const isLowStock = stock > 0 && stock <= 5
@@ -70,6 +77,8 @@ export function useProductPurchase(product: Product): ProductPurchaseState {
     discountPercent,
     flashSale,
     flashSalePrice,
+    unitPrice,
+    isWholesale,
     stock,
     isOutOfStock,
     isLowStock,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 function sanitize(str: string): string {
   return str.replace(/[<>&"']/g, (c) => {
@@ -18,7 +19,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
     }
 
-    const body = await request.json()
+    const body = await readJsonBody(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
     const name = typeof body.name === 'string' ? body.name : ''
     const email = typeof body.email === 'string' ? body.email : ''
     const phone = typeof body.phone === 'string' ? body.phone : ''

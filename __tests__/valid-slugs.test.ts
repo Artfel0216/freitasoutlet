@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { slugExists } from '@/lib/valid-slugs'
 
 describe('slugExists', () => {
-  it('accepts a static product slug', () => {
-    expect(slugExists('produtos', 'chuteira-nike-mercurial-superfly-9')).toBe(true)
+  it('accepts a DB-active product slug', () => {
+    expect(slugExists('produtos', 'adidas-ultra-boost-5')).toBe(true)
   })
 
-  it('accepts a DB-active product slug', () => {
-    expect(slugExists('produtos', 'chuteira-lotto-air-400')).toBe(true)
+  it('accepts another DB-active product slug', () => {
+    expect(slugExists('produtos', 'adidas-adizero-evo-sl')).toBe(true)
   })
 
   it('rejects a nonexistent product slug', () => {

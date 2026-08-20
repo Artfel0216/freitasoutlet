@@ -3,6 +3,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { queryOne, queryRun } from '@/lib/database'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 async function initTable() {
   await queryRun("CREATE TABLE IF NOT EXISTS newsletter_subscribers (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL)")
@@ -16,7 +17,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
     }
 
-    const { email } = await request.json()
+    const body = await readJsonBody<{ email?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { email } = body
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'E-mail é obrigatório' }, { status: 400 })

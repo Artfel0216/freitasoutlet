@@ -5,6 +5,7 @@ import { sendPasswordResetEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function POST(request: Request) {
   try {
@@ -14,10 +15,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
-    const { email } = await request.json()
+    const body = await readJsonBody<{ email?: string }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { email } = body
 
     if (!email) {
       return NextResponse.json({ error: 'E-mail é obrigatório' }, { status: 400 })
+    }
+
+    const accountRl = await rateLimit(`forgot-password-account:${String(email).toLowerCase().trim()}`, 3, 300_000)
+    if (!accountRl.allowed) {
+      return NextResponse.json({ error: 'Muitas tentativas para esta conta. Tente novamente em 5 minutos.' }, { status: 429 })
     }
 
     const customer = await findCustomerByEmail(email)

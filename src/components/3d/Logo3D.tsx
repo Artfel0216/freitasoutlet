@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { Group } from 'three'

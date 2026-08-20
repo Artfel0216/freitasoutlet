@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import type { ProductPurchaseState } from '../use-product-purchase'
+import { WHOLESALE_MIN_QUANTITY, WHOLESALE_DISCOUNT_PERCENT } from '@/lib/wholesale'
 
 export function QuantityStepper({ purchase }: { purchase: ProductPurchaseState }) {
   const { quantity, setQuantity } = purchase
@@ -40,6 +41,16 @@ export function QuantityStepper({ purchase }: { purchase: ProductPurchaseState }
           +
         </motion.button>
       </div>
+      {quantity >= WHOLESALE_MIN_QUANTITY && (
+        <motion.p
+          className="text-xs font-medium text-green-700"
+          initial={{ opacity: 0, x: -5 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          Preço de atacado aplicado (-{WHOLESALE_DISCOUNT_PERCENT}%)
+        </motion.p>
+      )}
     </motion.div>
   )
 }

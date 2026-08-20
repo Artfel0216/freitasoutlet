@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { CouponInput } from '@/components/CouponInput'
 import { stagger, staggerItem, fadeUp } from '@/components/animations'
+import { getEffectivePrice } from '@/lib/pricing'
+import { isWholesaleQuantity } from '@/lib/wholesale'
 
 function getStoredCoupon(): { code: string; discount: number } | null {
   if (typeof window === 'undefined') return null
@@ -109,8 +111,11 @@ export default function CartPage() {
                     {item.selectedSize} / {item.selectedColor.name}
                   </p>
                   <p className="text-sm font-heading font-bold mt-1">
-                    R$ {item.product.price.toFixed(2).replace('.', ',')}
+                    R$ {getEffectivePrice(item.product, item.quantity).toFixed(2).replace('.', ',')}
                   </p>
+                  {isWholesaleQuantity(item.quantity) && (
+                    <p className="text-[11px] text-green-700 font-medium mt-0.5">Preço de atacado aplicado</p>
+                  )}
 
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center border border-border">
@@ -162,7 +167,7 @@ export default function CartPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.15 }}
                   >
-                    R$ {(item.product.price * item.quantity).toFixed(2).replace('.', ',')}
+                    R$ {(getEffectivePrice(item.product, item.quantity) * item.quantity).toFixed(2).replace('.', ',')}
                   </motion.p>
                 </motion.div>
               </motion.div>

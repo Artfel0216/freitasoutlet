@@ -3,6 +3,7 @@ import { calculateShipping } from '@/lib/shipping'
 import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { getClientIp } from '@/lib/client-ip'
+import { readJsonBody } from '@/lib/read-json'
 
 export async function GET() {
   return NextResponse.json({ error: 'Método não permitido. Use POST.' }, {
@@ -19,7 +20,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Muitas requisições. Tente novamente em instantes.' }, { status: 429 })
     }
 
-    const { state, items, subtotal } = await request.json()
+    const body = await readJsonBody<{ state?: string; items?: number; subtotal?: number }>(request)
+    if (!body) {
+      return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
+    }
+
+    const { state, items, subtotal } = body
 
     if (!state || typeof state !== 'string' || state.length !== 2) {
       return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
